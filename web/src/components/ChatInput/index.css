@@ -1,0 +1,34 @@
+.chat-input-form {
+    margin-top: auto;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 12px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 90%;
+    display: flex;
+    flex-direction: row;
+}
+
+.chat-input-textarea {
+    background-color: #40414f;
+    width: 100%;
+    padding: 12px;
+    color: white;
+    font-size: 1.25em;
+    border-radius: 5px;
+    border: none;
+    outline: none;
+    box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.5);
+}
+
+.chat-input-submit-button {
+    min-width: 60px;
+    background-color: #0da37f;
+    border: unset;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    cursor: pointer;
+    color: #fff;
+}

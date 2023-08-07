@@ -1,0 +1,30 @@
+name: Chatbot Web CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/web-ci.yml'
+      - 'web/**'
+  pull_request:
+    types:
+      - opened
+      - synchronize
+    paths:
+      - '.github/workflows/web-ci.yml'
+      - 'web/**'
+  workflow_dispatch:  # Allows to trigger the workflow manually in GitHub UI
+
+jobs:
+  lint:
+    defaults:
+        run:
+          working-directory: web
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install modules
+      run: yarn
+    - name: Run ESLint
+      run: make lint

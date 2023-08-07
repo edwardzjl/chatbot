@@ -1,0 +1,54 @@
+.sidemenu {
+    width: 260px;
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, .2);
+    background-color: #202123;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidemenu-button {
+    margin: 5px;
+    align-items: center;
+    padding: 12px;
+    border: 1px solid rgba(255, 255, 255, .2);
+    border-radius: 5px;
+    text-align: left;
+    transition: ease 0.25s all;
+    display: flex;
+    flex-direction: row;
+}
+
+.sidemenu-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidemenu-button span {
+    padding-left: 6px;
+    padding-right: 12px;
+}
+
+.sidemenu-userinfo-hr {
+    margin-top: auto;
+    width: 90%;
+    border: 1px solid rgba(255, 255, 255, .2);
+}
+
+.sidemenu-userinfo {
+    padding: 12px;
+    border-radius: 5px;
+    text-align: center;
+    transition: ease 0.25s all;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.sidemenu-userinfo-username {
+    padding: 12px;
+    text-align: center;
+}
+
+.sidemenu-userinfo:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
