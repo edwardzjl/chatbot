@@ -68,7 +68,10 @@ def userinfo(kubeflow_userid: Annotated[str | None, Header()] = None):
 
 @app.get("/api/conversations", response_model=list[Conversation])
 async def get_conversations(kubeflow_userid: Annotated[str | None, Header()] = None):
-    convs = await Conversation.find(Conversation.owner == kubeflow_userid).all()
+    convs_iter = await Conversation.find(Conversation.owner == kubeflow_userid)
+    if not convs_iter:
+        return []
+    convs = convs_iter.all()
     convs.sort(key=lambda x: x.updated_at, reverse=True)
     return convs
 
