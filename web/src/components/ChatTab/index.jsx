@@ -3,7 +3,7 @@ import "./index.css";
 import { useState, useEffect, useRef, useContext } from "react";
 import TextField from "@mui/material/TextField";
 import Tooltip from "@mui/material/Tooltip";
-import ClickAwayListener from "@mui/base/ClickAwayListener";
+import { ClickAwayListener } from "@mui/base/ClickAwayListener";
 
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutline";
