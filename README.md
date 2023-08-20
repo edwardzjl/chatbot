@@ -27,6 +27,6 @@ Using TGI eliminates the need to build complex serving infrastructure from scrat
 
 Key | Default Value | Description
 ---|---|---
-LOG_LEVEL | INFO | log level
-REDIS_OM_URL | redis://localhost:6379 | Redis url to persist messages and metadata
-INFERENCE_SERVER_URL | http://localhost:8080 | model service url
+LOG_LEVEL | `INFO` | log level
+REDIS_OM_URL | `redis://localhost:6379` | Redis url to persist messages and metadata
+INFERENCE_SERVER_URL | `http://localhost:8080` | model service url
