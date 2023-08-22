@@ -25,7 +25,7 @@ from chatbot.callbacks import (
     UpdateConversationCallbackHandler,
 )
 from chatbot.history import AppendSuffixHistory
-from chatbot.prompts.baichuan import (
+from chatbot.prompts.vicuna import (
     prompt,
     human_prefix,
     ai_prefix,
