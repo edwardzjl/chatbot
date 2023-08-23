@@ -1,7 +1,7 @@
 fastapi==0.101.1
 langchain==0.0.268
 loguru==0.7.0
-redis==5.0.0
+redis==4.6.0
 redis-om==0.2.1
 requests==2.31.0
 sse-starlette==1.6.5
