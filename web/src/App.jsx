@@ -1,7 +1,6 @@
 import "./normal.css";
 import "./App.css";
-import { useState, useEffect, useReducer, forwardRef } from "react";
-import { fetchEventSource } from "@microsoft/fetch-event-source";
+import { useState, useEffect, useReducer, useRef, forwardRef } from "react";
 
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
@@ -41,6 +40,48 @@ const replaceUsername = (message, username) => {
 };
 
 function App() {
+  const ws = useRef(null);
+  useEffect(() => {
+    const wsurl = window.location.origin.replace(/^http/, "ws") + "/api/chat";
+    console.log("connecting to", wsurl);
+    ws.current = new WebSocket(wsurl);
+    ws.current.onmessage = (msg) => {
+      // <https://react.dev/learn/queueing-a-series-of-state-updates>
+      // <https://react.dev/learn/updating-arrays-in-state>
+      try {
+        const payload = JSON.parse(msg.data);
+        switch (payload.type) {
+          case "start":
+            dispatch({
+              type: "messageAdded",
+              id: payload.from,
+              message: { from: "AI", content: payload.content || "" },
+            });
+            break;
+          case "stream":
+            dispatch({
+              type: "messageAppended",
+              id: payload.from,
+              message: { from: "AI", content: payload.content },
+            });
+            break;
+          case "error":
+            setSnackbar({
+              open: true,
+              severity: "error",
+              message: "Something goes wrong, please try again later.",
+            });
+            break;
+        }
+      } catch (error) {
+        console.debug("not a json message", msg);
+      }
+    };
+    return () => {
+      ws.current?.close();
+    };
+  }, [ws]);
+
   const [username, setUsername] = useState("");
 
   /**
@@ -122,55 +163,13 @@ function App() {
   }, []);
 
   const sendMessage = async (convId, message) => {
-    fetchEventSource(`/api/conversations/${convId}/messages`, {
-      method: "POST",
-      headers: {
-        Accept: "text/event-stream",
-        "Content-Type": "application/json",
-        // TODO: remove this header when we add auth back
-        "kubeflow-userid": username,
-      },
-      body: JSON.stringify({
-        message: message,
-      }),
-      openWhenHidden: true,
-      async onopen(response) {
-        if (
-          response.ok &&
-          response.headers.get("content-type") === "text/event-stream"
-        ) {
-          console.log("on open");
-          // add a blank message to the chatlog
-          dispatch({
-            type: "messageAdded",
-            id: convId,
-            message: { from: "AI", content: "" },
-          });
-        } else {
-          console.error("error opening the SSE endpoint", response);
-        }
-      },
-      onmessage(msg) {
-        // <https://react.dev/learn/queueing-a-series-of-state-updates>
-        // <https://react.dev/learn/updating-arrays-in-state>
-        try {
-          const payload = JSON.parse(msg.data);
-          dispatch({
-            type: "messageAppended",
-            id: convId,
-            message: { from: "AI", content: payload.text },
-          });
-        } catch (error) {
-          console.debug("not a json message", msg);
-        }
-      },
-      onclose() {
-        console.log("on close");
-      },
-      onerror(err) {
-        console.error("on error", err);
-      },
-    });
+    ws.current?.send(
+      JSON.stringify({
+        to: convId,
+        content: message,
+        type: "text",
+      })
+    );
   };
 
   const closeSnackbar = (event, reason) => {
@@ -188,16 +187,11 @@ function App() {
             <SideMenu />
             <section className="chatbox">
               <ChatLog>
-                {currentConv?.messages?.map(
-                  (message, index) => (
-                    <ChatMessage key={index} message={message} />
-                  )
-                )}
+                {currentConv?.messages?.map((message, index) => (
+                  <ChatMessage key={index} message={message} />
+                ))}
               </ChatLog>
-              <ChatInput
-                chatId={currentConv?.id}
-                onSend={sendMessage}
-              />
+              <ChatInput chatId={currentConv?.id} onSend={sendMessage} />
             </section>
             <Snackbar
               open={snackbar.open}

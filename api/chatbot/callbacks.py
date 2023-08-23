@@ -1,34 +1,23 @@
 """Callback handlers used in the app.
 A modified version of langchain.callbacks.AsyncIteratorCallbackHandler.
 """
-import asyncio
 from datetime import datetime
-from typing import Any, AsyncIterator, Dict, List, Literal, Union, Optional, cast
+from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 
+from fastapi import WebSocket
 from langchain.callbacks.base import AsyncCallbackHandler
 from langchain.schema import LLMResult
-from loguru import logger
 
-from chatbot.schemas import StreamResponse, Conversation
+from chatbot.schemas import ChatMessage, Conversation
 
 
-class SSEMessageCallbackHandler(AsyncCallbackHandler):
-    """Callback handler for streaming LLM responses as Server Sent Events."""
+class StreamingLLMCallbackHandler(AsyncCallbackHandler):
+    """Callback handler for streaming LLM responses."""
 
-    queue: asyncio.Queue[StreamResponse]
-    """Queue of stream responses from the LLM."""
-
-    done: asyncio.Event
-    """Usually we want to pop all items from the queue, but if we get an error, or we want to do an early stop, we set this event."""
-
-    @property
-    def always_verbose(self) -> bool:
-        return True
-
-    def __init__(self) -> None:
-        self.queue = asyncio.Queue()
-        self.done = asyncio.Event()
+    def __init__(self, websocket: WebSocket, conversation_id: str):
+        self.websocket = websocket
+        self.conversation_id = conversation_id
 
     async def on_llm_start(
         self,
@@ -41,8 +30,10 @@ class SSEMessageCallbackHandler(AsyncCallbackHandler):
         metadata: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> None:
-        # If two calls are made in a row, this resets the state
-        self.done.clear()
+        message = ChatMessage(
+            id=run_id, from_=self.conversation_id, content=None, type="start"
+        )
+        await self.websocket.send_json(message.dict())
 
     async def on_llm_new_token(
         self,
@@ -53,8 +44,10 @@ class SSEMessageCallbackHandler(AsyncCallbackHandler):
         tags: Optional[List[str]] = None,
         **kwargs: Any,
     ) -> None:
-        if token is not None and token != "":
-            self.queue.put_nowait(StreamResponse(id=run_id.hex, text=token))
+        message = ChatMessage(
+            id=run_id, from_=self.conversation_id, content=token, type="stream"
+        )
+        await self.websocket.send_json(message.dict())
 
     async def on_llm_end(
         self,
@@ -65,7 +58,10 @@ class SSEMessageCallbackHandler(AsyncCallbackHandler):
         tags: Optional[List[str]] = None,
         **kwargs: Any,
     ) -> None:
-        self.done.set()
+        message = ChatMessage(
+            id=run_id, from_=self.conversation_id, content=None, type="end"
+        )
+        await self.websocket.send_json(message.dict())
 
     async def on_llm_error(
         self,
@@ -76,37 +72,14 @@ class SSEMessageCallbackHandler(AsyncCallbackHandler):
         tags: Optional[List[str]] = None,
         **kwargs: Any,
     ) -> None:
-        logger.error(f"Error from LLM: {error}")
-        self.done.set()
-
-    async def aiter(self) -> AsyncIterator[str]:
-        while not self.queue.empty() or not self.done.is_set():
-            # Wait for the next token in the queue,
-            # but stop waiting if the done event is set
-            done, other = await asyncio.wait(
-                [
-                    # NOTE: If you add other tasks here, update the code below,
-                    # which assumes each set has exactly one task each
-                    asyncio.ensure_future(self.queue.get()),
-                    asyncio.ensure_future(self.done.wait()),
-                ],
-                return_when=asyncio.FIRST_COMPLETED,
-            )
-
-            # Cancel the other task
-            if other:
-                other.pop().cancel()
-
-            # Extract the value of the first completed task
-            resp_or_done = cast(
-                Union[StreamResponse, Literal[True]], done.pop().result()
-            )
-
-            # If the extracted value is the boolean True, the done event was set
-            if resp_or_done is True:
-                break
-
-            yield resp_or_done.json()
+        """Run when LLM errors."""
+        message = ChatMessage(
+            id=run_id,
+            from_=self.conversation_id,
+            content=f"llm error: {str(error)}",
+            type="error",
+        )
+        await self.websocket.send_json(message.dict())
 
 
 class UpdateConversationCallbackHandler(AsyncCallbackHandler):

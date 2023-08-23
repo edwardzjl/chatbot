@@ -1743,11 +1743,6 @@
   resolved "https://registry.npmmirror.com/@leichtgewicht/ip-codec/-/ip-codec-2.0.4.tgz#b2ac626d6cb9c8718ab459166d4bb405b8ffa78b"
   integrity sha512-Hcv+nVC0kZnQ3tD9GVu5xSMR4VVYOteQIr/hwFPVEvPdlXqgGEuRjiheChHgdM+JyqdgNcmzZOX/tnl0JOiI7A==
 
-"@microsoft/fetch-event-source@^2.0.1":
-  version "2.0.1"
-  resolved "https://registry.npmmirror.com/@microsoft/fetch-event-source/-/fetch-event-source-2.0.1.tgz#9ceecc94b49fbaa15666e38ae8587f64acce007d"
-  integrity sha512-W6CLUJ2eBMw3Rec70qrsEW0jOm/3twwJv21mrmj2yORiaVmVYGS4sSS5yUwvQc1ZlDLYGPnClVWmUUMagKNsfA==
-
 "@mui/base@5.0.0-beta.12":
   version "5.0.0-beta.12"
   resolved "https://registry.yarnpkg.com/@mui/base/-/base-5.0.0-beta.12.tgz#131882930bdbe236dd835867bf6222a993b8d219"

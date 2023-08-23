@@ -1,0 +1,24 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: allowconnect-istio-ingressgateway
+  namespace: istio-system
+spec:
+  workloadSelector:
+    labels:
+      app: istio-ingressgateway
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      listener:
+        portNumber: 8081
+        filterChain:
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+    patch:
+      operation: MERGE
+      value:
+        typed_config:
+          "@type": "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
+          http2_protocol_options:
+            allow_connect: true

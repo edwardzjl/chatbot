@@ -14,9 +14,9 @@ Chatbot supports multiple conversations. Each conversation is identified by a un
 
 ### Streaming
 
-Chatbot supports streaming LLM outputs to the user in real-time. Currently, streaming messages are delivered via [Server-sent events (SSE)](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events), which provides unidirectional communication from server to client. Chatbot use [fetch-event-source](https://www.npmjs.com/package/@microsoft/fetch-event-source) on the client side and [sse-starlette](https://github.com/sysid/sse-starlette) on the server side for the SSE implementation. However, to reduce latency and improve performance, we are considering migrating to [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API), which enables bidirectional, full-duplex communication channels between the server and client.
+Chatbot supports streaming LLM outputs to the user in real-time. Streaming messages are delivered via [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API), which enables bidirectional, full-duplex communication channels between the server and client.
 
-Chatbot uses [Text Generation Inference (TGI)](https://github.com/huggingface/text-generation-inference), an open source library from HuggingFace, to host large language models for text generation. TGI provides out-of-the-box support for continuous batching, streaming inference, and other useful features for deploying production-ready LLMs.
+On the LLM side, Chatbot uses [Text Generation Inference (TGI)](https://github.com/huggingface/text-generation-inference), an open source library from HuggingFace, to host large language models for text generation. TGI provides out-of-the-box support for continuous batching, streaming inference, and other useful features for deploying production-ready LLMs.
 Using TGI eliminates the need to build complex serving infrastructure from scratch. Its continuous batching allows the chatbot to achieve high throughput by batching requests. Streaming inference enables the chatbot to return partial results instantly rather than waiting for the full output.
 
 ## Architecture
