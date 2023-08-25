@@ -43,14 +43,14 @@ def message_history(
     )
 
 
-@router.get("/api/conversations", response_model=list[Conversation])
+@router.get("/conversations", response_model=list[Conversation])
 async def get_conversations(kubeflow_userid: Annotated[str | None, Header()] = None):
     convs = await Conversation.find(Conversation.owner == kubeflow_userid).all()
     convs.sort(key=lambda x: x.updated_at, reverse=True)
     return convs
 
 
-@router.get("/api/conversations/{conversation_id}", response_model=ConversationDetail)
+@router.get("/conversations/{conversation_id}", response_model=ConversationDetail)
 async def get_conversation(
     conversation_id: str,
     message_history: Annotated[BaseChatMessageHistory, Depends(message_history)],
@@ -73,14 +73,14 @@ async def get_conversation(
     )
 
 
-@router.post("/api/conversations", status_code=201, response_model=Conversation)
+@router.post("/conversations", status_code=201, response_model=Conversation)
 async def create_conversation(kubeflow_userid: Annotated[str | None, Header()] = None):
     conv = Conversation(title=f"conversation at {date.today()}", owner=kubeflow_userid)
     await conv.save()
     return conv
 
 
-@router.put("/api/conversations/{conversation_id}")
+@router.put("/conversations/{conversation_id}")
 async def update_conversation(
     conversation_id: str,
     payload: UpdateConversation,
@@ -92,14 +92,14 @@ async def update_conversation(
     await conv.save()
 
 
-@router.delete("/api/conversations/{conversation_id}", status_code=204)
+@router.delete("/conversations/{conversation_id}", status_code=204)
 async def delete_conversation(
     conversation_id: str, kubeflow_userid: Annotated[str | None, Header()] = None
 ):
     await Conversation.delete(conversation_id)
 
 
-@router.post("/api/conversations/{conversation_id}/messages")
+@router.post("/conversations/{conversation_id}/messages")
 async def generate(
     data: dict,
     message_history: Annotated[BaseChatMessageHistory, Depends(message_history)],
