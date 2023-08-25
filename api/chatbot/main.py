@@ -12,6 +12,7 @@ import langchain
 from langchain.cache import RedisCache
 from redis import Redis
 
+from chatbot.routers import router
 from chatbot.settings import settings
 
 
@@ -26,6 +27,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+app.include_router(router)
 
 
 @app.get("/api/healthz")
