@@ -1,10 +1,9 @@
 fastapi==0.101.1
-langchain==0.0.268
+langchain==0.0.272
 loguru==0.7.0
-redis==4.6.0
+redis[hiredis]==4.6.0
 redis-om==0.2.1
 requests==2.31.0
 sse-starlette==1.6.5
 text-generation==0.6.0
-
 uvicorn[standard]==0.23.2
