@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from aredis_om import JsonModel, Field
@@ -11,11 +11,18 @@ class StreamResponse(BaseModel):
     text: str
 
 
+def utcnow():
+    """
+    datetime.datetime.utcnow() does not contain timezone information.
+    """
+    return datetime.now(timezone.utc)
+
+
 class Conversation(JsonModel):
     id: Optional[str]
     title: str
     owner: str = Field(index=True)
-    created_at: Optional[datetime] = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=utcnow)
     updated_at: datetime = created_at
 
     # TODO: this is not clear as the model will return both a 'pk' and an 'id' with the same value.
