@@ -9,13 +9,28 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutline";
 import CheckOutlinedIcon from "@mui/icons-material/CheckOutlined";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
-import { ConversationContext, SnackbarContext } from "contexts";
+import { UserContext, ConversationContext, SnackbarContext } from "contexts";
 import { conversationsReducer } from "conversationsReducer";
 import {
   createConversation,
   deleteConversation,
+  getConversation,
   updateConversation,
 } from "requests";
+
+/**
+ * Backend does not store real username in messages, we need to update it.
+ * @param {*} message
+ * @param {*} username
+ * @returns
+ */
+const replaceUsername = (message, username) => {
+  if (message.from === "human") {
+    return { ...message, from: username };
+  } else {
+    return message;
+  }
+};
 
 /**
  *
@@ -28,6 +43,7 @@ import {
  * @returns
  */
 const ChatTab = (props) => {
+  const username = useContext(UserContext);
   const { conversations, dispatch } = useContext(ConversationContext);
   const setSnackbar = useContext(SnackbarContext);
 
@@ -58,6 +74,16 @@ const ChatTab = (props) => {
   const selectChat = async (e, chatId) => {
     e.preventDefault();
     e.stopPropagation();
+    const detailedConv = await getConversation(chatId);
+    dispatch({
+      type: "updated",
+      conversation: {
+        ...detailedConv,
+        messages: detailedConv.messages.map((message) =>
+          replaceUsername(message, username)
+        ),
+      },
+    });
     dispatch({
       type: "selected",
       id: chatId,
