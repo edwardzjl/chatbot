@@ -10,6 +10,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 import langchain
 from langchain.cache import RedisCache
+from loguru import logger
 from redis import Redis
 
 from chatbot.routers import router
@@ -43,6 +44,7 @@ def userinfo(kubeflow_userid: Annotated[str | None, Header()] = None):
 
 @app.exception_handler(NotFoundError)
 async def notfound_exception_handler(request: Request, exc: NotFoundError):
+    logger.error(f"NotFoundError: {exc}")
     # TODO: add some details here
     return JSONResponse(
         status_code=status.HTTP_404_NOT_FOUND,
