@@ -1,5 +1,5 @@
 fastapi==0.103.0
-langchain==0.0.274
+langchain==0.0.276
 loguru==0.7.0
 redis[hiredis]==4.6.0
 redis-om==0.2.1
