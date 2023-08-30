@@ -6,7 +6,7 @@ spec:
   template:
     spec:
       containers:
-        - image: zjuici/chatbot:latest
+        - image: edwardlol/chatbot:latest
           args:
             - --port
             - "8080"
