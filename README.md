@@ -23,6 +23,8 @@ Using TGI eliminates the need to build complex serving infrastructure from scrat
 
 ## Deployment
 
+See [deployment instructions](./manifests/README.md)
+
 ## Configuration
 
 Key | Default Value | Description

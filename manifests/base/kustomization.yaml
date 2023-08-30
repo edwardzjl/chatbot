@@ -1,7 +1,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: skynet
+namespace: jlzhou
 
 labels:
   - pairs:
@@ -10,7 +10,8 @@ labels:
 
 resources:
   - ../third-party/redis
-  - ksvc.yaml
+  - deployment.yaml
+  - service.yaml
 
 configMapGenerator:
   - name: chatbot
@@ -22,5 +23,5 @@ generatorOptions:
   disableNameSuffixHash: true
 
 images:
-  - name: zjuici/chatbot
-    newTag: v0.1.4
+  - name: edwardlol/chatbot
+    newTag: v0.1.10

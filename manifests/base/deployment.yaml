@@ -1,13 +1,23 @@
-apiVersion: serving.knative.dev/v1
-kind: Service
+apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: chatbot
 spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chatbot
   template:
+    metadata:
+      labels:
+        app: chatbot
     spec:
       containers:
-        - image: zjuici/chatbot:latest
+        - name: chatbot
+          image: edwardlol/chatbot:latest
           args:
+            - --host
+            - "0.0.0.0"
             - --port
             - "8080"
           envFrom:
