@@ -31,7 +31,11 @@ class StreamingLLMCallbackHandler(AsyncCallbackHandler):
         **kwargs: Any,
     ) -> None:
         message = ChatMessage(
-            id=run_id, from_=self.conversation_id, content=None, type="start"
+            id=run_id,
+            conversation=self.conversation_id,
+            from_="ai",
+            content=None,
+            type="start",
         )
         await self.websocket.send_json(message.dict())
 
@@ -45,7 +49,11 @@ class StreamingLLMCallbackHandler(AsyncCallbackHandler):
         **kwargs: Any,
     ) -> None:
         message = ChatMessage(
-            id=run_id, from_=self.conversation_id, content=token, type="stream"
+            id=run_id,
+            conversation=self.conversation_id,
+            from_="ai",
+            content=token,
+            type="stream",
         )
         await self.websocket.send_json(message.dict())
 
@@ -59,7 +67,11 @@ class StreamingLLMCallbackHandler(AsyncCallbackHandler):
         **kwargs: Any,
     ) -> None:
         message = ChatMessage(
-            id=run_id, from_=self.conversation_id, content=None, type="end"
+            id=run_id,
+            conversation=self.conversation_id,
+            from_="ai",
+            content=None,
+            type="end",
         )
         await self.websocket.send_json(message.dict())
 
@@ -75,7 +87,8 @@ class StreamingLLMCallbackHandler(AsyncCallbackHandler):
         """Run when LLM errors."""
         message = ChatMessage(
             id=run_id,
-            from_=self.conversation_id,
+            conversation=self.conversation_id,
+            from_="ai",
             content=f"llm error: {str(error)}",
             type="error",
         )
