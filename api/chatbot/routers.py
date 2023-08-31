@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date
 from typing import Annotated
 
 from fastapi import APIRouter, Header, Depends, WebSocket, WebSocketDisconnect
@@ -74,7 +74,17 @@ async def get_conversation(
     return ConversationDetail(
         messages=[
             ChatMessage(
-                from_=conversation_id, content=message.content, type="text"
+                conversation=conversation_id,
+                from_="ai",
+                content=message.content,
+                type="text",
+            ).dict()
+            if message.type == "ai"
+            else ChatMessage(
+                conversation=conversation_id,
+                from_=kubeflow_userid,
+                content=message.content,
+                type="text",
             ).dict()
             for message in history.messages
         ],
@@ -133,10 +143,14 @@ async def generate(
         try:
             payload: str = await websocket.receive_text()
             message = ChatMessage.parse_raw(payload)
-            history.session_id = f"{kubeflow_userid}:{message.to}"
-            stream_handler = StreamingLLMCallbackHandler(websocket, message.to)
+            history.session_id = f"{kubeflow_userid}:{message.conversation}"
+            stream_handler = StreamingLLMCallbackHandler(
+                websocket, message.conversation
+            )
             llm.callbacks = [stream_handler]
-            update_conversation_callback = UpdateConversationCallbackHandler(message.to)
+            update_conversation_callback = UpdateConversationCallbackHandler(
+                message.conversation
+            )
             conversation_chain.callbacks = [update_conversation_callback]
             await conversation_chain.arun(message.content)
         except WebSocketDisconnect:

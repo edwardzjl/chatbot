@@ -25,19 +25,6 @@ const Alert = forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
-/**
- * Backend does not store real username in messages, we need to update it.
- * @param {*} message
- * @param {*} username
- * @returns
- */
-const replaceUsername = (message, username) => {
-  if (message.from === "human") {
-    return { ...message, from: username };
-  } else {
-    return message;
-  }
-};
 
 function App() {
   const ws = useRef(null);
@@ -54,15 +41,15 @@ function App() {
           case "start":
             dispatch({
               type: "messageAdded",
-              id: payload.from,
-              message: { from: "AI", content: payload.content || "" },
+              id: payload.conversation,
+              message: { from: payload.from, content: payload.content || "" },
             });
             break;
           case "stream":
             dispatch({
               type: "messageAppended",
-              id: payload.from,
-              message: { from: "AI", content: payload.content },
+              id: payload.conversation,
+              message: { from: payload.from, content: payload.content },
             });
             break;
           case "error":
@@ -150,9 +137,7 @@ function App() {
         type: "updated",
         conversation: {
           ...detailedConv,
-          messages: detailedConv.messages.map((message) =>
-            replaceUsername(message, username)
-          ),
+          messages: detailedConv.messages,
         },
       });
     };
@@ -165,7 +150,8 @@ function App() {
   const sendMessage = async (convId, message) => {
     ws.current?.send(
       JSON.stringify({
-        to: convId,
+        conversation: convId,
+        from: username,
         content: message,
         type: "text",
       })

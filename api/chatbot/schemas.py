@@ -11,9 +11,10 @@ from chatbot.utils import utcnow
 
 class ChatMessage(BaseModel):
     id: UUID = Field(default_factory=uuid4)
-    "Message id, used to chain stream responses into message."
+    """Message id, used to chain stream responses into message."""
+    conversation: Optional[str]
+    """Conversation id"""
     from_: Optional[str] = Field(alias="from")
-    to: Optional[str]
     """A transient field to determine conversation id."""
     content: Optional[str]
     type: str

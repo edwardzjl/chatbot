@@ -43,7 +43,6 @@ const ChatMessage = (props) => {
    * @param {*} message
    */
   const botMessage = (message) => {
-    // TODO: re-design
     const msgFrom = message.from.toLowerCase();
     return msgFrom === "ai" || msgFrom === "assistant";
   };
