@@ -7,8 +7,8 @@ import MuiAlert from "@mui/material/Alert";
 
 import SideMenu from "components/SideMenu";
 import ChatLog from "components/ChatLog";
-import ChatMessage from "components/ChatMessage";
-import ChatInput from "components/ChatInput";
+import ChatMessage from "components/ChatLog/ChatMessage";
+import ChatInput from "components/ChatLog/ChatInput";
 import generateName from "names";
 import {
   createConversation,

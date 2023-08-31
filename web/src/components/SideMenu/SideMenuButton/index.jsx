@@ -1,5 +1,3 @@
-import "./index.css";
-
 import { useState, useEffect, useRef, useContext } from "react";
 import TextField from "@mui/material/TextField";
 import Tooltip from "@mui/material/Tooltip";
@@ -18,15 +16,13 @@ import {
   updateConversation,
 } from "requests";
 
-
 /**
  *
  * @param {Object} props
- * @param {number} props.key
  * @param {Object} props.chat
  * @param {string} props.chat.id
  * @param {string} props.chat.title
- * @param {boolean} props.chat.selected whether this chat is selected
+ * @param {boolean} props.chat.active whether this chat is active
  * @returns
  */
 const ChatTab = (props) => {
@@ -38,6 +34,8 @@ const ChatTab = (props) => {
     setTitle(props.chat?.title);
   }, [props.chat?.title]);
   const titleRef = useRef(null);
+
+  const [titleReadOnly, setTitleReadOnly] = useState(true);
 
   const [operationConfirm, setOperationConfirm] = useState(
     /** @type {[{onConfirm: boolean, operation: string}]} */ {
@@ -51,15 +49,12 @@ const ChatTab = (props) => {
     setTitle(() => e.target.value);
   };
 
-  const onTitleFocus = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setOperationConfirm({ onConfirm: true, operation: "rename" });
-  };
-
   const selectChat = async (e, chatId) => {
     e.preventDefault();
     e.stopPropagation();
+    if (chatId === props.chat.id) {
+      return;
+    }
     const detailedConv = await getConversation(chatId);
     dispatch({
       type: "updated",
@@ -68,6 +63,7 @@ const ChatTab = (props) => {
         messages: detailedConv.messages,
       },
     });
+    // switch to the selected conversation
     dispatch({
       type: "selected",
       id: chatId,
@@ -108,6 +104,7 @@ const ChatTab = (props) => {
   };
 
   const renameChat = async (id, title) => {
+    setTitleReadOnly(true);
     updateConversation(id, title).then((res) => {
       if (res.ok) {
         setSnackbar({
@@ -126,14 +123,15 @@ const ChatTab = (props) => {
     });
   };
 
-  const renameConfirmation = async (e) => {
+  const onUpdateClick = async (e) => {
     e.preventDefault();
     e.stopPropagation();
     titleRef.current.focus();
     setOperationConfirm({ onConfirm: true, operation: "rename" });
+    setTitleReadOnly(false);
   };
 
-  const deleteConfirmation = async (e) => {
+  const onDeleteClick = async (e) => {
     e.preventDefault();
     e.stopPropagation();
     setOperationConfirm({ onConfirm: true, operation: "delete" });
@@ -168,13 +166,19 @@ const ChatTab = (props) => {
           variant="standard"
           value={title}
           onChange={(e) => handleTitleChange(e)}
-          onFocus={(e) => onTitleFocus(e)}
-          InputProps={{ disableUnderline: true }}
           sx={{
             maxWidth: 140,
-            input: {
+          }}
+          InputProps={{
+            disableUnderline: true,
+            readOnly: titleReadOnly,
+          }}
+          // TODO: migrate to css so we can use linear-gradient to fadeout long text
+          // https://css-tricks.com/text-fade-read-more/
+          inputProps={{
+            style: {
               height: 10,
-              color: "common.white",
+              color: "white",
             },
           }}
         />
@@ -184,10 +188,8 @@ const ChatTab = (props) => {
         {/* Operations */}
         {!operationConfirm?.onConfirm && (
           <div>
-            <DriveFileRenameOutlineIcon
-              onClick={(e) => renameConfirmation(e)}
-            />
-            <DeleteOutlineIcon onClick={(e) => deleteConfirmation(e)} />
+            <DriveFileRenameOutlineIcon onClick={(e) => onUpdateClick(e)} />
+            <DeleteOutlineIcon onClick={(e) => onDeleteClick(e)} />
           </div>
         )}
         {/* Confirmations */}

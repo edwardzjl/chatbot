@@ -6,7 +6,6 @@ import { TextField } from "@mui/material";
 
 import { UserContext, ConversationContext } from "contexts";
 
-
 /**
  * @param {Object} props
  * @param {string} props.chatId
@@ -22,7 +21,6 @@ const ChatInput = (props) => {
   /**
    * Focus on input when chatId changes.
    */
-  // TODO: I should refactor this so that I do not need to pass chatId to ChatInput.
   useEffect(() => {
     if (props.chatId) {
       inputRef.current.focus();
@@ -63,13 +61,14 @@ const ChatInput = (props) => {
 
   return (
     <form onSubmit={handleSubmit} className="chat-input-form">
-      {/* TODO: maybe I need to unify styling */}
+      {/* TODO: in order to get rid of css in js, I need to break TextField into smaller components.
+        See https://mui.com/material-ui/react-text-field/#components.
+       */}
       <TextField
         id="standard-multiline-flexible"
         className="chat-input-textarea"
         autoFocus
         inputRef={inputRef}
-        helperText="Enter to send message, Shift + Enter to add a new line"
         inputProps={{
           style: {
             padding: "12px",
@@ -77,6 +76,7 @@ const ChatInput = (props) => {
             fontSize: "1.25em",
           },
         }}
+        helperText="Enter to send message, Shift + Enter to add a new line"
         FormHelperTextProps={{
           style: {
             color: "white",

@@ -8,12 +8,11 @@ import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import { getFirstLetters, stringToColor, getCookie } from "commons";
 import { UserContext, ConversationContext } from "contexts";
 import { createConversation } from "requests";
-import ChatTab from "components/ChatTab";
+import ChatTab from "components/SideMenu/SideMenuButton";
 
 /**
  *
  */
-// TODO: maybe abstract some 'tab' component
 const SideMenu = () => {
   const username = useContext(UserContext);
   const { conversations, dispatch } = useContext(ConversationContext);
@@ -47,14 +46,12 @@ const SideMenu = () => {
         New Chat
       </div>
       {conversations?.map((chat, index) => (
-        <ChatTab
-          key={index}
-          chat={chat}
-        />
+        <ChatTab key={index} chat={chat} />
       ))}
       <hr className="sidemenu-userinfo-hr" />
       <div className="sidemenu-userinfo">
         <Avatar
+          // className not working on Avatar
           sx={{
             width: 24,
             height: 24,
@@ -65,7 +62,10 @@ const SideMenu = () => {
           {getFirstLetters(username)}
         </Avatar>
         <div className="sidemenu-userinfo-username">{username}</div>
-        <LogoutOutlinedIcon sx={{ ml: "auto" }} onClick={handleLogout} />
+        <LogoutOutlinedIcon
+          className="sidemenu-userinfo-logout"
+          onClick={handleLogout}
+        />
       </div>
     </aside>
   );

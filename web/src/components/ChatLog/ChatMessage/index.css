@@ -1,0 +1,42 @@
+.chat-message.AI {
+    background-color: #444654;
+}
+
+.chat-message-center {
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    padding: 12px;
+    padding-left: 24px;
+    padding-right: 24px;
+}
+
+.chat-message-avatar {
+    width: 40;
+    height: 40;
+}
+
+.chat-message-content {
+    padding-left: 40px;
+    padding-right: 40px;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+.chat-message-content-copy {
+    margin-left: auto;
+}
+
+.chat-message-content-copy:hover {
+    opacity: 0.9;
+    transition: opacity 1s;
+}
+
+/* Only using :not(:hover) will the fadeout take effect
+ * Otherwise the button just disappear immediately
+ */
+.chat-message-content-copy:not(:hover) {
+    opacity: 0.1;
+    transition: opacity 1s;
+}

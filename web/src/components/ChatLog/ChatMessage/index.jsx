@@ -13,24 +13,18 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { getFirstLetters, stringToColor } from "commons";
 
 /**
- * 
- * @param {object} props 
+ *
+ * @param {object} props
  * @param {object} props.message
  * @param {string} props.message.from
  * @param {string} props.message.content
- * @returns 
+ * @returns
  */
 const ChatMessage = (props) => {
-  const [isHovering, setIsHovering] = useState(false);
   const [copyTooltipTitle, setCopyTooltipTitle] = useState("copy content");
 
   const handleMouseIn = () => {
-    setIsHovering(true);
     setCopyTooltipTitle("copy content");
-  };
-
-  const handleMouseOut = () => {
-    setIsHovering(false);
   };
 
   const onCopyClick = () => {
@@ -52,12 +46,11 @@ const ChatMessage = (props) => {
       <div
         className="chat-message-center"
         onMouseEnter={handleMouseIn}
-        onMouseLeave={handleMouseOut}
       >
         <Avatar
+          className="chat-message-avatar"
+          // Cannot handle string to color in css
           sx={{
-            width: 40,
-            height: 40,
             bgcolor: stringToColor(props.message.from),
           }}
         >
@@ -91,11 +84,7 @@ const ChatMessage = (props) => {
         {botMessage(props.message) && (
           <Tooltip title={copyTooltipTitle}>
             <ContentCopyIcon
-              sx={{
-                opacity: isHovering ? 1 : 0,
-                transition: "opacity 1s",
-                ml: "auto",
-              }}
+              className="chat-message-content-copy"
               onClick={onCopyClick}
             />
           </Tooltip>

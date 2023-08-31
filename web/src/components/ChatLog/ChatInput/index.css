@@ -23,6 +23,17 @@
     box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.5);
 }
 
+.chat-input-inputprops {
+    padding: 12px;
+    color: white;
+    font-size: 1.25em;
+}
+
+.chat-input-helper {
+    padding: 12px;
+    color: white;
+}
+
 .chat-input-submit-button {
     min-width: 60px;
     background-color: #0da37f;
