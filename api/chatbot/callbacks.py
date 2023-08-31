@@ -1,7 +1,6 @@
 """Callback handlers used in the app.
 A modified version of langchain.callbacks.AsyncIteratorCallbackHandler.
 """
-from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 
@@ -10,6 +9,7 @@ from langchain.callbacks.base import AsyncCallbackHandler
 from langchain.schema import LLMResult
 
 from chatbot.schemas import ChatMessage, Conversation
+from chatbot.utils import utcnow
 
 
 class StreamingLLMCallbackHandler(AsyncCallbackHandler):
@@ -97,5 +97,5 @@ class UpdateConversationCallbackHandler(AsyncCallbackHandler):
     ) -> None:
         """Run when chain ends running."""
         conv = await Conversation.get(self.conversation_id)
-        conv.updated_at = datetime.now()
+        conv.updated_at = utcnow()
         await conv.save()
