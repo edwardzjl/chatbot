@@ -16,4 +16,4 @@ spec:
         - destination:
             host: chatbot.jlzhou.svc.cluster.local
             port:
-              number: 8080
+              number: 8000

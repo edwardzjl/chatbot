@@ -24,4 +24,4 @@ RUN adduser --system --no-create-home --group chatbot \
 USER chatbot:chatbot
 
 ENTRYPOINT [ "uvicorn", "chatbot.main:app" ]
-CMD [ "--host", "0.0.0.0", "--port", "8080" ]
+CMD [ "--host", "0.0.0.0", "--port", "8000" ]
