@@ -59,6 +59,13 @@ function App() {
               message: "Something goes wrong, please try again later.",
             });
             break;
+          case "text":
+            dispatch({
+              type: "messageAdded",
+              id: payload.conversation,
+              message: { from: payload.from, content: payload.content },
+            });
+            break;
         }
       } catch (error) {
         console.debug("not a json message", msg);
