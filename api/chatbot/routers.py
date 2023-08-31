@@ -1,4 +1,3 @@
-from datetime import date
 from typing import Annotated
 
 from fastapi import APIRouter, Header, Depends, WebSocket, WebSocketDisconnect
@@ -94,7 +93,7 @@ async def get_conversation(
 
 @router.post("/conversations", status_code=201, response_model=Conversation)
 async def create_conversation(kubeflow_userid: Annotated[str | None, Header()] = None):
-    conv = Conversation(title=f"conversation at {date.today()}", owner=kubeflow_userid)
+    conv = Conversation(title=f"New chat", owner=kubeflow_userid)
     await conv.save()
     return conv
 
