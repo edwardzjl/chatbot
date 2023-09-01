@@ -91,7 +91,7 @@ async def get_conversation(
     )
 
 
-@router.post("/conversations", status_code=201, response_model=Conversation)
+@router.post("/conversations", status_code=201, response_model=ConversationDetail)
 async def create_conversation(kubeflow_userid: Annotated[str | None, Header()] = None):
     conv = Conversation(title=f"New chat", owner=kubeflow_userid)
     await conv.save()
