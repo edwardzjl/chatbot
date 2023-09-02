@@ -22,9 +22,15 @@ export const conversationsReducer = (conversations, action) => {
                 return c.id === action.id;
             })
             const remaining = conversations.filter((c) => c.id !== action.id);
+            // nothing left, just return
+            if (remaining.length === 0) {
+                return [];
+            }
+            // not deleting active conversation, just return
             if (!toDelete.active) {
                 return remaining;
             }
+            // deleting active conversation, activate the first one
             return [{ ...remaining[0], active: true }, ...remaining.slice(1)]
         }
         case "updated": {
