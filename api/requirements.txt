@@ -1,4 +1,4 @@
-fastapi==0.103.0
+fastapi==0.103.1
 langchain==0.0.281
 loguru==0.7.0
 redis[hiredis]==4.6.0
