@@ -49,13 +49,13 @@ const ChatTab = (props) => {
     setTitle(() => e.target.value);
   };
 
-  const selectChat = async (e, chatId) => {
+  const selectChat = async (e, chat) => {
     e.preventDefault();
     e.stopPropagation();
-    if (chatId === props.chat.id) {
+    if (chat.activate) {
       return;
     }
-    const detailedConv = await getConversation(chatId);
+    const detailedConv = await getConversation(chat.id);
     dispatch({
       type: "updated",
       conversation: {
@@ -66,7 +66,7 @@ const ChatTab = (props) => {
     // switch to the selected conversation
     dispatch({
       type: "selected",
-      id: chatId,
+      id: chat.id,
     });
   };
 
@@ -157,7 +157,7 @@ const ChatTab = (props) => {
   return (
     <div
       className={`sidemenu-button ${props.chat.active && "selected"}`}
-      onClick={(e) => selectChat(e, props.chat.id)}
+      onClick={(e) => selectChat(e, props.chat)}
     >
       <Tooltip title={title}>
         <TextField
