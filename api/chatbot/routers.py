@@ -142,15 +142,16 @@ async def generate(
             payload: str = await websocket.receive_text()
             message = ChatMessage.parse_raw(payload)
             history.session_id = f"{kubeflow_userid}:{message.conversation}"
-            stream_handler = StreamingLLMCallbackHandler(
+            streaming_callback = StreamingLLMCallbackHandler(
                 websocket, message.conversation
             )
-            llm.callbacks = [stream_handler]
             update_conversation_callback = UpdateConversationCallbackHandler(
                 message.conversation
             )
-            conversation_chain.callbacks = [update_conversation_callback]
-            await conversation_chain.arun(message.content)
+            await conversation_chain.arun(
+                message.content,
+                callbacks=[streaming_callback, update_conversation_callback],
+            )
         except WebSocketDisconnect:
             logger.info("websocket disconnected")
             return
