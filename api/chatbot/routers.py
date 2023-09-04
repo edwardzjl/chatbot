@@ -106,7 +106,6 @@ async def update_conversation(
 ):
     conv = await Conversation.get(conversation_id)
     conv.title = payload.title
-    conv.updated_at = utcnow()
     await conv.save()
 
 
