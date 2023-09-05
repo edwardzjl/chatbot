@@ -45,11 +45,7 @@ def get_message_history() -> RedisChatMessageHistory:
 def get_llm() -> BaseLLM:
     return HuggingFaceTextGenInference(
         inference_server_url=settings.inference_server_url,
-        max_new_tokens=1024,
-        temperature=0.8,
-        top_p=0.9,
-        repetition_penalty=1.01,
-        stop_sequences=["</s>"],
+        stop_sequences=["</s>", f"{human_prefix}:"],
         streaming=True,
     )
 
