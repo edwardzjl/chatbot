@@ -4,7 +4,7 @@ loguru==0.7.0
 # redis-om 0.2.1 requires pydantic<2.1.0
 # text-generation 0.6.0 requires pydantic<2.0
 pydantic==1.10.12
-redis[hiredis]==4.6.0
+redis[hiredis]==5.0.0
 redis-om==0.2.1
 requests==2.31.0
 text-generation==0.6.0
