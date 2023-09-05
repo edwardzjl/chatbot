@@ -18,7 +18,7 @@ from chatbot.routers import router
 
 
 # TODO: should separate redis cache and storage instance
-langchain.llm_cache = RedisCache(redis_=Redis.from_url(settings.redis_url))
+langchain.llm_cache = RedisCache(redis_=Redis.from_url(settings.redis_om_url))
 
 
 @asynccontextmanager
