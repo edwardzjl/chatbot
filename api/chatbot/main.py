@@ -13,12 +13,12 @@ from langchain.cache import RedisCache
 from loguru import logger
 from redis import Redis
 
+from chatbot.config import settings
 from chatbot.routers import router
-from chatbot.settings import settings
 
 
-# TODO: should separate redis cache and om instance
-langchain.llm_cache = RedisCache(redis_=Redis.from_url(settings.redis_om_url))
+# TODO: should separate redis cache and storage instance
+langchain.llm_cache = RedisCache(redis_=Redis.from_url(settings.redis_url))
 
 
 @asynccontextmanager

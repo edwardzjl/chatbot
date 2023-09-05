@@ -10,6 +10,7 @@ from chatbot.callbacks import (
     StreamingLLMCallbackHandler,
     UpdateConversationCallbackHandler,
 )
+from chatbot.config import settings
 from chatbot.history import AppendSuffixHistory
 from chatbot.prompts.vicuna import (
     prompt,
@@ -24,8 +25,6 @@ from chatbot.schemas import (
     Conversation,
     UpdateConversation,
 )
-from chatbot.settings import settings
-from chatbot.utils import utcnow
 
 
 router = APIRouter(
@@ -36,7 +35,7 @@ router = APIRouter(
 
 def get_message_history() -> RedisChatMessageHistory:
     return AppendSuffixHistory(
-        url=settings.redis_om_url,
+        url=settings.redis_url,
         user_suffix=human_suffix,
         ai_suffix=ai_suffix,
         session_id="sid",  # a fake session id as it is required

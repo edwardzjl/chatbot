@@ -30,5 +30,5 @@ See [deployment instructions](./manifests/README.md)
 Key | Default Value | Description
 ---|---|---
 LOG_LEVEL | `INFO` | log level
-REDIS_OM_URL | `redis://localhost:6379` | Redis url to persist messages and metadata
+REDIS_URL | `redis://localhost:6379` | Redis url to persist messages and metadata
 INFERENCE_SERVER_URL | `http://localhost:8080` | model service url
