@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Header, Depends, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from langchain.chains import ConversationChain
 from langchain.llms import BaseLLM, HuggingFaceTextGenInference
 from langchain.memory import ConversationBufferWindowMemory, RedisChatMessageHistory
@@ -25,6 +25,7 @@ from chatbot.schemas import (
     Conversation,
     UpdateConversation,
 )
+from chatbot.utils import UserIdHeader
 
 
 router = APIRouter(
@@ -51,8 +52,8 @@ def get_llm() -> BaseLLM:
 
 
 @router.get("/conversations", response_model=list[Conversation])
-async def get_conversations(kubeflow_userid: Annotated[str | None, Header()] = None):
-    convs = await Conversation.find(Conversation.owner == kubeflow_userid).all()
+async def get_conversations(userid: Annotated[str | None, UserIdHeader()] = None):
+    convs = await Conversation.find(Conversation.owner == userid).all()
     convs.sort(key=lambda x: x.updated_at, reverse=True)
     return convs
 
@@ -61,10 +62,10 @@ async def get_conversations(kubeflow_userid: Annotated[str | None, Header()] = N
 async def get_conversation(
     conversation_id: str,
     history: Annotated[RedisChatMessageHistory, Depends(get_message_history)],
-    kubeflow_userid: Annotated[str | None, Header()] = None,
+    userid: Annotated[str | None, UserIdHeader()] = None,
 ):
     conv = await Conversation.get(conversation_id)
-    history.session_id = f"{kubeflow_userid}:{conversation_id}"
+    history.session_id = f"{userid}:{conversation_id}"
     return ConversationDetail(
         messages=[
             ChatMessage(
@@ -76,7 +77,7 @@ async def get_conversation(
             if message.type == "ai"
             else ChatMessage(
                 conversation=conversation_id,
-                from_=kubeflow_userid,
+                from_=userid,
                 content=message.content,
                 type="text",
             ).dict()
@@ -87,8 +88,8 @@ async def get_conversation(
 
 
 @router.post("/conversations", status_code=201, response_model=ConversationDetail)
-async def create_conversation(kubeflow_userid: Annotated[str | None, Header()] = None):
-    conv = Conversation(title=f"New chat", owner=kubeflow_userid)
+async def create_conversation(userid: Annotated[str | None, UserIdHeader()] = None):
+    conv = Conversation(title=f"New chat", owner=userid)
     await conv.save()
     return conv
 
@@ -97,7 +98,7 @@ async def create_conversation(kubeflow_userid: Annotated[str | None, Header()] =
 async def update_conversation(
     conversation_id: str,
     payload: UpdateConversation,
-    kubeflow_userid: Annotated[str | None, Header()] = None,
+    userid: Annotated[str | None, UserIdHeader()] = None,
 ):
     conv = await Conversation.get(conversation_id)
     conv.title = payload.title
@@ -106,7 +107,8 @@ async def update_conversation(
 
 @router.delete("/conversations/{conversation_id}", status_code=204)
 async def delete_conversation(
-    conversation_id: str, kubeflow_userid: Annotated[str | None, Header()] = None
+    conversation_id: str,
+    userid: Annotated[str | None, UserIdHeader()] = None,
 ):
     await Conversation.delete(conversation_id)
 
@@ -116,7 +118,7 @@ async def generate(
     websocket: WebSocket,
     llm: Annotated[BaseLLM, Depends(get_llm)],
     history: Annotated[RedisChatMessageHistory, Depends(get_message_history)],
-    kubeflow_userid: Annotated[str | None, Header()] = None,
+    userid: Annotated[str | None, UserIdHeader()] = None,
 ):
     await websocket.accept()
     memory = ConversationBufferWindowMemory(
@@ -136,7 +138,7 @@ async def generate(
         try:
             payload: str = await websocket.receive_text()
             message = ChatMessage.parse_raw(payload)
-            history.session_id = f"{kubeflow_userid}:{message.conversation}"
+            history.session_id = f"{userid}:{message.conversation}"
             streaming_callback = StreamingLLMCallbackHandler(
                 websocket, message.conversation
             )
