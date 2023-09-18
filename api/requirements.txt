@@ -1,5 +1,5 @@
 fastapi==0.103.1
-langchain==0.0.285
+langchain==0.0.292
 loguru==0.7.1
 # redis-om 0.2.1 requires pydantic<2.1.0
 # text-generation 0.6.0 requires pydantic<2.0
