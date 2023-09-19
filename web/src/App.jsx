@@ -29,48 +29,72 @@ const Alert = forwardRef(function Alert(props, ref) {
 function App() {
   const ws = useRef(null);
   useEffect(() => {
-    const wsurl = window.location.origin.replace(/^http/, "ws") + "/api/chat";
-    console.log("connecting to", wsurl);
-    ws.current = new WebSocket(wsurl);
-    ws.current.onmessage = (msg) => {
-      // <https://react.dev/learn/queueing-a-series-of-state-updates>
-      // <https://react.dev/learn/updating-arrays-in-state>
-      try {
-        const payload = JSON.parse(msg.data);
-        switch (payload.type) {
-          case "start":
-            dispatch({
-              type: "messageAdded",
-              id: payload.conversation,
-              message: { from: payload.from, content: payload.content || "" },
-            });
-            break;
-          case "stream":
-            dispatch({
-              type: "messageAppended",
-              id: payload.conversation,
-              message: { from: payload.from, content: payload.content },
-            });
-            break;
-          case "error":
-            setSnackbar({
-              open: true,
-              severity: "error",
-              message: "Something goes wrong, please try again later.",
-            });
-            break;
-          case "text":
-            dispatch({
-              type: "messageAdded",
-              id: payload.conversation,
-              message: { from: payload.from, content: payload.content },
-            });
-            break;
+    const conn = () => {
+      const wsurl = window.location.origin.replace(/^http/, "ws") + "/api/chat";
+      console.debug("connecting to", wsurl);
+      ws.current = new WebSocket(wsurl);
+      ws.current.onmessage = (msg) => {
+        // <https://react.dev/learn/queueing-a-series-of-state-updates>
+        // <https://react.dev/learn/updating-arrays-in-state>
+        try {
+          const payload = JSON.parse(msg.data);
+          switch (payload.type) {
+            case "start":
+              dispatch({
+                type: "messageAdded",
+                id: payload.conversation,
+                message: { from: payload.from, content: payload.content || "" },
+              });
+              break;
+            case "stream":
+              dispatch({
+                type: "messageAppended",
+                id: payload.conversation,
+                message: { from: payload.from, content: payload.content },
+              });
+              break;
+            case "error":
+              setSnackbar({
+                open: true,
+                severity: "error",
+                message: "Something goes wrong, please try again later.",
+              });
+              break;
+            case "text":
+              dispatch({
+                type: "messageAdded",
+                id: payload.conversation,
+                message: { from: payload.from, content: payload.content },
+              });
+              break;
+          }
+        } catch (error) {
+          console.debug("not a json message", msg);
         }
-      } catch (error) {
-        console.debug("not a json message", msg);
-      }
+      };
+      ws.current.onopen = () => {
+        console.debug("connected to", wsurl);
+      };
+      ws.current.onclose = () => {
+        console.log("connection closed, reconnecting...");
+        setSnackbar({
+          open: true,
+          severity: "error",
+          message: "connection closed, reconnecting...",
+        });
+        setTimeout(() => {
+          conn();
+        }, 10000);
+      };
+      ws.current.onerror = (err) => {
+        console.error(
+          `Socket encountered error: ${err.message}, Closing socket`
+        );
+        ws.current.close();
+      };
     };
+    conn();
+
     return () => {
       ws.current?.close();
     };
@@ -151,7 +175,7 @@ function App() {
 
     initialization();
 
-    return () => {};
+    return () => { };
   }, []);
 
   const sendMessage = async (convId, message) => {
