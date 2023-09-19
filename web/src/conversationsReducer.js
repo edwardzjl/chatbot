@@ -35,11 +35,10 @@ export const conversationsReducer = (conversations, action) => {
         }
         case "updated": {
             return conversations.map((c) => {
-                if (c.id === action.conversation.id) {
-                    return { ...c, ...action.conversation };
-                } else {
+                if (c.id !== action.conversation.id) {
                     return c;
                 }
+                return { ...c, ...action.conversation };
             });
         }
         case "selected": {
@@ -73,24 +72,22 @@ export const conversationsReducer = (conversations, action) => {
         }
         case "messageAdded": {
             return conversations.map((c) => {
-                if (c.id === action.id) {
-                    return { ...c, messages: [...c.messages, action.message] };
-                } else {
+                if (c.id !== action.id) {
                     return c;
                 }
+                return { ...c, messages: [...c.messages, action.message] };
             });
         }
         case "messageAppended": {
             return conversations.map((c) => {
-                if (c.id === action.id) {
-                    const lastMsg = c.messages[c.messages.length - 1];
-                    return {
-                        ...c,
-                        messages: [...c.messages.slice(0, -1), { ...lastMsg, content: lastMsg.content + action.message.content }]
-                    };
-                } else {
+                if (c.id !== action.id) {
                     return c;
                 }
+                const lastMsg = c.messages[c.messages.length - 1];
+                return {
+                    ...c,
+                    messages: [...c.messages.slice(0, -1), { ...lastMsg, content: lastMsg.content + action.message.content }]
+                };
             });
         }
         default: {
