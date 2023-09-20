@@ -27,6 +27,8 @@ const Alert = forwardRef(function Alert(props, ref) {
 
 
 function App() {
+  const [username, setUsername] = useState("");
+
   const ws = useRef(null);
   useEffect(() => {
     const conn = () => {
@@ -99,8 +101,16 @@ function App() {
       ws.current?.close();
     };
   }, [ws]);
-
-  const [username, setUsername] = useState("");
+  const sendMessage = async (convId, message) => {
+    ws.current?.send(
+      JSON.stringify({
+        conversation: convId,
+        from: username,
+        content: message,
+        type: "text",
+      })
+    );
+  };
 
   /**
    * All conversations of the current user.
@@ -120,13 +130,6 @@ function App() {
       setCurrentConv(currentConv);
     }
   }, [conversations]);
-
-  /**
-   * open, severity, message
-   */
-  const [snackbar, setSnackbar] = useState(
-    /** @type {{open: boolean, severity: string?, message: string}} */ {}
-  );
 
   // initialization
   useEffect(() => {
@@ -178,16 +181,12 @@ function App() {
     return () => { };
   }, []);
 
-  const sendMessage = async (convId, message) => {
-    ws.current?.send(
-      JSON.stringify({
-        conversation: convId,
-        from: username,
-        content: message,
-        type: "text",
-      })
-    );
-  };
+  /**
+   * open, severity, message
+   */
+  const [snackbar, setSnackbar] = useState(
+    /** @type {{open: boolean, severity: string?, message: string}} */ {}
+  );
 
   const closeSnackbar = (event, reason) => {
     if (reason === "clickaway") {
@@ -210,22 +209,22 @@ function App() {
               </ChatLog>
               <ChatInput chatId={currentConv?.id} onSend={sendMessage} />
             </section>
-            <Snackbar
-              open={snackbar.open}
-              autoHideDuration={3000}
-              onClose={closeSnackbar}
-            >
-              <Alert
-                severity={snackbar.severity}
-                sx={{ width: "100%" }}
-                onClose={closeSnackbar}
-              >
-                {snackbar.message}
-              </Alert>
-            </Snackbar>
           </ConversationContext.Provider>
         </UserContext.Provider>
       </SnackbarContext.Provider>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={closeSnackbar}
+      >
+        <Alert
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+          onClose={closeSnackbar}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 }
