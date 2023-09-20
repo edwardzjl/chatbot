@@ -1,5 +1,8 @@
+import "./index.css";
+
 import { useState, useEffect, useRef, useContext } from "react";
-import TextField from "@mui/material/TextField";
+import FormControl from '@mui/material/FormControl';
+import Input from '@mui/material/Input';
 import Tooltip from "@mui/material/Tooltip";
 import { ClickAwayListener } from "@mui/base/ClickAwayListener";
 
@@ -160,28 +163,33 @@ const ChatTab = (props) => {
       onClick={(e) => selectChat(e, props.chat)}
     >
       <Tooltip title={title}>
-        <TextField
+        <FormControl
           id="chat-title"
-          inputRef={titleRef}
           variant="standard"
-          value={title}
-          onChange={(e) => handleTitleChange(e)}
           sx={{
             maxWidth: 140,
           }}
-          InputProps={{
-            disableUnderline: true,
-            readOnly: titleReadOnly,
-          }}
-          // TODO: migrate to css so we can use linear-gradient to fadeout long text
-          // https://css-tricks.com/text-fade-read-more/
-          inputProps={{
-            style: {
-              height: 10,
-              color: "white",
-            },
-          }}
-        />
+        // TODO: className not working, there's a MuiFormControl-root that will override className
+        // className="chat-title"
+        >
+          <Input
+            id="chat-input"
+            className="chat-title"
+            disableUnderline
+            // TODO: className not working
+            // className="input-text"
+            inputProps={{
+              style: {
+                height: 10,
+                color: "white",
+              },
+            }}
+            readOnly={titleReadOnly}
+            inputRef={titleRef}
+            value={title}
+            onChange={(e) => handleTitleChange(e)}
+          />
+        </FormControl>
       </Tooltip>
 
       <div className="sidemenu-button-operations">
