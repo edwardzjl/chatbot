@@ -2,7 +2,9 @@ import "./index.css";
 
 import { useContext, useState, useRef, useEffect } from "react";
 
-import { TextField } from "@mui/material";
+import FormControl from '@mui/material/FormControl';
+import FormHelperText from '@mui/material/FormHelperText';
+import Input from '@mui/material/Input';
 
 import { UserContext, ConversationContext } from "contexts";
 
@@ -60,36 +62,39 @@ const ChatInput = (props) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="chat-input-form">
-      {/* TODO: in order to get rid of css in js, I need to break TextField into smaller components.
-        See https://mui.com/material-ui/react-text-field/#components.
-       */}
-      <TextField
-        id="standard-multiline-flexible"
-        className="chat-input-textarea"
-        autoFocus
-        inputRef={inputRef}
-        inputProps={{
-          style: {
-            padding: "12px",
-            color: "white",
-            fontSize: "1.25em",
-          },
-        }}
-        helperText="Enter to send message, Shift + Enter to add a new line"
-        FormHelperTextProps={{
-          style: {
+    <form onSubmit={handleSubmit} className="input-form">
+      <FormControl variant="standard" className="input-form-control">
+        <Input
+          id="chat-input"
+          // TODO: className not working
+          // className="input-text"
+          inputProps={{
+            style: {
+              padding: "12px",
+              color: "white",
+              fontSize: "1.25em",
+            },
+          }}
+          multiline
+          inputRef={inputRef}
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          aria-describedby="input-helper-text"
+        />
+        <FormHelperText
+          id="input-helper-text"
+          // TODO: className not working
+          // className="input-helper"
+          sx={{
             color: "white",
             paddingLeft: "12px",
-          },
-        }}
-        multiline
-        variant="standard"
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        onKeyDown={handleKeyDown}
-      />
-      <button className="chat-input-submit-button" type="submit">
+          }}
+        >
+          Enter to send message, Shift + Enter to add a new line
+        </FormHelperText>
+      </FormControl>
+      <button className="input-submit-button" type="submit">
         Send
       </button>
     </form>
