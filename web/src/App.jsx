@@ -1,4 +1,3 @@
-import "normalize.css";
 import "./App.css";
 import { useState, useEffect, useReducer, useRef, forwardRef } from "react";
 
