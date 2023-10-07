@@ -4,7 +4,8 @@ from uuid import UUID, uuid4
 
 from aredis_om import JsonModel, Field
 from langchain.schema import BaseMessage
-from pydantic import BaseModel, root_validator, validator
+from pydantic import field_validator, ConfigDict, BaseModel
+from pydantic.v1 import root_validator
 
 from chatbot.utils import utcnow
 
@@ -12,17 +13,18 @@ from chatbot.utils import utcnow
 class ChatMessage(BaseModel):
     id: UUID = Field(default_factory=uuid4)
     """Message id, used to chain stream responses into message."""
-    conversation: Optional[str]
+    conversation: Optional[str] = None
     """Conversation id"""
-    from_: Optional[str] = Field(alias="from")
+    from_: Optional[str] = Field(None, alias="from")
     """A transient field to determine conversation id."""
-    content: Optional[str]
+    content: Optional[str] = None
     type: str
     # sent_at is not an important information for the user, as far as I can tell.
     # But it introduces some complexity in the code, so I'm removing it for now.
     # sent_at: datetime = Field(default_factory=datetime.now)
 
-    @validator("type")
+    @field_validator("type")
+    @classmethod
     def validate_message_type(cls, v):
         valid_types = {"start", "stream", "text", "end", "error", "info"}
         if v not in valid_types:
@@ -48,11 +50,11 @@ class ChatMessage(BaseModel):
     def dict(
         self, by_alias: bool = True, exclude_none: bool = True, **kwargs
     ) -> dict[str, Any]:
-        return super().dict(by_alias=by_alias, exclude_none=exclude_none, **kwargs)
+        return super().model_dump(
+            by_alias=by_alias, exclude_none=exclude_none, **kwargs
+        )
 
-    class Config:
-        allow_population_by_field_name = True
-        """'from' is a reversed word in python, so we have to populate ChatMessage by 'from_'"""
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class Conversation(JsonModel):
@@ -64,6 +66,7 @@ class Conversation(JsonModel):
 
     # TODO: this is not clear as the model will return both a 'pk' and an 'id' with the same value.
     # But I think id is more general than pk.
+    # TODO: redis-om supports pydantic v2 but still uses pydantic v1 inside.
     @root_validator(pre=True)
     def set_id(cls, values):
         if "pk" in values:
