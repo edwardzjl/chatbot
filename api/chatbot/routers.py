@@ -12,6 +12,7 @@ from chatbot.callbacks import (
 )
 from chatbot.config import settings
 from chatbot.history import AppendSuffixHistory
+from chatbot.models import Conversation as ORMConversation
 from chatbot.prompts.vicuna import (
     prompt,
     human_prefix,
@@ -36,7 +37,7 @@ router = APIRouter(
 
 def get_message_history() -> RedisChatMessageHistory:
     return AppendSuffixHistory(
-        url=settings.redis_om_url,
+        url=str(settings.redis_om_url),
         user_suffix=human_suffix,
         ai_suffix=ai_suffix,
         session_id="sid",  # a fake session id as it is required
@@ -45,7 +46,7 @@ def get_message_history() -> RedisChatMessageHistory:
 
 def get_llm() -> BaseLLM:
     return HuggingFaceTextGenInference(
-        inference_server_url=settings.inference_server_url,
+        inference_server_url=str(settings.inference_server_url),
         stop_sequences=["</s>", f"{human_prefix}:"],
         streaming=True,
     )
@@ -53,9 +54,9 @@ def get_llm() -> BaseLLM:
 
 @router.get("/conversations", response_model=list[Conversation])
 async def get_conversations(userid: Annotated[str | None, UserIdHeader()] = None):
-    convs = await Conversation.find(Conversation.owner == userid).all()
+    convs = await ORMConversation.find(ORMConversation.owner == userid).all()
     convs.sort(key=lambda x: x.updated_at, reverse=True)
-    return convs
+    return [Conversation(**conv.dict()) for conv in convs]
 
 
 @router.get("/conversations/{conversation_id}", response_model=ConversationDetail)
@@ -64,7 +65,7 @@ async def get_conversation(
     history: Annotated[RedisChatMessageHistory, Depends(get_message_history)],
     userid: Annotated[str | None, UserIdHeader()] = None,
 ):
-    conv = await Conversation.get(conversation_id)
+    conv = await ORMConversation.get(conversation_id)
     history.session_id = f"{userid}:{conversation_id}"
     return ConversationDetail(
         messages=[
@@ -83,15 +84,15 @@ async def get_conversation(
             ).model_dump()
             for message in history.messages
         ],
-        **conv.model_dump(),
+        **conv.dict(),
     )
 
 
 @router.post("/conversations", status_code=201, response_model=ConversationDetail)
 async def create_conversation(userid: Annotated[str | None, UserIdHeader()] = None):
-    conv = Conversation(title=f"New chat", owner=userid)
+    conv = ORMConversation(title=f"New chat", owner=userid)
     await conv.save()
-    return conv
+    return Conversation(**conv.dict())
 
 
 @router.put("/conversations/{conversation_id}")
@@ -100,7 +101,7 @@ async def update_conversation(
     payload: UpdateConversation,
     userid: Annotated[str | None, UserIdHeader()] = None,
 ):
-    conv = await Conversation.get(conversation_id)
+    conv = await ORMConversation.get(conversation_id)
     conv.title = payload.title
     await conv.save()
 
@@ -110,7 +111,7 @@ async def delete_conversation(
     conversation_id: str,
     userid: Annotated[str | None, UserIdHeader()] = None,
 ):
-    await Conversation.delete(conversation_id)
+    await ORMConversation.delete(conversation_id)
 
 
 @router.websocket("/chat")
