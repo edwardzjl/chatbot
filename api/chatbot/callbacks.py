@@ -37,7 +37,7 @@ class StreamingLLMCallbackHandler(AsyncCallbackHandler):
             content=None,
             type="start",
         )
-        await self.websocket.send_json(message.dict())
+        await self.websocket.send_json(message.model_dump())
 
     async def on_llm_new_token(
         self,
@@ -55,7 +55,7 @@ class StreamingLLMCallbackHandler(AsyncCallbackHandler):
             content=token,
             type="stream",
         )
-        await self.websocket.send_json(message.dict())
+        await self.websocket.send_json(message.model_dump())
 
     async def on_llm_end(
         self,
@@ -73,7 +73,7 @@ class StreamingLLMCallbackHandler(AsyncCallbackHandler):
             content=None,
             type="end",
         )
-        await self.websocket.send_json(message.dict())
+        await self.websocket.send_json(message.model_dump())
 
     async def on_llm_error(
         self,
@@ -92,7 +92,7 @@ class StreamingLLMCallbackHandler(AsyncCallbackHandler):
             content=f"llm error: {str(error)}",
             type="error",
         )
-        await self.websocket.send_json(message.dict())
+        await self.websocket.send_json(message.model_dump())
 
 
 class UpdateConversationCallbackHandler(AsyncCallbackHandler):
