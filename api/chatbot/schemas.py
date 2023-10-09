@@ -44,10 +44,10 @@ class ChatMessage(BaseModel):
     }
 
     def _iter(self, **kwargs):
-        for key, value in super()._iter(**kwargs):
+        for key, value in super().model_dump(**kwargs):
             yield key, self._encoders_by_type.get(type(value), lambda v: v)(value)
 
-    def dict(
+    def model_dump(
         self, by_alias: bool = True, exclude_none: bool = True, **kwargs
     ) -> dict[str, Any]:
         return super().model_dump(
