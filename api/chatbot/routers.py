@@ -137,7 +137,7 @@ async def generate(
     while True:
         try:
             payload: str = await websocket.receive_text()
-            message = ChatMessage.parse_raw(payload)
+            message = ChatMessage.model_validate_json(payload)
             history.session_id = f"{userid}:{message.conversation}"
             streaming_callback = StreamingLLMCallbackHandler(
                 websocket, message.conversation

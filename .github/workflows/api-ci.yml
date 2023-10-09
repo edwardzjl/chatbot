@@ -41,10 +41,6 @@ jobs:
       run:
         working-directory: api
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.11"]
-      fail-fast: false
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
