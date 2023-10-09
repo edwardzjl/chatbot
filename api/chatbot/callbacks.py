@@ -8,7 +8,8 @@ from fastapi import WebSocket
 from langchain.callbacks.base import AsyncCallbackHandler
 from langchain.schema import LLMResult
 
-from chatbot.schemas import ChatMessage, Conversation
+from chatbot.models import Conversation
+from chatbot.schemas import ChatMessage
 from chatbot.utils import utcnow
 
 
@@ -37,7 +38,7 @@ class StreamingLLMCallbackHandler(AsyncCallbackHandler):
             content=None,
             type="start",
         )
-        await self.websocket.send_json(message.model_dump())
+        await self.websocket.send_text(message.model_dump_json())
 
     async def on_llm_new_token(
         self,
@@ -55,7 +56,7 @@ class StreamingLLMCallbackHandler(AsyncCallbackHandler):
             content=token,
             type="stream",
         )
-        await self.websocket.send_json(message.model_dump())
+        await self.websocket.send_text(message.model_dump_json())
 
     async def on_llm_end(
         self,
@@ -73,7 +74,7 @@ class StreamingLLMCallbackHandler(AsyncCallbackHandler):
             content=None,
             type="end",
         )
-        await self.websocket.send_json(message.model_dump())
+        await self.websocket.send_text(message.model_dump_json())
 
     async def on_llm_error(
         self,
@@ -92,7 +93,7 @@ class StreamingLLMCallbackHandler(AsyncCallbackHandler):
             content=f"llm error: {str(error)}",
             type="error",
         )
-        await self.websocket.send_json(message.model_dump())
+        await self.websocket.send_text(message.model_dump_json())
 
 
 class UpdateConversationCallbackHandler(AsyncCallbackHandler):

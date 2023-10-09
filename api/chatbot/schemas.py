@@ -2,10 +2,8 @@ from datetime import datetime
 from typing import Any, Optional
 from uuid import UUID, uuid4
 
-from aredis_om import JsonModel, Field
 from langchain.schema import BaseMessage
-from pydantic import field_validator, ConfigDict, BaseModel
-from pydantic.v1 import root_validator
+from pydantic import field_validator, model_validator, ConfigDict, BaseModel, Field
 
 from chatbot.utils import utcnow
 
@@ -38,15 +36,6 @@ class ChatMessage(BaseModel):
             content=lc_message.content,
         )
 
-    _encoders_by_type = {
-        datetime: lambda dt: dt.isoformat(timespec="seconds"),
-        UUID: lambda uid: uid.hex,
-    }
-
-    def _iter(self, **kwargs):
-        for key, value in super()._iter(**kwargs):
-            yield key, self._encoders_by_type.get(type(value), lambda v: v)(value)
-
     def model_dump(
         self, by_alias: bool = True, exclude_none: bool = True, **kwargs
     ) -> dict[str, Any]:
@@ -57,19 +46,17 @@ class ChatMessage(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
 
-class Conversation(JsonModel):
-    id: Optional[str]
+class Conversation(BaseModel):
+    id: Optional[str] = None
     title: str
-    owner: str = Field(index=True)
+    owner: str
     created_at: datetime = Field(default_factory=utcnow)
     updated_at: datetime = created_at
 
-    # TODO: this is not clear as the model will return both a 'pk' and an 'id' with the same value.
-    # But I think id is more general than pk.
-    # TODO: redis-om supports pydantic v2 but still uses pydantic v1 inside.
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def set_id(cls, values):
-        if "pk" in values:
+        if "pk" in values and "id" not in values:
             values["id"] = values["pk"]
         return values
 
@@ -77,7 +64,7 @@ class Conversation(JsonModel):
 class ConversationDetail(Conversation):
     """Conversation with messages."""
 
-    messages: list[dict[str, str]] = []
+    messages: list[dict[str, Any]] = []
 
 
 class UpdateConversation(BaseModel):

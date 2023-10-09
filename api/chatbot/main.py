@@ -19,7 +19,7 @@ from chatbot.utils import UserIdHeader
 
 
 # TODO: should separate redis cache and storage instance
-langchain.llm_cache = RedisCache(redis_=Redis.from_url(settings.redis_om_url))
+langchain.llm_cache = RedisCache(redis_=Redis.from_url(str(settings.redis_om_url)))
 
 
 @asynccontextmanager
