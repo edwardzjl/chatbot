@@ -9,6 +9,8 @@ from chatbot.utils import utcnow
 
 
 class ChatMessage(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
     id: UUID = Field(default_factory=uuid4)
     """Message id, used to chain stream responses into message."""
     conversation: Optional[str] = None
@@ -43,7 +45,12 @@ class ChatMessage(BaseModel):
             by_alias=by_alias, exclude_none=exclude_none, **kwargs
         )
 
-    model_config = ConfigDict(populate_by_name=True)
+    def model_dump_json(
+        self, by_alias: bool = True, exclude_none: bool = True, **kwargs
+    ) -> str:
+        return super().model_dump_json(
+            by_alias=by_alias, exclude_none=exclude_none, **kwargs
+        )
 
 
 class Conversation(BaseModel):
@@ -64,7 +71,7 @@ class Conversation(BaseModel):
 class ConversationDetail(Conversation):
     """Conversation with messages."""
 
-    messages: list[dict[str, Any]] = []
+    messages: list[ChatMessage] = []
 
 
 class UpdateConversation(BaseModel):

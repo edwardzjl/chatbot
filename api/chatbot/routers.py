@@ -74,14 +74,14 @@ async def get_conversation(
                 from_="ai",
                 content=message.content,
                 type="text",
-            ).model_dump()
+            )
             if message.type == "ai"
             else ChatMessage(
                 conversation=conversation_id,
                 from_=userid,
                 content=message.content,
                 type="text",
-            ).model_dump()
+            )
             for message in history.messages
         ],
         **conv.dict(),
