@@ -10,7 +10,7 @@ COPY web/ ./
 RUN yarn build
 
 
-FROM python:3.11-slim as app
+FROM python:3.12-slim as app
 
 WORKDIR /app
 COPY api/requirements.txt .
