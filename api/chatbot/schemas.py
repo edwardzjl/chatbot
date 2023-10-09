@@ -44,7 +44,7 @@ class ChatMessage(BaseModel):
     }
 
     def _iter(self, **kwargs):
-        for key, value in super().model_dump(**kwargs):
+        for key, value in super()._iter(**kwargs):
             yield key, self._encoders_by_type.get(type(value), lambda v: v)(value)
 
     def model_dump(
