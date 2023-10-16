@@ -5,7 +5,7 @@ loguru==0.7.2
 pydantic==2.0.3
 pydantic-settings==2.0.3
 # redis-om 0.2.1 requires redis<5.0.0
-redis[hiredis]==4.6.0
+redis[hiredis]==5.0.1
 redis-om==0.2.1
 requests==2.31.0
 text-generation==0.6.1
