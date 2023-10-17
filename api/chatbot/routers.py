@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from langchain.chains import ConversationChain
 from langchain.llms import BaseLLM, HuggingFaceTextGenInference
-from langchain.memory import ConversationBufferWindowMemory, RedisChatMessageHistory
+from langchain.memory import RedisChatMessageHistory
 from loguru import logger
 
 from chatbot.callbacks import (
@@ -11,7 +11,7 @@ from chatbot.callbacks import (
     UpdateConversationCallbackHandler,
 )
 from chatbot.config import settings
-from chatbot.history import AppendSuffixHistory
+from chatbot.memory import FlexConversationBufferWindowMemory
 from chatbot.models import Conversation as ORMConversation
 from chatbot.prompts.vicuna import (
     prompt,
@@ -36,10 +36,8 @@ router = APIRouter(
 
 
 def get_message_history() -> RedisChatMessageHistory:
-    return AppendSuffixHistory(
+    return RedisChatMessageHistory(
         url=str(settings.redis_om_url),
-        user_suffix=human_suffix,
-        ai_suffix=ai_suffix,
         session_id="sid",  # a fake session id as it is required
     )
 
@@ -122,9 +120,11 @@ async def generate(
     userid: Annotated[str | None, UserIdHeader()] = None,
 ):
     await websocket.accept()
-    memory = ConversationBufferWindowMemory(
+    memory = FlexConversationBufferWindowMemory(
         human_prefix=human_prefix,
         ai_prefix=ai_prefix,
+        human_suffix=human_suffix,
+        ai_suffix=ai_suffix,
         memory_key="history",
         chat_memory=history,
     )
