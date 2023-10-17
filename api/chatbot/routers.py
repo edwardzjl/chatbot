@@ -92,7 +92,7 @@ async def get_conversation(
 async def create_conversation(userid: Annotated[str | None, UserIdHeader()] = None):
     conv = ORMConversation(title=f"New chat", owner=userid)
     await conv.save()
-    return Conversation(**conv.dict())
+    return ConversationDetail(**conv.dict())
 
 
 @router.put("/conversations/{conversation_id}")
