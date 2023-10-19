@@ -1,7 +1,8 @@
+from datetime import date
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
-from langchain.chains import ConversationChain
+from langchain.chains import LLMChain
 from langchain.llms import BaseLLM, HuggingFaceTextGenInference
 from langchain.memory import RedisChatMessageHistory
 from loguru import logger
@@ -13,7 +14,7 @@ from chatbot.callbacks import (
 from chatbot.config import settings
 from chatbot.memory import FlexConversationBufferWindowMemory
 from chatbot.models import Conversation as ORMConversation
-from chatbot.prompts.vicuna import (
+from chatbot.prompts.chatml import (
     prompt,
     human_prefix,
     ai_prefix,
@@ -45,7 +46,7 @@ def get_message_history() -> RedisChatMessageHistory:
 def get_llm() -> BaseLLM:
     return HuggingFaceTextGenInference(
         inference_server_url=str(settings.inference_server_url),
-        stop_sequences=["</s>", f"{human_prefix}:"],
+        stop_sequences=[ai_suffix, human_prefix],
         streaming=True,
     )
 
@@ -123,12 +124,14 @@ async def generate(
     memory = FlexConversationBufferWindowMemory(
         human_prefix=human_prefix,
         ai_prefix=ai_prefix,
+        prefix_delimiter="\n",
         human_suffix=human_suffix,
         ai_suffix=ai_suffix,
         memory_key="history",
+        input_key="input",
         chat_memory=history,
     )
-    conversation_chain: ConversationChain = ConversationChain(
+    conversation_chain = LLMChain(
         llm=llm,
         prompt=prompt,
         verbose=False,
@@ -147,7 +150,8 @@ async def generate(
                 message.conversation
             )
             await conversation_chain.arun(
-                message.content,
+                input=message.content,
+                date=date.today(),
                 callbacks=[streaming_callback, update_conversation_callback],
             )
         except WebSocketDisconnect:
