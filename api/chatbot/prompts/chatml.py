@@ -9,10 +9,8 @@ ai_prefix = "<|im_start|>assistant"
 human_suffix = "<|im_end|>"
 ai_suffix = "<|im_end|>"
 
-template = """<|im_start|>system
-You are Mistral-OpenOrca, a large language model trained by Open-Orca. Answer as concisely as possible.
-Knowledge cutoff: 2023-10-01
-Current date: {{date}}<|im_end|>
+template = f"""<|im_start|>system
+{{system}}<|im_end|>
 
 {{history}}
 {human_prefix}
@@ -21,8 +19,6 @@ Current date: {{date}}<|im_end|>
 """
 
 prompt = PromptTemplate(
-    input_variables=["history", "input", "date"],
-    template=template.format(
-        human_prefix=human_prefix, human_suffix=human_suffix, ai_prefix=ai_prefix
-    ),
+    input_variables=["system", "history", "input"],
+    template=template,
 )

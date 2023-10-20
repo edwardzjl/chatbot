@@ -141,6 +141,9 @@ async def generate(
     while True:
         try:
             payload: str = await websocket.receive_text()
+            system_message = f"""You are Mistral-OpenOrca, a large language model trained by Open-Orca. Answer as concisely as possible.
+Knowledge cutoff: 2023-10-01
+Current date: {date.today()}"""
             message = ChatMessage.model_validate_json(payload)
             history.session_id = f"{userid}:{message.conversation}"
             streaming_callback = StreamingLLMCallbackHandler(
@@ -150,8 +153,8 @@ async def generate(
                 message.conversation
             )
             await conversation_chain.arun(
+                system=system_message,
                 input=message.content,
-                date=date.today(),
                 callbacks=[streaming_callback, update_conversation_callback],
             )
         except WebSocketDisconnect:
