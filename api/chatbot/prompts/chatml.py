@@ -1,7 +1,7 @@
 """Prompt template for OpenAI's Chat Markup Language, or ChatML.
 See <https://github.com/openai/openai-python/blob/main/chatml.md> for more details."""
 
-from langchain import PromptTemplate
+from langchain.prompts import PromptTemplate
 
 
 human_prefix = "<|im_start|>user"

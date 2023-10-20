@@ -1,4 +1,4 @@
-from langchain import PromptTemplate
+from langchain.prompts import PromptTemplate
 
 
 template = """Assistant is a large language model trained by OpenAI.
