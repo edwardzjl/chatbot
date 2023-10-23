@@ -145,7 +145,7 @@ Current date: {date.today()}"""
                 message.conversation
             )
             await conversation_chain.arun(
-                system=system_message,
+                system_message=system_message,
                 input=message.content,
                 callbacks=[streaming_callback, update_conversation_callback],
             )
