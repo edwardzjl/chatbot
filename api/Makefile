@@ -3,13 +3,13 @@
 all: help
 
 lint:
-	black . --check
+	pipenv run black . --check
 
 format:
-	black .
+	pipenv run black .
 
 test:
-	python -m unittest
+	pipenv run python -m unittest
 
 ######################
 # HELP

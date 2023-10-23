@@ -10,12 +10,19 @@ COPY web/ ./
 RUN yarn build
 
 
+FROM python:3.11-slim as backend-builder
+RUN pip install pipenv
+
+COPY api/Pipfile api/Pipfile.lock ./
+RUN PIPENV_VENV_IN_PROJECT=1 pipenv install --deploy
+
+
 FROM python:3.11-slim as app
 
 WORKDIR /app
-COPY api/requirements.txt .
-RUN python -m pip install --no-cache-dir -U pip \
-  && python -m pip install --no-cache-dir -r requirements.txt
+
+COPY --from=backend-builder /.venv ./.venv
+ENV PATH="$WORKDIR/.venv/bin:$PATH"
 COPY api/ .
 COPY --from=frontend-builder /build/build ./static
 
