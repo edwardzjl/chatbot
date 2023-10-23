@@ -24,6 +24,8 @@ jobs:
         uses: docker/metadata-action@879dcbb708d40f8b8679d4f7941b938a086e23a7
         with:
           images: edwardlol/chatbot
+          tags: |
+            type=semver,pattern={{version}}
       - name: Build and push Docker image
         uses: docker/build-push-action@fdf7f43ecf7c1a5c7afe936410233728a8c2d9c2
         with:
