@@ -32,10 +32,17 @@ class ChatMessage(BaseModel):
         return v
 
     @staticmethod
-    def from_lc(lc_message: BaseMessage) -> "ChatMessage":
+    def from_lc(
+        lc_message: BaseMessage, conv_id: str, from_: str = None
+    ) -> "ChatMessage":
+        msg_id_str = lc_message.additional_kwargs.get("id", None)
+        msg_id = UUID(msg_id_str) if msg_id_str else uuid4()
         return ChatMessage(
-            from_=lc_message.type,
+            id=msg_id,
+            conversation=conv_id,
+            from_=from_ if from_ else lc_message.type,
             content=lc_message.content,
+            type="text",
         )
 
     def model_dump(

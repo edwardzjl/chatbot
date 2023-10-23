@@ -1,5 +1,7 @@
 import unittest
 
+from langchain.schema import AIMessage, HumanMessage
+
 from chatbot.schemas import ChatMessage, Conversation
 
 
@@ -13,8 +15,15 @@ class TestConversationSchema(unittest.TestCase):
 
 
 class TestMessageSchema(unittest.TestCase):
-    def test_create_message(self):
-        msg = ChatMessage(from_="ai", content="foo", type="stream")
+    def test_create_message_from_langchain(self):
+        lc_msg = AIMessage(content="foo")
+        msg = ChatMessage.from_lc(lc_msg, "conv_id")
+        self.assertEqual(msg.content, "foo")
+        self.assertEqual(msg.from_, "ai")
+        lc_msg = HumanMessage(content="bar")
+        msg = ChatMessage.from_lc(lc_msg, "conv_id", from_="some-user")
+        self.assertEqual(msg.content, "bar")
+        self.assertEqual(msg.from_, "some-user")
 
 
 if __name__ == "__main__":

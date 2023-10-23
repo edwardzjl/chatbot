@@ -68,18 +68,10 @@ async def get_conversation(
     history.session_id = f"{userid}:{conversation_id}"
     return ConversationDetail(
         messages=[
-            ChatMessage(
-                conversation=conversation_id,
-                from_="ai",
-                content=message.content,
-                type="text",
-            )
+            ChatMessage.from_lc(lc_message=message, conv_id=conversation_id, from_="ai")
             if message.type == "ai"
-            else ChatMessage(
-                conversation=conversation_id,
-                from_=userid,
-                content=message.content,
-                type="text",
+            else ChatMessage.from_lc(
+                lc_message=message, conv_id=conversation_id, from_=userid
             )
             for message in history.messages
         ],
