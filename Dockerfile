@@ -22,7 +22,7 @@ FROM python:3.11-slim as app
 WORKDIR /app
 
 COPY --from=backend-builder /.venv ./.venv
-ENV PATH="$WORKDIR/.venv/bin:$PATH"
+ENV PATH="/app/.venv/bin:$PATH"
 COPY api/ .
 COPY --from=frontend-builder /build/build ./static
 
@@ -30,5 +30,5 @@ RUN adduser --system --no-create-home --group chatbot \
   && chown -R chatbot:chatbot /app
 USER chatbot:chatbot
 
-ENTRYPOINT [ "uvicorn", "chatbot.main:app" ]
+ENTRYPOINT [ "python", "-m", "uvicorn", "chatbot.main:app" ]
 CMD [ "--host", "0.0.0.0", "--port", "8000" ]
