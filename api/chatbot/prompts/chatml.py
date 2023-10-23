@@ -10,7 +10,7 @@ human_suffix = "<|im_end|>"
 ai_suffix = "<|im_end|>"
 
 template = f"""<|im_start|>system
-{{system}}<|im_end|>
+{{system_message}}<|im_end|>
 
 {{history}}
 {human_prefix}
@@ -19,6 +19,6 @@ template = f"""<|im_start|>system
 """
 
 prompt = PromptTemplate(
-    input_variables=["system", "history", "input"],
+    input_variables=["system_message", "history", "input"],
     template=template,
 )

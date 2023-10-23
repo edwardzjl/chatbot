@@ -18,5 +18,5 @@ template = f"""[INST] <<SYS>>
 {{input}}{human_suffix}"""
 
 prompt = PromptTemplate(
-    input_variables=["system", "history", "input"], template=template
+    input_variables=["system_message", "history", "input"], template=template
 )
