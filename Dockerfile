@@ -10,14 +10,14 @@ COPY web/ ./
 RUN yarn build
 
 
-FROM python:3.11-slim as backend-builder
+FROM python:3.12-slim as backend-builder
 RUN pip install pipenv
 
 COPY api/Pipfile api/Pipfile.lock ./
 RUN PIPENV_VENV_IN_PROJECT=1 pipenv install --deploy
 
 
-FROM python:3.11-slim as app
+FROM python:3.12-slim as app
 
 WORKDIR /app
 
