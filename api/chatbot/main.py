@@ -2,13 +2,13 @@
 from contextlib import asynccontextmanager
 from typing import Annotated
 
+import langchain
 from aredis_om import Migrator, NotFoundError
 from fastapi import FastAPI, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.requests import Request
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
-import langchain
 from langchain.cache import RedisCache
 from loguru import logger
 from redis import Redis
@@ -16,7 +16,6 @@ from redis import Redis
 from chatbot.config import settings
 from chatbot.routers import router
 from chatbot.utils import UserIdHeader
-
 
 # TODO: should separate redis cache and storage instance
 langchain.llm_cache = RedisCache(redis_=Redis.from_url(str(settings.redis_om_url)))

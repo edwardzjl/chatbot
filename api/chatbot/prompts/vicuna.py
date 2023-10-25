@@ -4,7 +4,6 @@
 
 from langchain.prompts import PromptTemplate
 
-
 human_prefix = "USER"
 ai_prefix = "ASSISTANT"
 human_suffix = None

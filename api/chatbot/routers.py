@@ -15,20 +15,19 @@ from chatbot.config import settings
 from chatbot.memory import FlexConversationBufferWindowMemory
 from chatbot.models import Conversation as ORMConversation
 from chatbot.prompts.chatml import (
-    prompt,
-    human_prefix,
     ai_prefix,
-    human_suffix,
     ai_suffix,
+    human_prefix,
+    human_suffix,
+    prompt,
 )
 from chatbot.schemas import (
     ChatMessage,
-    ConversationDetail,
     Conversation,
+    ConversationDetail,
     UpdateConversation,
 )
 from chatbot.utils import UserIdHeader
-
 
 router = APIRouter(
     prefix="/api",

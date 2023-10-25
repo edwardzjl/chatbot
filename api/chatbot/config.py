@@ -1,4 +1,4 @@
-from pydantic import RedisDsn, HttpUrl
+from pydantic import HttpUrl, RedisDsn
 from pydantic_settings import BaseSettings
 
 
