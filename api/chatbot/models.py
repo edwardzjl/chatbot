@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from aredis_om import JsonModel, Field
+from aredis_om import Field, JsonModel
 
 from chatbot.utils import utcnow
 

@@ -2,12 +2,12 @@ from typing import Optional, Sequence
 
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.schema import (
-    BaseMessage,
-    HumanMessage,
     AIMessage,
-    SystemMessage,
-    FunctionMessage,
+    BaseMessage,
     ChatMessage,
+    FunctionMessage,
+    HumanMessage,
+    SystemMessage,
 )
 
 

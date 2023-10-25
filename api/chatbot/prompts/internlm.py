@@ -5,7 +5,6 @@
 
 from langchain.prompts import PromptTemplate
 
-
 human_prefix = "<|User|>"
 ai_prefix = "<|Bot|>"
 human_suffix = "<eoh>"

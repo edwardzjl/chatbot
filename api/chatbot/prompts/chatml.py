@@ -3,7 +3,6 @@ See <https://github.com/openai/openai-python/blob/main/chatml.md> for more detai
 
 from langchain.prompts import PromptTemplate
 
-
 human_prefix = "<|im_start|>user"
 ai_prefix = "<|im_start|>assistant"
 human_suffix = "<|im_end|>"
