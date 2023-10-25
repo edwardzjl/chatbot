@@ -20,6 +20,7 @@ websockets = "==12.0"
 
 [dev-packages]
 black = "*"
+isort = "*"
 
 [requires]
 python_version = "3.11"

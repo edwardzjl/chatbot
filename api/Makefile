@@ -4,9 +4,11 @@ all: help
 
 lint:
 	pipenv run black . --check
+	pipenv run isort . --check
 
 format:
 	pipenv run black .
+	pipenv run isort .
 
 test:
 	pipenv run python -m unittest
