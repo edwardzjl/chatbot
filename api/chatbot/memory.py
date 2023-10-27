@@ -17,6 +17,7 @@ class FlexConversationBufferWindowMemory(ConversationBufferWindowMemory):
     human_suffix: Optional[str] = None
     ai_suffix: Optional[str] = None
     prefix_delimiter: str = ": "
+    message_delimiter: str = "\n"
 
     @property
     def buffer_as_str(self) -> str:
@@ -51,4 +52,4 @@ class FlexConversationBufferWindowMemory(ConversationBufferWindowMemory):
                 message += f"{m.additional_kwargs['function_call']}"
             string_messages.append(message)
 
-        return "\n".join(string_messages)
+        return self.message_delimiter.join(string_messages)

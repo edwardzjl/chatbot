@@ -5,16 +5,17 @@
 
 from langchain.prompts import PromptTemplate
 
-human_prefix = "[INST]"
-ai_prefix = None
-human_suffix = "[/INST]"
-ai_suffix = None
+human_prefix = ""
+ai_prefix = ""
+human_suffix = " [/INST]"
+ai_suffix = " </s><s>[INST]"
 
-template = f"""[INST] <<SYS>>
+# TODO: there will be a whitespace before the first user message that I cannot elegantly remove now.
+template = f"""<s>[INST] <<SYS>>
 {{system_message}}
 <</SYS>>
-{{history}}
-{{input}}{human_suffix}"""
+
+{{history}} {{input}}{human_suffix}"""
 
 prompt = PromptTemplate(
     input_variables=["system_message", "history", "input"], template=template
