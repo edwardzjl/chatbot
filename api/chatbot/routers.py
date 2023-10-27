@@ -12,6 +12,7 @@ from chatbot.callbacks import (
     UpdateConversationCallbackHandler,
 )
 from chatbot.config import settings
+from chatbot.history import CustomRedisChatMessageHistory
 from chatbot.memory import FlexConversationBufferWindowMemory
 from chatbot.models import Conversation as ORMConversation
 from chatbot.prompts.chatml import (
@@ -36,7 +37,7 @@ router = APIRouter(
 
 
 def get_message_history() -> RedisChatMessageHistory:
-    return RedisChatMessageHistory(
+    return CustomRedisChatMessageHistory(
         url=str(settings.redis_om_url),
         session_id="sid",  # a fake session id as it is required
     )
@@ -112,6 +113,7 @@ async def generate(
     userid: Annotated[str | None, UserIdHeader()] = None,
 ):
     await websocket.accept()
+    logger.info("websocket connected")
     memory = FlexConversationBufferWindowMemory(
         human_prefix=human_prefix,
         ai_prefix=ai_prefix,
