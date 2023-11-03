@@ -13,7 +13,7 @@ class CustomRedisChatMessageHistory(RedisChatMessageHistory):
         """Add an AI message to the store"""
         self.add_message(
             HumanMessage(
-                content=message.strip(),
+                content=message,
                 additional_kwargs={
                     "id": uuid4().hex,
                     "sent_at": utcnow().isoformat(),
@@ -26,7 +26,7 @@ class CustomRedisChatMessageHistory(RedisChatMessageHistory):
         """Add an AI message to the store"""
         self.add_message(
             AIMessage(
-                content=message.strip(),
+                content=message,
                 additional_kwargs={
                     "id": uuid4().hex,
                     "sent_at": utcnow().isoformat(),
