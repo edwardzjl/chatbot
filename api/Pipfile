@@ -6,17 +6,17 @@ name = "pypi"
 [packages]
 fastapi = ">=0.100.0"
 langchain = ">=0.0.300"
-loguru = "==0.7.2"
+loguru = "~=0.7"
 # redis-om 0.2.1 requires pydantic<2.1.0
 pydantic = "~=2.0.0"
-pydantic-settings = "==2.0.3"
+pydantic-settings = "~=2.0"
 # redis-om 0.2.1 requires redis<5.0.0
 redis = {extras = ["hiredis"], version = "<5.0.0"}
-redis-om = "==0.2.1"
-requests = "==2.31.0"
-text-generation = "==0.6.1"
+redis-om = "~=0.2.1"
+requests = "~=2.31"
+text-generation = "~=0.6.1"
 uvicorn = {extras = ["standard"], version = ">=0.23.0"}
-websockets = "==12.0"
+websockets = "~=12.0"
 
 [dev-packages]
 black = "*"
