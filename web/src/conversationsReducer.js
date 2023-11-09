@@ -18,20 +18,7 @@ export const conversationsReducer = (conversations, action) => {
             ];
         }
         case "deleted": {
-            const toDelete = conversations.find((c) => {
-                return c.id === action.id;
-            })
-            const remaining = conversations.filter((c) => c.id !== action.id);
-            // nothing left, just return
-            if (remaining.length === 0) {
-                return [];
-            }
-            // not deleting active conversation, just return
-            if (!toDelete.active) {
-                return remaining;
-            }
-            // deleting active conversation, activate the first one
-            return [{ ...remaining[0], active: true }, ...remaining.slice(1)]
+            return conversations.filter((c) => c.id !== action.id);
         }
         case "updated": {
             return conversations.map((c) => {
@@ -95,4 +82,8 @@ export const conversationsReducer = (conversations, action) => {
 
 export const getCurrentConversation = (conversations) => {
     return conversations.find((c) => c.active);
+}
+
+export const getConversationById = (conversations, id) => {
+    return conversations.find((c) => c.id === id);
 }

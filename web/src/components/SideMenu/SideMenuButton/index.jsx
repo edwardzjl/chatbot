@@ -11,7 +11,7 @@ import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutli
 import CheckOutlinedIcon from "@mui/icons-material/CheckOutlined";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 import { ConversationContext, SnackbarContext } from "contexts";
-import { conversationsReducer } from "conversationsReducer";
+import { conversationsReducer, getConversationById } from "conversationsReducer";
 import {
   createConversation,
   deleteConversation,
@@ -69,19 +69,35 @@ const ChatTab = (props) => {
   const deleteChat = async (chatId) => {
     deleteConversation(chatId)
       .then(() => {
-        const action = {
+        const deleteAction = {
           type: "deleted",
           id: chatId,
         };
-        dispatch(action);
-        const nextState = conversationsReducer(conversations, action);
+        const nextState = conversationsReducer(conversations, deleteAction);
         if (!nextState.length) {
           createConversation().then((data) => {
+            dispatch(deleteAction);
             dispatch({
               type: "added",
               conversation: data,
             });
           });
+        } else {
+          // there's still conversations left, check if we are deleting the active one
+          const toDelete = getConversationById(conversations, chatId);
+          if (toDelete.active) {
+            // switch to the first conversation
+            // select before delete makes the page more smooth
+            getConversation(nextState[0].id)
+              .then((data) => {
+                dispatch({
+                  type: "selected",
+                  data: data,
+                });
+              }).then(() => {
+                dispatch(deleteAction);
+              });
+          }
         }
         setSnackbar({
           open: true,
