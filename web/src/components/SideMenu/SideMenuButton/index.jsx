@@ -55,7 +55,7 @@ const ChatTab = (props) => {
   const selectChat = async (e, chat) => {
     e.preventDefault();
     e.stopPropagation();
-    if (chat.activate) {
+    if (chat.active) {
       return;
     }
     const detailedConv = await getConversation(chat.id);
