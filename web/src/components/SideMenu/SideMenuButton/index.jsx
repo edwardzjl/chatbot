@@ -58,18 +58,11 @@ const ChatTab = (props) => {
     if (chat.active) {
       return;
     }
+    // we need to update messages, as there might be unfinished messages when we last time left the chat.
     const detailedConv = await getConversation(chat.id);
     dispatch({
-      type: "updated",
-      conversation: {
-        ...detailedConv,
-        messages: detailedConv.messages,
-      },
-    });
-    // switch to the selected conversation
-    dispatch({
       type: "selected",
-      id: chat.id,
+      data: detailedConv,
     });
   };
 
