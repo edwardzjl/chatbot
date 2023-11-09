@@ -42,13 +42,10 @@ export const conversationsReducer = (conversations, action) => {
             });
         }
         case "selected": {
-            if (conversations[0].id === action.id && conversations[0].active) {
-                return conversations;
-            }
             return conversations.map((c) => {
-                if (c.id === action.id) {
+                if (c.id === action.data.id) {
                     return {
-                        ...c,
+                        ...action.data,
                         active: true,
                     };
                 } else {
