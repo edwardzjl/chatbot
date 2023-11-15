@@ -94,10 +94,9 @@ const ChatTab = (props) => {
                   type: "selected",
                   data: data,
                 });
-              }).then(() => {
-                dispatch(deleteAction);
               });
           }
+          dispatch(deleteAction);
         }
         setSnackbar({
           open: true,
