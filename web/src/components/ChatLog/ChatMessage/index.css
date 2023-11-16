@@ -18,6 +18,7 @@
 }
 
 .chat-message-content {
+    max-width: 800px;
     padding-left: 40px;
     padding-right: 40px;
     word-break: break-word;
