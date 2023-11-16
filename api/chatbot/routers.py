@@ -51,19 +51,21 @@ def get_llm() -> BaseLLM:
     )
 
 
-@router.get("/conversations", response_model=list[Conversation])
-async def get_conversations(userid: Annotated[str | None, UserIdHeader()] = None):
+@router.get("/conversations")
+async def get_conversations(
+    userid: Annotated[str | None, UserIdHeader()] = None
+) -> list[Conversation]:
     convs = await ORMConversation.find(ORMConversation.owner == userid).all()
     convs.sort(key=lambda x: x.updated_at, reverse=True)
     return [Conversation(**conv.dict()) for conv in convs]
 
 
-@router.get("/conversations/{conversation_id}", response_model=ConversationDetail)
+@router.get("/conversations/{conversation_id}")
 async def get_conversation(
     conversation_id: str,
     history: Annotated[RedisChatMessageHistory, Depends(get_message_history)],
     userid: Annotated[str | None, UserIdHeader()] = None,
-):
+) -> ConversationDetail:
     conv = await ORMConversation.get(conversation_id)
     history.session_id = f"{userid}:{conversation_id}"
     return ConversationDetail(
@@ -79,8 +81,10 @@ async def get_conversation(
     )
 
 
-@router.post("/conversations", status_code=201, response_model=ConversationDetail)
-async def create_conversation(userid: Annotated[str | None, UserIdHeader()] = None):
+@router.post("/conversations", status_code=201)
+async def create_conversation(
+    userid: Annotated[str | None, UserIdHeader()] = None
+) -> ConversationDetail:
     conv = ORMConversation(title=f"New chat", owner=userid)
     await conv.save()
     return ConversationDetail(**conv.dict())
@@ -91,7 +95,7 @@ async def update_conversation(
     conversation_id: str,
     payload: UpdateConversation,
     userid: Annotated[str | None, UserIdHeader()] = None,
-):
+) -> None:
     conv = await ORMConversation.get(conversation_id)
     conv.title = payload.title
     await conv.save()
@@ -101,7 +105,7 @@ async def update_conversation(
 async def delete_conversation(
     conversation_id: str,
     userid: Annotated[str | None, UserIdHeader()] = None,
-):
+) -> None:
     await ORMConversation.delete(conversation_id)
 
 
