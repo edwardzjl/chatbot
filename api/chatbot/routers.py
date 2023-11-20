@@ -3,8 +3,10 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from langchain.chains import LLMChain
+from langchain.chains.base import Chain
 from langchain.llms import BaseLLM, HuggingFaceTextGenInference
 from langchain.memory import RedisChatMessageHistory
+from langchain.schema import BaseMemory
 from loguru import logger
 
 from chatbot.callbacks import (
@@ -12,7 +14,8 @@ from chatbot.callbacks import (
     UpdateConversationCallbackHandler,
 )
 from chatbot.config import settings
-from chatbot.history import CustomRedisChatMessageHistory
+from chatbot.context import session_id
+from chatbot.history import ContextAwareMessageHistory
 from chatbot.memory import FlexConversationBufferWindowMemory
 from chatbot.models import Conversation as ORMConversation
 from chatbot.prompts.chatml import (
@@ -37,9 +40,24 @@ router = APIRouter(
 
 
 def get_message_history() -> RedisChatMessageHistory:
-    return CustomRedisChatMessageHistory(
+    return ContextAwareMessageHistory(
         url=str(settings.redis_om_url),
         session_id="sid",  # a fake session id as it is required
+    )
+
+
+def get_memory(
+    history: Annotated[RedisChatMessageHistory, Depends(get_message_history)]
+) -> BaseMemory:
+    return FlexConversationBufferWindowMemory(
+        human_prefix=human_prefix,
+        ai_prefix=ai_prefix,
+        prefix_delimiter="\n",
+        human_suffix=human_suffix,
+        ai_suffix=ai_suffix,
+        memory_key="history",
+        input_key="input",
+        chat_memory=history,
     )
 
 
@@ -48,6 +66,18 @@ def get_llm() -> BaseLLM:
         inference_server_url=str(settings.inference_server_url),
         stop_sequences=[ai_suffix, human_prefix],
         streaming=True,
+    )
+
+
+def get_conv_chain(
+    llm: Annotated[BaseLLM, Depends(get_llm)],
+    memory: Annotated[BaseMemory, Depends(get_memory)],
+) -> Chain:
+    return LLMChain(
+        llm=llm,
+        prompt=prompt,
+        verbose=False,
+        memory=memory,
     )
 
 
@@ -67,7 +97,7 @@ async def get_conversation(
     userid: Annotated[str | None, UserIdHeader()] = None,
 ) -> ConversationDetail:
     conv = await ORMConversation.get(conversation_id)
-    history.session_id = f"{userid}:{conversation_id}"
+    session_id.set(f"{userid}:{conversation_id}")
     return ConversationDetail(
         messages=[
             ChatMessage.from_lc(lc_message=message, conv_id=conversation_id, from_="ai")
@@ -112,29 +142,11 @@ async def delete_conversation(
 @router.websocket("/chat")
 async def generate(
     websocket: WebSocket,
-    llm: Annotated[BaseLLM, Depends(get_llm)],
-    history: Annotated[RedisChatMessageHistory, Depends(get_message_history)],
+    conv_chain: Annotated[LLMChain, Depends(get_conv_chain)],
     userid: Annotated[str | None, UserIdHeader()] = None,
 ):
     await websocket.accept()
     logger.info("websocket connected")
-    memory = FlexConversationBufferWindowMemory(
-        human_prefix=human_prefix,
-        ai_prefix=ai_prefix,
-        prefix_delimiter="\n",
-        human_suffix=human_suffix,
-        ai_suffix=ai_suffix,
-        memory_key="history",
-        input_key="input",
-        chat_memory=history,
-    )
-    conversation_chain = LLMChain(
-        llm=llm,
-        prompt=prompt,
-        verbose=False,
-        memory=memory,
-    )
-
     while True:
         try:
             payload: str = await websocket.receive_text()
@@ -142,14 +154,14 @@ async def generate(
 Knowledge cutoff: 2023-10-01
 Current date: {date.today()}"""
             message = ChatMessage.model_validate_json(payload)
-            history.session_id = f"{userid}:{message.conversation}"
+            session_id.set(f"{userid}:{message.conversation}")
             streaming_callback = StreamingLLMCallbackHandler(
                 websocket, message.conversation
             )
             update_conversation_callback = UpdateConversationCallbackHandler(
                 message.conversation
             )
-            await conversation_chain.arun(
+            await conv_chain.arun(
                 system_message=system_message,
                 input=message.content,
                 callbacks=[streaming_callback, update_conversation_callback],
