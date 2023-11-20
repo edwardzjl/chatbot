@@ -3,11 +3,17 @@ from uuid import uuid4
 from langchain.memory.chat_message_histories import RedisChatMessageHistory
 from langchain.schema import BaseMessage
 
+from chatbot.context import session_id
 from chatbot.utils import utcnow
 
 
-class CustomRedisChatMessageHistory(RedisChatMessageHistory):
-    """Persist extra information in `additional_kwargs`."""
+class ContextAwareMessageHistory(RedisChatMessageHistory):
+    """Context aware history which also persists extra information in `additional_kwargs`."""
+
+    @property
+    def key(self) -> str:
+        """Construct the record key to use"""
+        return self.key_prefix + (session_id.get() or self.session_id)
 
     def add_message(self, message: BaseMessage) -> None:
         """Append the message to the record in Redis"""
