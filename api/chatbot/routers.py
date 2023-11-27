@@ -42,6 +42,7 @@ router = APIRouter(
 def get_message_history() -> RedisChatMessageHistory:
     return ContextAwareMessageHistory(
         url=str(settings.redis_om_url),
+        key_prefix="chatbot:messages:",
         session_id="sid",  # a fake session id as it is required
     )
 
