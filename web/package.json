@@ -16,7 +16,7 @@
     "react-markdown": "^9.0.1",
     "react-scripts": "5.0.1",
     "react-syntax-highlighter": "^15.5.0",
-    "react-window": "^1.8.9",
+    "react-window": "^1.8.10",
     "remark-gfm": "^4.0.0",
     "web-vitals": "^3.5.0"
   },
