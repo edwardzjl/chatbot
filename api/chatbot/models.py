@@ -10,3 +10,6 @@ class Conversation(JsonModel):
     owner: str = Field(index=True)
     created_at: datetime = Field(default_factory=utcnow)
     updated_at: datetime = created_at
+
+    class Meta:
+        global_key_prefix = "chatbot"
