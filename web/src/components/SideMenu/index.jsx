@@ -18,12 +18,15 @@ const SideMenu = () => {
   const { conversations, dispatch } = useContext(ConversationContext);
 
   const createChat = () => {
-    createConversation().then((data) => {
-      dispatch({
-        type: "added",
-        conversation: data,
+    createConversation()
+      .then((data) => {
+        dispatch({
+          type: "added",
+          conversation: data,
+        });
+      }).catch((error) => {
+        console.error("Failed to create chat:", error);
       });
-    });
   };
 
   const handleLogout = async (e) => {
@@ -45,8 +48,8 @@ const SideMenu = () => {
         <AddOutlinedIcon />
         New Chat
       </div>
-      {conversations?.map((chat, index) => (
-        <ChatTab key={index} chat={chat} />
+      {conversations?.map((chat) => (
+        <ChatTab key={chat.id} chat={chat} />
       ))}
       <hr className="sidemenu-userinfo-hr" />
       <div className="sidemenu-userinfo">

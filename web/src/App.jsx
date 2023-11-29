@@ -38,20 +38,20 @@ function App() {
         // <https://react.dev/learn/queueing-a-series-of-state-updates>
         // <https://react.dev/learn/updating-arrays-in-state>
         try {
-          const payload = JSON.parse(msg.data);
-          switch (payload.type) {
+          const { type, conversation, from, content } = JSON.parse(msg.data);
+          switch (type) {
             case "start":
               dispatch({
                 type: "messageAdded",
-                id: payload.conversation,
-                message: { from: payload.from, content: payload.content || "" },
+                id: conversation,
+                message: { from: from, content: content || "", type: "stream" },
               });
               break;
             case "stream":
               dispatch({
                 type: "messageAppended",
-                id: payload.conversation,
-                message: { from: payload.from, content: payload.content },
+                id: conversation,
+                message: { from: from, content: content, type: "stream" },
               });
               break;
             case "error":
@@ -64,12 +64,14 @@ function App() {
             case "text":
               dispatch({
                 type: "messageAdded",
-                id: payload.conversation,
-                message: { from: payload.from, content: payload.content },
+                id: conversation,
+                message: { from: from, content: content, type: "text" },
               });
               break;
+            case "end":
+              break;
             default:
-              console.warn("unknown message type", payload);
+              console.warn("unknown message type", type);
           }
         } catch (error) {
           console.debug("not a json message", msg);
@@ -204,7 +206,7 @@ function App() {
             <SideMenu />
             <section className="chatbox">
               <ChatLog>
-                {currentConv?.messages?.map((message, index) => (
+                {currentConv && currentConv.messages && currentConv.messages.map((message, index) => (
                   <ChatMessage key={index} message={message} />
                 ))}
               </ChatLog>

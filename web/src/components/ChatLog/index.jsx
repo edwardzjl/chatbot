@@ -14,11 +14,17 @@ const ChatLog = ({ children }) => {
   };
 
   useEffect(() => {
-    const chatLogElem = document.getElementById("chat-log");
-    const resizeObserver = new ResizeObserver(() => {
-      scrollToBottom();
-    });
-    resizeObserver.observe(chatLogElem);
+    if (window.ResizeObserver) {
+      const chatLogElem = document.getElementById("chat-log");
+      const resizeObserver = new ResizeObserver(() => {
+        scrollToBottom();
+      });
+      resizeObserver.observe(chatLogElem);
+
+      return () => {
+        resizeObserver.disconnect();
+      };
+    }
   }, []);
 
   return (
