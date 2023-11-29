@@ -1,7 +1,6 @@
 import "./index.css";
 
 import { useContext, useState, useRef, useEffect } from "react";
-
 import FormControl from '@mui/material/FormControl';
 import FormHelperText from '@mui/material/FormHelperText';
 import Input from '@mui/material/Input';
@@ -9,11 +8,10 @@ import Input from '@mui/material/Input';
 import { UserContext, ConversationContext } from "contexts";
 
 /**
- * @param {Object} props
- * @param {string} props.chatId
- * @param {*} props.onSend
+ * @param {string} chatId
+ * @param {*} onSend
  */
-const ChatInput = (props) => {
+const ChatInput = ({ chatId, onSend }) => {
   const username = useContext(UserContext);
   const { conversations, dispatch } = useContext(ConversationContext);
 
@@ -24,10 +22,10 @@ const ChatInput = (props) => {
    * Focus on input when chatId changes.
    */
   useEffect(() => {
-    if (props.chatId) {
+    if (chatId) {
       inputRef.current.focus();
     }
-  }, [props.chatId]);
+  }, [chatId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,17 +34,17 @@ const ChatInput = (props) => {
     // append user input to chatlog
     dispatch({
       type: "messageAdded",
-      id: props.chatId,
-      message: { from: username, content: payload },
+      id: chatId,
+      message: { from: username, content: payload, type: "text" },
     });
     // if current chat is not the first in the list, move it to the first when send message.
-    if (conversations[0].id !== props.chatId) {
+    if (conversations[0].id !== chatId) {
       dispatch({
         type: "moveToFirst",
-        id: props.chatId,
+        id: chatId,
       });
     }
-    await props.onSend(props.chatId, payload);
+    await onSend(chatId, payload);
   };
 
   const handleKeyDown = async (e) => {

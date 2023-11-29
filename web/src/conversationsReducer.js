@@ -14,39 +14,20 @@ export const conversationsReducer = (conversations, action) => {
             // new conversation will be added to the first and be activated.
             return [
                 { ...action.conversation, messages: [], active: true },
-                ...conversations.map(c => { return { ...c, active: false } }),
+                ...conversations.map(c => ({ ...c, active: false })),
             ];
         }
         case "deleted": {
             return conversations.filter((c) => c.id !== action.id);
         }
         case "updated": {
-            return conversations.map((c) => {
-                if (c.id !== action.conversation.id) {
-                    return c;
-                }
-                return { ...c, ...action.conversation };
-            });
+            return conversations.map((c) => (c.id !== action.conversation.id ? c : { ...c, ...action.conversation }));
         }
         case "selected": {
-            return conversations.map((c) => {
-                if (c.id === action.data.id) {
-                    return {
-                        ...action.data,
-                        active: true,
-                    };
-                } else {
-                    return {
-                        ...c,
-                        active: false,
-                    };
-                }
-            });
+            return conversations.map((c) => (c.id === action.data.id ? { ...action.data, active: true } : { ...c, active: false }));
         }
         case "moveToFirst": {
-            const toMove = conversations.find((c) => {
-                return c.id === action.id;
-            })
+            const toMove = conversations.find((c) => c.id === action.id)
             const others = conversations.filter((c) => c.id !== action.id);
             return [toMove, ...others];
         }
@@ -55,12 +36,9 @@ export const conversationsReducer = (conversations, action) => {
             return [{ ...action.conversations[0], active: true }, ...action.conversations.slice(1).map((c) => { return { ...c, active: false } })]
         }
         case "messageAdded": {
-            return conversations.map((c) => {
-                if (c.id !== action.id) {
-                    return c;
-                }
-                return { ...c, messages: [...c.messages, action.message] };
-            });
+            return conversations.map((c) =>
+                c.id !== action.id ? c : { ...c, messages: [...c.messages, { ...action.message }] }
+            );
         }
         case "messageAppended": {
             return conversations.map((c) => {
