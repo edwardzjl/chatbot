@@ -11,12 +11,11 @@ import { WebsocketContext } from "contexts/websocket";
 
 /**
  * @param {string} chatId
- * @param {*} onSend
  */
 const ChatInput = ({ chatId }) => {
   const [username,] = useContext(UserContext);
   const [conversations, dispatch] = useContext(ConversationContext);
-  const [ready, , send] = useContext(WebsocketContext);
+  const [ready, send] = useContext(WebsocketContext);
 
   const [input, setInput] = useState("");
   const inputRef = useRef(null);

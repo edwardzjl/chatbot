@@ -10,9 +10,8 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutline";
 import CheckOutlinedIcon from "@mui/icons-material/CheckOutlined";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
-import { ConversationContext } from "contexts/conversation";
+import { ConversationContext, conversationsReducer } from "contexts/conversation";
 import { SnackbarContext } from "contexts/snackbar";
-import { conversationsReducer, getConversationById } from "conversationsReducer";
 import {
   createConversation,
   deleteConversation,
@@ -84,7 +83,7 @@ const ChatTab = ({ chat }) => {
           });
         } else {
           // there's still conversations left, check if we are deleting the active one
-          const toDelete = getConversationById(conversations, chatId);
+          const toDelete = conversations.find((c) => c.id === chatId);
           if (toDelete.active) {
             // switch to the first conversation
             // select before delete makes the page more smooth
