@@ -5,9 +5,7 @@ from fastapi import WebSocket
 from langchain.callbacks.base import AsyncCallbackHandler
 from langchain.schema import LLMResult
 
-from chatbot.models import Conversation
 from chatbot.schemas import ChatMessage
-from chatbot.utils import utcnow
 
 
 class StreamingLLMCallbackHandler(AsyncCallbackHandler):
@@ -91,22 +89,3 @@ class StreamingLLMCallbackHandler(AsyncCallbackHandler):
             type="error",
         )
         await self.websocket.send_text(message.model_dump_json())
-
-
-class UpdateConversationCallbackHandler(AsyncCallbackHandler):
-    def __init__(self, conversation_id: str):
-        self.conversation_id: str = conversation_id
-
-    async def on_chain_end(
-        self,
-        outputs: dict[str, Any],
-        *,
-        run_id: UUID,
-        parent_run_id: Optional[UUID] = None,
-        tags: Optional[list[str]] = None,
-        **kwargs: Any,
-    ) -> None:
-        """Run when chain ends running."""
-        conv = await Conversation.get(self.conversation_id)
-        conv.updated_at = utcnow()
-        await conv.save()
