@@ -34,7 +34,7 @@ export const WebsocketProvider = ({ children }) => {
             }
             socket.onerror = (err) => {
                 console.error("connection error", err);
-                ws.current.close();
+                socket.close();
             };
             socket.onmessage = (event) => {
                 // <https://react.dev/learn/queueing-a-series-of-state-updates>
