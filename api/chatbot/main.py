@@ -10,8 +10,8 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from loguru import logger
 
+from chatbot.dependencies import UserIdHeader
 from chatbot.routers import router
-from chatbot.utils import UserIdHeader
 
 
 @asynccontextmanager
