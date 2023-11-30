@@ -6,7 +6,8 @@ import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 
 import { getFirstLetters, stringToColor, getCookie } from "commons";
-import { UserContext, ConversationContext } from "contexts";
+import { ConversationContext } from "contexts/conversation";
+import { UserContext } from "contexts/user";
 import { createConversation } from "requests";
 import ChatTab from "components/SideMenu/SideMenuButton";
 
@@ -14,8 +15,8 @@ import ChatTab from "components/SideMenu/SideMenuButton";
  *
  */
 const SideMenu = () => {
-  const username = useContext(UserContext);
-  const { conversations, dispatch } = useContext(ConversationContext);
+  const [username,] = useContext(UserContext);
+  const [conversations, dispatch] = useContext(ConversationContext);
 
   const createChat = () => {
     createConversation()

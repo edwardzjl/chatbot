@@ -10,7 +10,8 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutline";
 import CheckOutlinedIcon from "@mui/icons-material/CheckOutlined";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
-import { ConversationContext, SnackbarContext } from "contexts";
+import { ConversationContext } from "contexts/conversation";
+import { SnackbarContext } from "contexts/snackbar";
 import { conversationsReducer, getConversationById } from "conversationsReducer";
 import {
   createConversation,
@@ -28,8 +29,8 @@ import {
  * @returns
  */
 const ChatTab = ({ chat }) => {
-  const { conversations, dispatch } = useContext(ConversationContext);
-  const setSnackbar = useContext(SnackbarContext);
+  const [conversations, dispatch] = useContext(ConversationContext);
+  const [, setSnackbar] = useContext(SnackbarContext);
 
   const [title, setTitle] = useState(chat?.title);
   useEffect(() => {
