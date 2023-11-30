@@ -2,87 +2,29 @@ from datetime import date
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
-from langchain.chains import LLMChain
 from langchain.chains.base import Chain
-from langchain.llms import BaseLLM
-from langchain.llms.huggingface_text_gen_inference import HuggingFaceTextGenInference
-from langchain.memory import RedisChatMessageHistory
-from langchain.schema import BaseMemory
+from langchain_core.chat_history import BaseChatMessageHistory
 from loguru import logger
 
 from chatbot.callbacks import (
     StreamingLLMCallbackHandler,
     UpdateConversationCallbackHandler,
 )
-from chatbot.config import settings
 from chatbot.context import session_id
-from chatbot.history import ContextAwareMessageHistory
-from chatbot.memory import FlexConversationBufferWindowMemory
+from chatbot.dependencies import UserIdHeader, get_conv_chain, get_message_history
 from chatbot.models import Conversation as ORMConversation
 from chatbot.prompts import INSTRUCTION
-from chatbot.prompts.chatml import (
-    ai_prefix,
-    ai_suffix,
-    human_prefix,
-    human_suffix,
-    prompt,
-)
 from chatbot.schemas import (
     ChatMessage,
     Conversation,
     ConversationDetail,
     UpdateConversation,
 )
-from chatbot.utils import UserIdHeader
 
 router = APIRouter(
     prefix="/api",
     tags=["conversation"],
 )
-
-
-def get_message_history() -> RedisChatMessageHistory:
-    return ContextAwareMessageHistory(
-        url=str(settings.redis_om_url),
-        key_prefix="chatbot:messages:",
-        session_id="sid",  # a fake session id as it is required
-    )
-
-
-def get_memory(
-    history: Annotated[RedisChatMessageHistory, Depends(get_message_history)]
-) -> BaseMemory:
-    return FlexConversationBufferWindowMemory(
-        human_prefix=human_prefix,
-        ai_prefix=ai_prefix,
-        prefix_delimiter="\n",
-        human_suffix=human_suffix,
-        ai_suffix=ai_suffix,
-        memory_key="history",
-        input_key="input",
-        chat_memory=history,
-    )
-
-
-def get_llm() -> BaseLLM:
-    return HuggingFaceTextGenInference(
-        inference_server_url=str(settings.inference_server_url),
-        max_new_tokens=1024,
-        stop_sequences=[ai_suffix, human_prefix],
-        streaming=True,
-    )
-
-
-def get_conv_chain(
-    llm: Annotated[BaseLLM, Depends(get_llm)],
-    memory: Annotated[BaseMemory, Depends(get_memory)],
-) -> Chain:
-    return LLMChain(
-        llm=llm,
-        prompt=prompt,
-        verbose=False,
-        memory=memory,
-    )
 
 
 @router.get("/conversations")
@@ -97,7 +39,7 @@ async def get_conversations(
 @router.get("/conversations/{conversation_id}")
 async def get_conversation(
     conversation_id: str,
-    history: Annotated[RedisChatMessageHistory, Depends(get_message_history)],
+    history: Annotated[BaseChatMessageHistory, Depends(get_message_history)],
     userid: Annotated[str | None, UserIdHeader()] = None,
 ) -> ConversationDetail:
     conv = await ORMConversation.get(conversation_id)
@@ -146,7 +88,7 @@ async def delete_conversation(
 @router.websocket("/chat")
 async def generate(
     websocket: WebSocket,
-    conv_chain: Annotated[LLMChain, Depends(get_conv_chain)],
+    conv_chain: Annotated[Chain, Depends(get_conv_chain)],
     userid: Annotated[str | None, UserIdHeader()] = None,
 ):
     await websocket.accept()
