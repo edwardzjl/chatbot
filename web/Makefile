@@ -3,10 +3,10 @@
 all: help
 
 lint:
-	npx eslint . --ext .js,.jsx,.ts,.tsx
+	yarn lint
 
 format:
-	npx eslint . --ext .js,.jsx,.ts,.tsx --fix
+	yarn format
 
 test:
 	yarn test
