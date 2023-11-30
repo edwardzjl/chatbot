@@ -15,11 +15,11 @@ root.render(
   <React.StrictMode>
     <SnackbarProvider>
       <UserProvider>
-        <WebsocketProvider>
-          <ConversationProvider>
+        <ConversationProvider>
+          <WebsocketProvider>
             <App />
-          </ConversationProvider>
-        </WebsocketProvider>
+          </WebsocketProvider>
+        </ConversationProvider>
       </UserProvider>
     </SnackbarProvider>
   </React.StrictMode>
