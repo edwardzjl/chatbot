@@ -8,15 +8,18 @@ import reportWebVitals from './reportWebVitals';
 import { ConversationProvider } from "contexts/conversation";
 import { SnackbarProvider } from "./contexts/snackbar";
 import { UserProvider } from "contexts/user";
+import { WebsocketProvider } from "contexts/websocket";
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <SnackbarProvider>
       <UserProvider>
-        <ConversationProvider>
-          <App />
-        </ConversationProvider>
+        <WebsocketProvider>
+          <ConversationProvider>
+            <App />
+          </ConversationProvider>
+        </WebsocketProvider>
       </UserProvider>
     </SnackbarProvider>
   </React.StrictMode>
