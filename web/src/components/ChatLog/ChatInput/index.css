@@ -39,3 +39,7 @@
     cursor: pointer;
     color: #fff;
 }
+
+.input-submit-button:disabled {
+    background-color: #808080;
+}
