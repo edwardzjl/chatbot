@@ -4,7 +4,8 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from langchain.chains import LLMChain
 from langchain.chains.base import Chain
-from langchain.llms import BaseLLM, HuggingFaceTextGenInference
+from langchain.llms import BaseLLM
+from langchain.llms.huggingface_text_gen_inference import HuggingFaceTextGenInference
 from langchain.memory import RedisChatMessageHistory
 from langchain.schema import BaseMemory
 from loguru import logger
@@ -18,6 +19,7 @@ from chatbot.context import session_id
 from chatbot.history import ContextAwareMessageHistory
 from chatbot.memory import FlexConversationBufferWindowMemory
 from chatbot.models import Conversation as ORMConversation
+from chatbot.prompts import INSTRUCTION
 from chatbot.prompts.chatml import (
     ai_prefix,
     ai_suffix,
@@ -65,6 +67,7 @@ def get_memory(
 def get_llm() -> BaseLLM:
     return HuggingFaceTextGenInference(
         inference_server_url=str(settings.inference_server_url),
+        max_new_tokens=1024,
         stop_sequences=[ai_suffix, human_prefix],
         streaming=True,
     )
@@ -151,9 +154,7 @@ async def generate(
     while True:
         try:
             payload: str = await websocket.receive_text()
-            system_message = f"""You are Mistral-OpenOrca, a large language model trained by Open-Orca. Answer as concisely as possible.
-Knowledge cutoff: 2023-10-01
-Current date: {date.today()}"""
+            system_message = INSTRUCTION.format(date=date.today())
             message = ChatMessage.model_validate_json(payload)
             session_id.set(f"{userid}:{message.conversation}")
             streaming_callback = StreamingLLMCallbackHandler(
