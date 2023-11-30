@@ -1,6 +1,7 @@
 {
   "name": "chatbot",
-  "version": "0.1.0",
+  "version": "0.3.5",
+  "type": "module",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.11.1",
@@ -24,13 +25,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+    "eject": "react-scripts eject",
+    "lint": "eslint .",
+    "format": "eslint . --fix"
   },
   "browserslist": {
     "production": [
@@ -46,6 +43,9 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "eslint": "^8.54.0",
+    "eslint-plugin-jsdoc": "^46.9.0",
+    "eslint-plugin-react": "^7.33.2",
     "http-proxy-middleware": "^2.0.6"
   }
 }
