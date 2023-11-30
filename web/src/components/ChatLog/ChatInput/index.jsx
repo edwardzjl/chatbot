@@ -5,15 +5,16 @@ import FormControl from '@mui/material/FormControl';
 import FormHelperText from '@mui/material/FormHelperText';
 import Input from '@mui/material/Input';
 
-import { UserContext, ConversationContext } from "contexts";
+import { ConversationContext } from "contexts/conversation";
+import { UserContext } from "contexts/user";
 
 /**
  * @param {string} chatId
  * @param {*} onSend
  */
 const ChatInput = ({ chatId, onSend }) => {
-  const username = useContext(UserContext);
-  const { conversations, dispatch } = useContext(ConversationContext);
+  const [username,] = useContext(UserContext);
+  const [conversations, dispatch] = useContext(ConversationContext);
 
   const [input, setInput] = useState("");
   const inputRef = useRef(null);

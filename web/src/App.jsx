@@ -1,5 +1,5 @@
 import "./App.css";
-import { useState, useEffect, useReducer, useRef, forwardRef } from "react";
+import { forwardRef, useContext, useEffect, useRef, useState } from "react";
 
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
@@ -14,11 +14,10 @@ import {
   getConversations,
   getConversation,
 } from "requests";
-import { UserContext, ConversationContext, SnackbarContext } from "contexts";
-import {
-  conversationsReducer,
-  getCurrentConversation,
-} from "conversationsReducer";
+import { ConversationContext } from "contexts/conversation";
+import { SnackbarContext } from "contexts/snackbar";
+import { UserContext } from "contexts/user";
+import { getCurrentConversation } from "conversationsReducer";
 
 const Alert = forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -26,8 +25,7 @@ const Alert = forwardRef(function Alert(props, ref) {
 
 
 function App() {
-  const [username, setUsername] = useState("");
-
+  const [username, setUsername] = useContext(UserContext);
   const ws = useRef(null);
   useEffect(() => {
     const conn = () => {
@@ -82,19 +80,17 @@ function App() {
       };
       ws.current.onclose = () => {
         console.log("connection closed, reconnecting...");
+        setTimeout(() => {
+          conn();
+        }, 1000);
+      };
+      ws.current.onerror = (err) => {
+        console.error("connection error", err);
         setSnackbar({
           open: true,
           severity: "error",
-          message: "connection closed, reconnecting...",
+          message: "connection error",
         });
-        setTimeout(() => {
-          conn();
-        }, 10000);
-      };
-      ws.current.onerror = (err) => {
-        console.error(
-          `Socket encountered error: ${err.message}, Closing socket`
-        );
         ws.current.close();
       };
     };
@@ -115,14 +111,7 @@ function App() {
     );
   };
 
-  /**
-   * All conversations of the current user.
-   */
-  const [conversations, dispatch] = useReducer(
-    conversationsReducer,
-    /** @type {[{id: string, title: string?, messages: Array, active: boolean}]} */
-    []
-  );
+  const [conversations, dispatch] = useContext(ConversationContext);
 
   const [currentConv, setCurrentConv] = useState(
     /** @type {{id: string, title: string?, messages: Array}} */ {}
@@ -184,13 +173,7 @@ function App() {
     return () => { };
   }, []);
 
-  /**
-   * open, severity, message
-   */
-  const [snackbar, setSnackbar] = useState(
-    /** @type {{open: boolean, severity: string?, message: string}} */ {}
-  );
-
+  const [snackbar, setSnackbar] = useContext(SnackbarContext);
   const closeSnackbar = (event, reason) => {
     if (reason === "clickaway") {
       return;
@@ -200,21 +183,15 @@ function App() {
 
   return (
     <div className="App">
-      <SnackbarContext.Provider value={setSnackbar}>
-        <UserContext.Provider value={username}>
-          <ConversationContext.Provider value={{ conversations, dispatch }}>
-            <SideMenu />
-            <section className="chatbox">
-              <ChatLog>
-                {currentConv && currentConv.messages && currentConv.messages.map((message, index) => (
-                  <ChatMessage key={index} message={message} />
-                ))}
-              </ChatLog>
-              <ChatInput chatId={currentConv?.id} onSend={sendMessage} />
-            </section>
-          </ConversationContext.Provider>
-        </UserContext.Provider>
-      </SnackbarContext.Provider>
+      <SideMenu />
+      <section className="chatbox">
+        <ChatLog>
+          {currentConv && currentConv.messages && currentConv.messages.map((message, index) => (
+            <ChatMessage key={index} message={message} />
+          ))}
+        </ChatLog>
+        <ChatInput chatId={currentConv?.id} onSend={sendMessage} />
+      </section>
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}
