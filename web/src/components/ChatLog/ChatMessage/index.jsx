@@ -4,7 +4,7 @@ import { useState } from "react";
 import Markdown from "react-markdown";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import remarkGfm from "remark-gfm";
-import { darcula } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { darcula } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
 import Avatar from "@mui/material/Avatar";
 import Tooltip from "@mui/material/Tooltip";
