@@ -42,27 +42,6 @@ export const WebsocketProvider = ({ children }) => {
                 try {
                     const { type, conversation, from, content } = JSON.parse(event.data);
                     switch (type) {
-                        case "start":
-                            dispatch({
-                                type: "messageAdded",
-                                id: conversation,
-                                message: { from: from, content: content || "", type: "stream" },
-                            });
-                            break;
-                        case "stream":
-                            dispatch({
-                                type: "messageAppended",
-                                id: conversation,
-                                message: { from: from, content: content, type: "stream" },
-                            });
-                            break;
-                        case "error":
-                            setSnackbar({
-                                open: true,
-                                severity: "error",
-                                message: "Something goes wrong, please try again later.",
-                            });
-                            break;
                         case "text":
                             dispatch({
                                 type: "messageAdded",
@@ -70,7 +49,28 @@ export const WebsocketProvider = ({ children }) => {
                                 message: { from: from, content: content, type: "text" },
                             });
                             break;
-                        case "end":
+                        case "stream/start":
+                            dispatch({
+                                type: "messageAdded",
+                                id: conversation,
+                                message: { from: from, content: content || "", type: "text" },
+                            });
+                            break;
+                        case "stream/text":
+                            dispatch({
+                                type: "messageAppended",
+                                id: conversation,
+                                message: { from: from, content: content, type: "text" },
+                            });
+                            break;
+                        case "stream/end":
+                            break;
+                        case "error":
+                            setSnackbar({
+                                open: true,
+                                severity: "error",
+                                message: "Something goes wrong, please try again later.",
+                            });
                             break;
                         default:
                             console.warn("unknown message type", type);

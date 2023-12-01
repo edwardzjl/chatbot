@@ -31,7 +31,7 @@ class StreamingLLMCallbackHandler(AsyncCallbackHandler):
             conversation=self.conversation_id,
             from_="ai",
             content=None,
-            type="start",
+            type="stream/start",
         )
         await self.websocket.send_text(message.model_dump_json())
 
@@ -49,7 +49,7 @@ class StreamingLLMCallbackHandler(AsyncCallbackHandler):
             conversation=self.conversation_id,
             from_="ai",
             content=token,
-            type="stream",
+            type="stream/text",
         )
         await self.websocket.send_text(message.model_dump_json())
 
@@ -67,7 +67,7 @@ class StreamingLLMCallbackHandler(AsyncCallbackHandler):
             conversation=self.conversation_id,
             from_="ai",
             content=None,
-            type="end",
+            type="stream/end",
         )
         await self.websocket.send_text(message.model_dump_json())
 
