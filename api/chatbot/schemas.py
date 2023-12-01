@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 from uuid import UUID, uuid4
 
 from langchain.schema import BaseMessage
@@ -18,18 +18,12 @@ class ChatMessage(BaseModel):
     from_: Optional[str] = Field(None, alias="from")
     """A transient field to determine conversation id."""
     content: Optional[str] = None
-    type: str
+    type: Literal[
+        "text", "stream/start", "stream/text", "stream/end", "info", "error"
+    ] = "text"
     # sent_at is not an important information for the user, as far as I can tell.
     # But it introduces some complexity in the code, so I'm removing it for now.
     # sent_at: datetime = Field(default_factory=datetime.now)
-
-    @field_validator("type")
-    @classmethod
-    def validate_message_type(cls, v):
-        valid_types = {"start", "stream", "text", "end", "error", "info"}
-        if v not in valid_types:
-            raise ValueError(f"invalid type {v}, must be one of {valid_types}")
-        return v
 
     @staticmethod
     def from_lc(
