@@ -10,24 +10,32 @@ import { UserContext } from "contexts/user";
 import { WebsocketContext } from "contexts/websocket";
 
 /**
- * @param {string} chatId
+ *
  */
-const ChatInput = ({ chatId }) => {
+const ChatInput = () => {
   const [username,] = useContext(UserContext);
   const [conversations, dispatch] = useContext(ConversationContext);
   const [ready, send] = useContext(WebsocketContext);
 
+  const [currentConvId, setCurrentConvId] = useState("");
   const [input, setInput] = useState("");
   const inputRef = useRef(null);
 
+  useEffect(() => {
+    if (conversations?.length > 0) {
+      const currentConv = conversations.find((c) => c.active);
+      setCurrentConvId(currentConv.id);
+    }
+  }, [conversations]);
+
   /**
-   * Focus on input when chatId changes.
+   * Focus on input when currentConvId changes.
    */
   useEffect(() => {
-    if (chatId) {
+    if (currentConvId) {
       inputRef.current.focus();
     }
-  }, [chatId]);
+  }, [currentConvId]);
 
   const handleSubmit = async (e) => {
     if (!ready) {
@@ -39,24 +47,22 @@ const ChatInput = ({ chatId }) => {
     // append user input to chatlog
     dispatch({
       type: "messageAdded",
-      id: chatId,
+      id: currentConvId,
       message: { from: username, content: payload, type: "text" },
     });
     // if current chat is not the first in the list, move it to the first when send message.
-    if (conversations[0].id !== chatId) {
+    if (conversations[0].id !== currentConvId) {
       dispatch({
         type: "moveToFirst",
-        id: chatId,
+        id: currentConvId,
       });
     }
-    send(
-      JSON.stringify({
-        conversation: chatId,
-        from: username,
-        content: payload,
-        type: "text",
-      })
-    );
+    send(JSON.stringify({
+      conversation: currentConvId,
+      from: username,
+      content: payload,
+      type: "text",
+    }));
   };
 
   const handleKeyDown = async (e) => {

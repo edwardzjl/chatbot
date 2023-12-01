@@ -7,7 +7,7 @@ import MuiAlert from "@mui/material/Alert";
 import SideMenu from "components/SideMenu";
 import ChatLog from "components/ChatLog";
 import ChatMessage from "components/ChatLog/ChatMessage";
-import ChatInput from "components/ChatLog/ChatInput";
+import ChatInput from "components/ChatInput";
 
 import { ConversationContext } from "contexts/conversation";
 import { SnackbarContext } from "contexts/snackbar";
@@ -48,7 +48,7 @@ const App = () => {
             <ChatMessage key={index} message={message} />
           ))}
         </ChatLog>
-        <ChatInput chatId={currentConv?.id} />
+        <ChatInput />
       </section>
       <Snackbar
         open={snackbar.open}
