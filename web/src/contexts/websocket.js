@@ -10,7 +10,7 @@ import { SnackbarContext } from "contexts/snackbar";
 export const WebsocketContext = createContext(false, () => { });
 
 export const WebsocketProvider = ({ children }) => {
-    const [, dispatch] = useContext(ConversationContext);
+    const [, , dispatch] = useContext(ConversationContext);
     const [, setSnackbar] = useContext(SnackbarContext);
     const [isReady, setIsReady] = useState(false);
     const ws = useRef(null);
