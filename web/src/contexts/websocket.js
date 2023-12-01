@@ -19,24 +19,24 @@ export const WebsocketProvider = ({ children }) => {
         const conn = () => {
             const wsurl = window.location.origin.replace(/^http/, "ws") + "/api/chat";
             console.debug("connecting to", wsurl);
-            const socket = new WebSocket(wsurl);
+            ws.current = new WebSocket(wsurl);
 
-            socket.onopen = () => {
+            ws.current.onopen = () => {
                 console.debug("connected to", wsurl);
                 setIsReady(true);
-            }
-            socket.onclose = () => {
+            };
+            ws.current.onclose = () => {
                 console.debug("connection closed");
                 setIsReady(false);
                 setTimeout(() => {
                     conn();
                 }, 1000);
-            }
-            socket.onerror = (err) => {
-                console.error("connection error", err);
-                socket.close();
             };
-            socket.onmessage = (event) => {
+            ws.current.onerror = (err) => {
+                console.error("connection error", err);
+                ws.current.close();
+            };
+            ws.current.onmessage = (event) => {
                 // <https://react.dev/learn/queueing-a-series-of-state-updates>
                 // <https://react.dev/learn/updating-arrays-in-state>
                 try {
@@ -78,10 +78,9 @@ export const WebsocketProvider = ({ children }) => {
                 } catch (error) {
                     console.debug("not a json message", event.data);
                 }
-            }
-            return socket;
+            };
         }
-        ws.current = conn();
+        conn();
 
         return () => {
             ws.current.close();
