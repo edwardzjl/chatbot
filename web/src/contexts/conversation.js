@@ -1,4 +1,4 @@
-import { createContext, useEffect, useReducer } from "react";
+import { createContext, useEffect, useReducer, useState } from "react";
 
 import {
     createConversation,
@@ -8,9 +8,9 @@ import {
 
 
 /**
- * conversations, dispatch
+ * conversations, currentConversation, dispatch
  */
-export const ConversationContext = createContext([], () => { });
+export const ConversationContext = createContext([], undefined, () => { });
 
 export const ConversationProvider = ({ children }) => {
     const [conversations, dispatch] = useReducer(
@@ -18,6 +18,7 @@ export const ConversationProvider = ({ children }) => {
         /** @type {[{id: string, title: string?, messages: Array, active: boolean}]} */
         []
     );
+    const [currentConv, setCurrentConv] = useState(undefined);
 
     useEffect(() => {
         const initialization = async () => {
@@ -40,8 +41,19 @@ export const ConversationProvider = ({ children }) => {
         return () => { };
     }, []);
 
+    useEffect(() => {
+        if (conversations?.length > 0) {
+            const currentConv = conversations.find((c) => c.active);
+            if (!currentConv) {
+                console.error("no active conversation");
+                return;
+            }
+            setCurrentConv(currentConv);
+        }
+    }, [conversations]);
+
     return (
-        <ConversationContext.Provider value={[conversations, dispatch]}>
+        <ConversationContext.Provider value={[conversations, currentConv, dispatch]}>
             {children}
         </ConversationContext.Provider>
     );

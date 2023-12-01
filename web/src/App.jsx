@@ -1,5 +1,5 @@
 import "./App.css";
-import { forwardRef, useContext, useEffect, useState } from "react";
+import { forwardRef, useContext } from "react";
 
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
@@ -19,18 +19,8 @@ const Alert = forwardRef(function Alert(props, ref) {
 
 
 const App = () => {
-  const [conversations,] = useContext(ConversationContext);
+  const [, currentConv,] = useContext(ConversationContext);
   const [snackbar, setSnackbar] = useContext(SnackbarContext);
-
-  const [currentConv, setCurrentConv] = useState(
-    /** @type {{id: string, title: string?, messages: Array}} */ {}
-  );
-  useEffect(() => {
-    if (conversations?.length > 0) {
-      const currentConv = conversations.find((c) => c.active);
-      setCurrentConv(currentConv);
-    }
-  }, [conversations]);
 
   const closeSnackbar = (event, reason) => {
     if (reason === "clickaway") {
