@@ -670,28 +670,28 @@
         },
         "langchain": {
             "hashes": [
-                "sha256:06341ee0b034847cbcea4b40a0a26b270abb6fd1237437735187c44d30a7a24d",
-                "sha256:83c37898226666e0176d093f57fa49e176486608ef4c617a65aadf0b038ba0ec"
+                "sha256:2d366513a46e4620d8fe6fc956b9185c2a252e60e2fc0476113482455aaaa9f0",
+                "sha256:461a126ec182834c714589ceec47354401d80b903262efab8d669fe941a0a4df"
             ],
             "index": "pypi",
-            "markers": "python_full_version >= '3.8.1' and python_version < '4.0'",
-            "version": "==0.0.342"
+            "markers": "python_version < '4.0' and python_full_version >= '3.8.1'",
+            "version": "==0.0.345"
         },
         "langchain-core": {
             "hashes": [
-                "sha256:2310df8b783194ec2dfe01c2864bd8b3ccb4adecb02b17cf1d63cc773c252b4a",
-                "sha256:368ae70a1da56971642df0a9ede5f480d762224238ba84d0f9b2cd7c776150de"
+                "sha256:ce5dcf05804cdc4edf0b06d6691cb3dd4ed0014ed9cc08d02bd2b1691344c137",
+                "sha256:d3ba6e30ed57ba2a3cbe227daad81fc4edf29cd3d3e24b418782ba69b07cb07d"
             ],
-            "markers": "python_full_version >= '3.8.1' and python_version < '4.0'",
-            "version": "==0.0.7"
+            "markers": "python_version < '4.0' and python_full_version >= '3.8.1'",
+            "version": "==0.0.9"
         },
         "langsmith": {
             "hashes": [
-                "sha256:66a257b97dabd43a7e62af271b2ddb7566167ce4e446fd7b7760e97d6ce84a5e",
-                "sha256:cef00bac2e7455a5943f3afaea91c032db1a1f2adb83003159a71e884fb5a9a2"
+                "sha256:49a2546bb83eedb0552673cf81a068bb08078d6d48471f4f1018e1d5c6aa46b1",
+                "sha256:8fb5297f274db0576ec650d9bab0319acfbb6622d62bc5bb9fe31c6235dc0358"
             ],
-            "markers": "python_full_version >= '3.8.1' and python_version < '4.0'",
-            "version": "==0.0.67"
+            "markers": "python_version < '4.0' and python_full_version >= '3.8.1'",
+            "version": "==0.0.69"
         },
         "loguru": {
             "hashes": [
