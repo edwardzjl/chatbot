@@ -10,12 +10,15 @@ export const ThemeContext = createContext({
 
 const getTheme = () => {
     const theme = localStorage.getItem("theme");
-    if (!theme) {
-        localStorage.setItem("theme", "dark");
-        return "dark";
-    } else {
+    if (theme) {
         return theme;
     }
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        localStorage.setItem("theme", "dark");
+        return "dark";
+    }
+    localStorage.setItem("theme", "light");    
+    return "light";
 };
 
 export const ThemeProvider = ({ children }) => {
