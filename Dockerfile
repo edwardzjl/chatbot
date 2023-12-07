@@ -3,8 +3,7 @@ FROM node:lts-alpine as frontend-builder
 ARG PUBLIC_URL=
 
 WORKDIR /build
-COPY web/package.json ./
-COPY web/yarn.lock ./
+COPY web/package.json web/yarn.lock ./
 RUN yarn
 COPY web/ ./
 RUN yarn build
