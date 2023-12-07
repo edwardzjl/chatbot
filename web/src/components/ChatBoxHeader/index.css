@@ -1,0 +1,6 @@
+.chatbox-header {
+    min-height: 60px;
+    position: sticky;
+    display: flex;
+    flex-direction: row;
+}
