@@ -11,7 +11,11 @@
     flex-direction: row;
 }
 
-.input-form-control {
+.input-box {
+    display: inline-flex;
+    flex-direction: column;
+    position: relative;
+    vertical-align: top;
     background-color: #40414f;
     width: 100%;
     border-top-left-radius: 5px;
@@ -26,6 +30,8 @@
 }
 
 .input-helper {
+    font-size: 0.75em;
+    text-align: start;
     padding-left: 12px;
     color: white;
 }

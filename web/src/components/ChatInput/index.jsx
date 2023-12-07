@@ -1,8 +1,6 @@
 import "./index.css";
 
 import { useContext, useState, useRef, useEffect } from "react";
-import FormControl from '@mui/material/FormControl';
-import FormHelperText from '@mui/material/FormHelperText';
 import Input from '@mui/material/Input';
 
 import { ConversationContext } from "contexts/conversation";
@@ -71,7 +69,7 @@ const ChatInput = () => {
 
   return (
     <form onSubmit={handleSubmit} className="input-form">
-      <FormControl variant="standard" className="input-form-control">
+      <div className="input-box">
         <Input
           id="chat-input"
           // TODO: className not working
@@ -90,18 +88,10 @@ const ChatInput = () => {
           onKeyDown={handleKeyDown}
           aria-describedby="input-helper-text"
         />
-        <FormHelperText
-          id="input-helper-text"
-          // TODO: className not working
-          // className="input-helper"
-          sx={{
-            color: "white",
-            paddingLeft: "12px",
-          }}
-        >
+        <div className="input-helper">
           Enter to send message, Shift + Enter to add a new line
-        </FormHelperText>
-      </FormControl>
+        </div>
+      </div>
       <button disabled={!ready} className="input-submit-button" type="submit">
         Send
       </button>
