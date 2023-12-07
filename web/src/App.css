@@ -1,14 +1,34 @@
+.theme-light {
+  --color-primary: #ffffff;
+  --color-secondary: #868686;
+  --bg-primary: white;
+  --bg-secondary: rgb(212, 212, 212);
+  --text-primary: black;
+  --text-secondary: rgb(70, 70, 70);
+}
+
+.theme-dark {
+  --color-primary: #343541;
+  --color-secondary: #444654;
+  --bg-primary: #282c34;
+  --bg-secondary: rgb(34, 34, 34);
+  --text-primary: white;
+  --text-secondary: rgb(160, 160, 160);
+}
+
+
 .App {
   text-align: center;
   display: flex;
-  background-color: #282c34;
-  color: white;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   position: absolute;
   top: 0;
   bottom: 0;
   left: 0;
   right: 0;
 }
+
 
 .chatbox {
   display: flex;
