@@ -11,6 +11,7 @@ import ChatInput from "components/ChatInput";
 
 import { ConversationContext } from "contexts/conversation";
 import { SnackbarContext } from "contexts/snackbar";
+import { ThemeContext } from "contexts/theme";
 
 
 const Alert = forwardRef(function Alert(props, ref) {
@@ -19,6 +20,7 @@ const Alert = forwardRef(function Alert(props, ref) {
 
 
 const App = () => {
+  const [theme, , ] = useContext(ThemeContext);
   const [, currentConv,] = useContext(ConversationContext);
   const [snackbar, setSnackbar] = useContext(SnackbarContext);
 
@@ -30,7 +32,7 @@ const App = () => {
   };
 
   return (
-    <div className="App">
+    <div className={`App theme-${theme}`}>
       <SideMenu />
       <section className="chatbox">
         <ChatLog>
