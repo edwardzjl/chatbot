@@ -1,7 +1,6 @@
 import "./index.css";
 
 import { useState, useEffect, useRef, useContext } from "react";
-import FormControl from '@mui/material/FormControl';
 import Input from '@mui/material/Input';
 import Tooltip from "@mui/material/Tooltip";
 import { ClickAwayListener } from "@mui/base/ClickAwayListener";
@@ -170,30 +169,25 @@ const ChatTab = ({ chat }) => {
       onClick={(e) => selectChat(e, chat)}
     >
       <Tooltip title={title}>
-        <FormControl
+        <Input
           id="chat-title"
-          variant="standard"
-        >
-          <Input
-            id="chat-title"
-            // TODO: className not working, there's a MuiFormControl-root that will override className
-            className="chat-title"
-            disableUnderline
-            inputProps={{
-              style: {
-                width: 160,
-                height: 10,
-                color: "white",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              },
-            }}
-            readOnly={titleReadOnly}
-            inputRef={titleRef}
-            value={title}
-            onChange={(e) => handleTitleChange(e)}
-          />
-        </FormControl>
+          // TODO: className not working
+          // className="chat-title"
+          disableUnderline
+          inputProps={{
+            style: {
+              width: 160,
+              height: 10,
+              color: "white",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            },
+          }}
+          readOnly={titleReadOnly}
+          inputRef={titleRef}
+          value={title}
+          onChange={(e) => handleTitleChange(e)}
+        />
       </Tooltip>
 
       <div className="sidemenu-button-operations">

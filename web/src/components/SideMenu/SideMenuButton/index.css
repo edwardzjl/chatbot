@@ -1,3 +1,7 @@
 .chat-title {
-  max-width: 140;
+  width: 160;
+  height: 10;
+  color: white;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
