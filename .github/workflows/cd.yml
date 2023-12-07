@@ -24,8 +24,14 @@ jobs:
         uses: docker/metadata-action@v5.2.0
         with:
           images: edwardlol/chatbot
+          # semver has default priority 900, sha has default priority 100
+          # ref has default priority 600
+          # see <https://github.com/docker/metadata-action#priority-attribute>
+          # also, sha has a default prefix of '-sha'
+          # see <https://github.com/docker/metadata-action#typesha>
           tags: |
             type=semver,pattern={{version}}
+            type=sha,priority=850,prefix=
       - name: Build and push Docker image
         uses: docker/build-push-action@v5.1.0
         with:
