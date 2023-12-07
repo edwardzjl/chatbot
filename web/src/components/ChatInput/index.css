@@ -2,10 +2,10 @@
     margin-top: auto;
     margin-left: auto;
     margin-right: auto;
-    padding: 12px;
     bottom: 0;
     left: 0;
     right: 0;
+    padding: 12px;
     width: 90%;
     display: flex;
     flex-direction: row;
