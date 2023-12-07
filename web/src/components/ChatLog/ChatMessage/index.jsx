@@ -9,6 +9,8 @@ import { darcula } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import Avatar from "@mui/material/Avatar";
 import Tooltip from "@mui/material/Tooltip";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import ThumbUpOutlined from "@mui/icons-material/ThumbUpOutlined";
+import ThumbDownOutlined from "@mui/icons-material/ThumbDownOutlined";
 
 import { getFirstLetters, stringToColor } from "commons";
 
@@ -21,10 +23,27 @@ import { getFirstLetters, stringToColor } from "commons";
  */
 const ChatMessage = ({ message }) => {
   const [copyTooltipTitle, setCopyTooltipTitle] = useState("copy content");
+  const [thumbUpTooltipTitle, setThumbUpTooltipTitle] = useState("good answer");
+  const [thumbDownTooltipTitle, setThumbDownTooltipTitle] = useState("bad answer");
 
   const onCopyClick = () => {
     navigator.clipboard.writeText(message.content);
     setCopyTooltipTitle("copied!");
+    setTimeout(() => {
+      setCopyTooltipTitle("copy content");
+    }, "3000");
+  };
+  const onThumbUpClick = () => {
+    setThumbUpTooltipTitle("thanks!");
+    setTimeout(() => {
+      setThumbUpTooltipTitle("good answer");
+    }, "3000");
+  };
+  const onThumbDownClick = () => {
+    setThumbDownTooltipTitle("thanks!");
+    setTimeout(() => {
+      setThumbUpTooltipTitle("bad answer");
+    }, "3000");
   };
 
   /**
@@ -38,10 +57,7 @@ const ChatMessage = ({ message }) => {
 
   return (
     <div className={`chat-message ${botMessage(message) && "AI"}`}>
-      <div
-        className="chat-message-center"
-        onMouseEnter={() => setCopyTooltipTitle("copy content")}
-      >
+      <div className="chat-message-center">
         <Avatar
           className="chat-message-avatar"
           // Cannot handle string to color in css
@@ -49,9 +65,7 @@ const ChatMessage = ({ message }) => {
             bgcolor: stringToColor(message.from),
           }}
         >
-          {botMessage(message)
-            ? "AI"
-            : getFirstLetters(message.from)}
+          {botMessage(message) ? "AI" : getFirstLetters(message.from)}
         </Avatar>
         <Markdown
           className="chat-message-content"
@@ -80,12 +94,17 @@ const ChatMessage = ({ message }) => {
           {message.content}
         </Markdown>
         {botMessage(message) && (
-          <Tooltip title={copyTooltipTitle}>
-            <ContentCopyIcon
-              className="chat-message-content-copy"
-              onClick={onCopyClick}
-            />
-          </Tooltip>
+          <div className="chat-message-feedbacks">
+            <Tooltip title={copyTooltipTitle}>
+              <ContentCopyIcon className="chat-message-feedback" onClick={onCopyClick} />
+            </Tooltip>
+            <Tooltip title={thumbUpTooltipTitle}>
+              <ThumbUpOutlined className="chat-message-feedback" onClick={onThumbUpClick} />
+            </Tooltip>
+            <Tooltip title={thumbDownTooltipTitle}>
+              <ThumbDownOutlined className="chat-message-feedback" onClick={onThumbDownClick} />
+            </Tooltip>
+          </div>
         )}
       </div>
     </div>

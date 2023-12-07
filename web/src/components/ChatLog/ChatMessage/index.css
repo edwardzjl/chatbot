@@ -3,7 +3,7 @@
 }
 
 .chat-message-center {
-    max-width: 800px;
+    max-width: 1000px;
     margin-left: auto;
     margin-right: auto;
     display: flex;
@@ -25,19 +25,21 @@
     overflow-wrap: break-word;
 }
 
-.chat-message-content-copy {
+.chat-message-feedbacks {
     margin-left: auto;
 }
 
-.chat-message-content-copy:hover {
+.chat-message-feedback:hover {
     opacity: 0.9;
     transition: opacity 1s;
 }
 
-/* Only using :not(:hover) will the fadeout take effect
- * Otherwise the button just disappear immediately
+/*
+ * Fade out only takes effect when using :not(:hover)
+ * Otherwise the button just disappears immediately
+ * TODO: I want to hide them completely and only show on mouse enter message.
  */
-.chat-message-content-copy:not(:hover) {
-    opacity: 0.1;
+.chat-message-feedback:not(:hover) {
+    opacity: 0.05;
     transition: opacity 1s;
 }
