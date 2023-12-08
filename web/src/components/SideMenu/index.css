@@ -2,7 +2,7 @@
     width: 260px;
     padding: 10px;
     border: 1px solid rgba(255, 255, 255, .2);
-    background-color: #202123;
+    background-color: var(--bg-primary);
     display: flex;
     flex-direction: column;
 }
@@ -20,11 +20,11 @@
 }
 
 .sidemenu-button:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: var(--bg-secondary);
 }
 
 .sidemenu-button.selected {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: var(--bg-secondary);
 }
 
 .sidemenu-button-operations {
@@ -34,7 +34,7 @@
 .sidemenu-userinfo-hr {
     margin-top: auto;
     width: 90%;
-    border: 1px solid rgba(255, 255, 255, .2);
+    border: 1px solid var(--border-color);
 }
 
 .sidemenu-userinfo {
@@ -48,7 +48,7 @@
 }
 
 .sidemenu-userinfo:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: var(--bg-secondary);
 }
 
 .sidemenu-userinfo-username {

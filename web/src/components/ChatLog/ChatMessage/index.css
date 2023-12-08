@@ -1,5 +1,5 @@
 .chat-message.AI {
-    background-color: #444654;
+    background-color: var(--bg-primary);
 }
 
 .chat-message-center {
