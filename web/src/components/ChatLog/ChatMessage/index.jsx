@@ -1,10 +1,10 @@
 import "./index.css";
 
-import { useState } from "react";
+import { useContext, useState } from "react";
 import Markdown from "react-markdown";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import remarkGfm from "remark-gfm";
-import { darcula } from "react-syntax-highlighter/dist/esm/styles/hljs";
+import { darcula, googlecode } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
 import Avatar from "@mui/material/Avatar";
 import Tooltip from "@mui/material/Tooltip";
@@ -12,6 +12,7 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import ThumbUpOutlined from "@mui/icons-material/ThumbUpOutlined";
 import ThumbDownOutlined from "@mui/icons-material/ThumbDownOutlined";
 
+import { ThemeContext } from "contexts/theme";
 import { getFirstLetters, stringToColor } from "commons";
 
 /**
@@ -22,6 +23,7 @@ import { getFirstLetters, stringToColor } from "commons";
  * @returns
  */
 const ChatMessage = ({ message }) => {
+  const [theme, ,] = useContext(ThemeContext);
   const [copyTooltipTitle, setCopyTooltipTitle] = useState("copy content");
   const [thumbUpTooltipTitle, setThumbUpTooltipTitle] = useState("good answer");
   const [thumbDownTooltipTitle, setThumbDownTooltipTitle] = useState("bad answer");
@@ -76,7 +78,7 @@ const ChatMessage = ({ message }) => {
               return !inline && match ? (
                 <SyntaxHighlighter
                   {...props}
-                  style={darcula}
+                  style={theme === "dark" ? darcula : googlecode}
                   language={match[1]}
                   PreTag="div"
                 >

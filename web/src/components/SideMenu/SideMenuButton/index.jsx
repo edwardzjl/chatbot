@@ -9,6 +9,8 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutline";
 import CheckOutlinedIcon from "@mui/icons-material/CheckOutlined";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
+
+import { ThemeContext } from "contexts/theme";
 import { ConversationContext, conversationsReducer } from "contexts/conversation";
 import { SnackbarContext } from "contexts/snackbar";
 import {
@@ -27,6 +29,7 @@ import {
  * @returns
  */
 const ChatTab = ({ chat }) => {
+  const [theme, ,] = useContext(ThemeContext);
   const [conversations, , dispatch] = useContext(ConversationContext);
   const [, setSnackbar] = useContext(SnackbarContext);
 
@@ -178,7 +181,7 @@ const ChatTab = ({ chat }) => {
             style: {
               width: 160,
               height: 10,
-              color: "white",
+              color: theme === "dark" ? "white" : "black",
               overflow: "hidden",
               textOverflow: "ellipsis",
             },

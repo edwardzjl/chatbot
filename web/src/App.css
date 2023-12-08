@@ -2,21 +2,19 @@
 @import "https://unpkg.com/open-props/gray-hsl.min.css";
 
 .theme-light {
-  --color-primary: #ffffff;
-  --color-secondary: #868686;
   --bg-primary: var(--gray-1);
   --bg-secondary: var(--gray-2);
   --text-primary: var(--gray-8);
   --text-secondary: var(--gray-7);
+  --border-color: var(--gray-3);
 }
 
 .theme-dark {
-  --color-primary: #343541;
-  --color-secondary: #444654;
   --bg-primary: var(--gray-8);
   --bg-secondary: var(--gray-7);
   --text-primary: var(--gray-3);
   --text-secondary: var(--gray-4);
+  --border-color: var(--gray-6);
 }
 
 
@@ -38,8 +36,8 @@
   flex-direction: column;
   flex-grow: 1;
   overflow: auto;
-  border: 1px solid rgba(255, 255, 255, .2);
-  background-color: #343541;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
   position: relative;
 }
 
