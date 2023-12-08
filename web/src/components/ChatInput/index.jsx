@@ -70,7 +70,7 @@ const ChatInput = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="input-form">
+    <form onSubmit={handleSubmit} className="input-container">
       <div className="input-box">
         <Input
           id="chat-input"
