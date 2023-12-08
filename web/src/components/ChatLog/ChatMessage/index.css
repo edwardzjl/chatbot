@@ -1,35 +1,43 @@
-.chat-message.AI {
-    background-color: var(--bg-primary);
-}
-
-.chat-message-center {
-    max-width: 1000px;
+/* 
+ * main container of chat messages
+ * align center and control max width
+ */
+.message-container {
+    max-width: 40vw;
     margin-left: auto;
     margin-right: auto;
+    padding-top: 1vw;
+}
+
+.message-container.AI {
+    /* background-color: var(--bg-primary); */
+}
+
+.message-title {
     display: flex;
-    padding: 12px;
-    padding-left: 24px;
-    padding-right: 24px;
+    flex-direction: row;
 }
 
-.chat-message-avatar {
-    width: 40;
-    height: 40;
+/* TODO: this seems not working for material avatar */
+.message-title-avatar {
+    width: 100;
+    height: 100;
 }
 
-.chat-message-content {
-    max-width: 800px;
-    padding-left: 40px;
-    padding-right: 40px;
-    word-break: break-word;
-    overflow-wrap: break-word;
+.message-title-name {
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-left: 1vw;
+    font-size: 1.2rem;
+    font-weight: bold;
 }
 
-.chat-message-feedbacks {
-    margin-left: auto;
+.message-body {
+    padding-left: 3vw;
+    padding-right: 3vw;
 }
 
-.chat-message-feedback:hover {
+.message-body:hover .message-feedback {
     opacity: 0.9;
     transition: opacity 1s;
 }
@@ -39,7 +47,30 @@
  * Otherwise the button just disappears immediately
  * TODO: I want to hide them completely and only show on mouse enter message.
  */
-.chat-message-feedback:not(:hover) {
-    opacity: 0.05;
+.message-body:not(:hover) .message-feedback {
+    opacity: 0;
     transition: opacity 1s;
+}
+
+.message-content {
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+.message-code-title {
+    padding: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    background-color: var(--bg-primary);
+}
+
+.message-feedbacks {
+    margin-left: auto;
+}
+
+.message-feedback {
+    margin: 0.1vw;
 }

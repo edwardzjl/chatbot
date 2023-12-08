@@ -28,8 +28,8 @@ const ChatMessage = ({ message }) => {
   const [thumbUpTooltipTitle, setThumbUpTooltipTitle] = useState("good answer");
   const [thumbDownTooltipTitle, setThumbDownTooltipTitle] = useState("bad answer");
 
-  const onCopyClick = () => {
-    navigator.clipboard.writeText(message.content);
+  const onCopyClick = (content) => {
+    navigator.clipboard.writeText(content);
     setCopyTooltipTitle("copied!");
     setTimeout(() => {
       setCopyTooltipTitle("copy content");
@@ -58,10 +58,10 @@ const ChatMessage = ({ message }) => {
   };
 
   return (
-    <div className={`chat-message ${botMessage(message) && "AI"}`}>
-      <div className="chat-message-center">
+    <div className={`message-container ${botMessage(message) && "AI"}`}>
+      <div className="message-title">
         <Avatar
-          className="chat-message-avatar"
+          className="message-title-avatar"
           // Cannot handle string to color in css
           sx={{
             bgcolor: stringToColor(message.from),
@@ -69,22 +69,33 @@ const ChatMessage = ({ message }) => {
         >
           {botMessage(message) ? "AI" : getFirstLetters(message.from)}
         </Avatar>
+        <div className="message-title-name">{botMessage(message) ? "AI" : "You"}</div>
+      </div>
+      <div className="message-body">
         <Markdown
-          className="chat-message-content"
+          className="message-content"
           remarkPlugins={[remarkGfm]}
           components={{
             code({ inline, className, children, ...props }) {
               const match = /language-(\w+)/.exec(className || "");
               return !inline && match ? (
-                <SyntaxHighlighter
-                  {...props}
-                  style={theme === "dark" ? darcula : googlecode}
-                  language={match[1]}
-                  PreTag="div"
-                >
-                  {/* remove the last line separator, is it necessary? */}
-                  {String(children).replace(/\n$/, "")}
-                </SyntaxHighlighter>
+                <div>
+                  <div className="message-code-title">
+                    <div>{match[1]}</div>
+                    <Tooltip title={copyTooltipTitle}>
+                      <ContentCopyIcon onClick={() => onCopyClick(children)} />
+                    </Tooltip>
+                  </div>
+                  <SyntaxHighlighter
+                    {...props}
+                    style={theme === "dark" ? darcula : googlecode}
+                    language={match[1]}
+                    PreTag="div"
+                  >
+                    {/* remove the last line separator, is it necessary? */}
+                    {String(children).replace(/\n$/, "")}
+                  </SyntaxHighlighter>
+                </div>
               ) : (
                 <code {...props} className={className}>
                   {children}
@@ -96,19 +107,20 @@ const ChatMessage = ({ message }) => {
           {message.content}
         </Markdown>
         {botMessage(message) && (
-          <div className="chat-message-feedbacks">
+          <div className="message-feedbacks">
             <Tooltip title={copyTooltipTitle}>
-              <ContentCopyIcon className="chat-message-feedback" onClick={onCopyClick} />
+              <ContentCopyIcon className="message-feedback" onClick={() => onCopyClick(message.content)} />
             </Tooltip>
             <Tooltip title={thumbUpTooltipTitle}>
-              <ThumbUpOutlined className="chat-message-feedback" onClick={onThumbUpClick} />
+              <ThumbUpOutlined className="message-feedback" onClick={onThumbUpClick} />
             </Tooltip>
             <Tooltip title={thumbDownTooltipTitle}>
-              <ThumbDownOutlined className="chat-message-feedback" onClick={onThumbDownClick} />
+              <ThumbDownOutlined className="message-feedback" onClick={onThumbDownClick} />
             </Tooltip>
           </div>
         )}
       </div>
+
     </div>
   );
 };
