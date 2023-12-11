@@ -21,6 +21,7 @@ class ChatMessage(BaseModel):
     type: Literal[
         "text", "stream/start", "stream/text", "stream/end", "info", "error"
     ] = "text"
+    feedback: Literal["thumbup", "thumbdown", None] = None
     # sent_at is not an important information for the user, as far as I can tell.
     # But it introduces some complexity in the code, so I'm removing it for now.
     # sent_at: datetime = Field(default_factory=datetime.now)
@@ -37,6 +38,7 @@ class ChatMessage(BaseModel):
             from_=from_ if from_ else lc_message.type,
             content=lc_message.content,
             type="text",
+            feedback=lc_message.additional_kwargs.get("feedback", None),
         )
 
     def model_dump(

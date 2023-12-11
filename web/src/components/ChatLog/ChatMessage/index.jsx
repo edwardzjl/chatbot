@@ -8,22 +8,28 @@ import { darcula, googlecode } from "react-syntax-highlighter/dist/esm/styles/hl
 
 import Avatar from "@mui/material/Avatar";
 import Tooltip from "@mui/material/Tooltip";
+
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import ThumbUpOutlined from "@mui/icons-material/ThumbUpOutlined";
+import ThumbDownIcon from '@mui/icons-material/ThumbDown';
 import ThumbDownOutlined from "@mui/icons-material/ThumbDownOutlined";
 
 import { ThemeContext } from "contexts/theme";
+import { ConversationContext } from "contexts/conversation";
 import { getFirstLetters, stringToColor } from "commons";
 
 /**
- *
+ * @param {string} convId
+ * @param {integer} idx
  * @param {object} message
  * @param {string} message.from
  * @param {string} message.content
  * @returns
  */
-const ChatMessage = ({ message }) => {
+const ChatMessage = ({ convId, idx, message }) => {
   const [theme, ,] = useContext(ThemeContext);
+  const [, , dispatch] = useContext(ConversationContext);
   const [copyTooltipTitle, setCopyTooltipTitle] = useState("copy content");
   const [thumbUpTooltipTitle, setThumbUpTooltipTitle] = useState("good answer");
   const [thumbDownTooltipTitle, setThumbDownTooltipTitle] = useState("bad answer");
@@ -36,16 +42,30 @@ const ChatMessage = ({ message }) => {
     }, "3000");
   };
   const onThumbUpClick = () => {
-    setThumbUpTooltipTitle("thanks!");
-    setTimeout(() => {
-      setThumbUpTooltipTitle("good answer");
-    }, "3000");
+    fetch(`/api/conversations/${convId}/messages/${idx}/thumbup`, {
+      method: "PUT",
+    }).then(() => {
+      setThumbUpTooltipTitle("thanks!");
+      dispatch({
+        type: "feedback",
+        id: convId,
+        idx: idx,
+        feedback: "thumbup",
+      });
+    });
   };
   const onThumbDownClick = () => {
-    setThumbDownTooltipTitle("thanks!");
-    setTimeout(() => {
-      setThumbUpTooltipTitle("bad answer");
-    }, "3000");
+    fetch(`/api/conversations/${convId}/messages/${idx}/thumbup`, {
+      method: "PUT",
+    }).then(() => {
+      setThumbDownTooltipTitle("thanks!");
+      dispatch({
+        type: "feedback",
+        id: convId,
+        idx: idx,
+        feedback: "thumbdown",
+      });
+    });
   };
 
   /**
@@ -111,12 +131,16 @@ const ChatMessage = ({ message }) => {
             <Tooltip title={copyTooltipTitle}>
               <ContentCopyIcon className="message-feedback" onClick={() => onCopyClick(message.content)} />
             </Tooltip>
-            <Tooltip title={thumbUpTooltipTitle}>
-              <ThumbUpOutlined className="message-feedback" onClick={onThumbUpClick} />
-            </Tooltip>
-            <Tooltip title={thumbDownTooltipTitle}>
-              <ThumbDownOutlined className="message-feedback" onClick={onThumbDownClick} />
-            </Tooltip>
+            {message.feedback === "thumbdown" ? undefined : message.feedback === "thumbup" ? <ThumbUpIcon className="message-feedback" /> :
+              <Tooltip title={thumbUpTooltipTitle}>
+                <ThumbUpOutlined className="message-feedback" onClick={onThumbUpClick} />
+              </Tooltip>
+            }
+            {message.feedback === "thumbup" ? undefined : message.feedback === "thumbdown" ? <ThumbDownIcon className="message-feedback" /> :
+              <Tooltip title={thumbDownTooltipTitle}>
+                <ThumbDownOutlined className="message-feedback" onClick={onThumbDownClick} />
+              </Tooltip>
+            }
           </div>
         )}
       </div>

@@ -37,7 +37,7 @@ const App = () => {
       <section className="chatbox">
         <ChatLog>
           {currentConv && currentConv.messages && currentConv.messages.map((message, index) => (
-            <ChatMessage key={index} message={message} />
+            <ChatMessage key={index} convId={currentConv.id} idx={index} message={message} />
           ))}
         </ChatLog>
         <ChatInput />

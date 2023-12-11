@@ -113,8 +113,25 @@ export const conversationsReducer = (conversations, action) => {
                 };
             });
         }
+        case "feedback": {
+            // action: { id, idx, feedback }
+            // action.id: conversation id
+            // action.idx: message index
+            // action.feedback: feedback object, thumbup / thumbdown
+            return conversations.map((c) => {
+                if (c.id !== action.id) {
+                    return c;
+                }
+                const msg = c.messages[action.idx];
+                return {
+                    ...c,
+                    messages: [...c.messages.slice(0, action.idx), { ...msg, feedback: action.feedback }, ...c.messages.slice(action.idx + 1)]
+                };
+            });
+        }
         default: {
-            throw Error("Unknown action: " + action.type);
+            console.error("Unknown action: ", action);
+            return conversations;
         }
     }
 };
