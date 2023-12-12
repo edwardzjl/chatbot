@@ -53,7 +53,7 @@ export const ConversationProvider = ({ children }) => {
     }, [conversations]);
 
     return (
-        <ConversationContext.Provider value={[conversations, currentConv, dispatch]}>
+        <ConversationContext.Provider value={{conversations, currentConv, dispatch}}>
             {children}
         </ConversationContext.Provider>
     );

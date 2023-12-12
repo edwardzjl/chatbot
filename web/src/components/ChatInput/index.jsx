@@ -12,9 +12,9 @@ import { WebsocketContext } from "contexts/websocket";
  *
  */
 const ChatInput = () => {
-  const [theme, ,] = useContext(ThemeContext);
-  const [username,] = useContext(UserContext);
-  const [conversations, currentConv, dispatch] = useContext(ConversationContext);
+  const {theme} = useContext(ThemeContext);
+  const {username} = useContext(UserContext);
+  const {conversations, currentConv, dispatch} = useContext(ConversationContext);
   const [ready, send] = useContext(WebsocketContext);
 
   const [input, setInput] = useState("");

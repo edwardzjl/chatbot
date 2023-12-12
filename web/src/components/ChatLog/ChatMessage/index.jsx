@@ -28,8 +28,8 @@ import { getFirstLetters, stringToColor } from "commons";
  * @returns
  */
 const ChatMessage = ({ convId, idx, message }) => {
-  const [theme, ,] = useContext(ThemeContext);
-  const [, , dispatch] = useContext(ConversationContext);
+  const {theme} = useContext(ThemeContext);
+  const {dispatch} = useContext(ConversationContext);
   const [copyTooltipTitle, setCopyTooltipTitle] = useState("copy content");
   const [thumbUpTooltipTitle, setThumbUpTooltipTitle] = useState("good answer");
   const [thumbDownTooltipTitle, setThumbDownTooltipTitle] = useState("bad answer");
