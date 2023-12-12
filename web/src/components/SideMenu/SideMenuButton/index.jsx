@@ -1,7 +1,7 @@
 import "./index.css";
 
 import { useState, useEffect, useRef, useContext } from "react";
-import Input from '@mui/material/Input';
+import Input from "@mui/material/Input";
 import Tooltip from "@mui/material/Tooltip";
 import { ClickAwayListener } from "@mui/base/ClickAwayListener";
 
@@ -29,9 +29,9 @@ import {
  * @returns
  */
 const ChatTab = ({ chat }) => {
-  const {theme} = useContext(ThemeContext);
-  const {conversations, dispatch} = useContext(ConversationContext);
-  const {setSnackbar} = useContext(SnackbarContext);
+  const { theme } = useContext(ThemeContext);
+  const { conversations, dispatch } = useContext(ConversationContext);
+  const { setSnackbar } = useContext(SnackbarContext);
 
   const [title, setTitle] = useState(chat?.title);
   useEffect(() => {

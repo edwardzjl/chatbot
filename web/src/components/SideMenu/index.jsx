@@ -15,8 +15,8 @@ import ChatTab from "components/SideMenu/SideMenuButton";
  *
  */
 const SideMenu = () => {
-  const {username} = useContext(UserContext);
-  const {conversations, dispatch} = useContext(ConversationContext);
+  const { username } = useContext(UserContext);
+  const { conversations, dispatch } = useContext(ConversationContext);
 
   const createChat = () => {
     createConversation()
