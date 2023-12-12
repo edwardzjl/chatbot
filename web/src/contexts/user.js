@@ -2,7 +2,7 @@ import { createContext, useEffect, useState } from "react";
 import generateName from "names";
 
 
-export const UserContext = createContext(generateName(), () => { });
+export const UserContext = createContext(generateName());
 
 export const UserProvider = ({ children }) => {
     const [username, setUsername] = useState("");
@@ -25,7 +25,7 @@ export const UserProvider = ({ children }) => {
     }, []);
 
     return (
-        <UserContext.Provider value={[username, setUsername]}>
+        <UserContext.Provider value={{username}}>
             {children}
         </UserContext.Provider>
     );

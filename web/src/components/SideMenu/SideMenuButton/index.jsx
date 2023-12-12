@@ -29,9 +29,9 @@ import {
  * @returns
  */
 const ChatTab = ({ chat }) => {
-  const [theme, ,] = useContext(ThemeContext);
-  const [conversations, , dispatch] = useContext(ConversationContext);
-  const [, setSnackbar] = useContext(SnackbarContext);
+  const {theme} = useContext(ThemeContext);
+  const {conversations, dispatch} = useContext(ConversationContext);
+  const {setSnackbar} = useContext(SnackbarContext);
 
   const [title, setTitle] = useState(chat?.title);
   useEffect(() => {
