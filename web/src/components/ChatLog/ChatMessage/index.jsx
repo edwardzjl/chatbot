@@ -10,9 +10,9 @@ import Avatar from "@mui/material/Avatar";
 import Tooltip from "@mui/material/Tooltip";
 
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import ThumbUpIcon from '@mui/icons-material/ThumbUp';
+import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import ThumbUpOutlined from "@mui/icons-material/ThumbUpOutlined";
-import ThumbDownIcon from '@mui/icons-material/ThumbDown';
+import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import ThumbDownOutlined from "@mui/icons-material/ThumbDownOutlined";
 
 import { ThemeContext } from "contexts/theme";
@@ -28,8 +28,8 @@ import { getFirstLetters, stringToColor } from "commons";
  * @returns
  */
 const ChatMessage = ({ convId, idx, message }) => {
-  const {theme} = useContext(ThemeContext);
-  const {dispatch} = useContext(ConversationContext);
+  const { theme } = useContext(ThemeContext);
+  const { dispatch } = useContext(ConversationContext);
   const [copyTooltipTitle, setCopyTooltipTitle] = useState("copy content");
   const [thumbUpTooltipTitle, setThumbUpTooltipTitle] = useState("good answer");
   const [thumbDownTooltipTitle, setThumbDownTooltipTitle] = useState("bad answer");

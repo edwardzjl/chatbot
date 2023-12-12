@@ -13,11 +13,11 @@ const getTheme = () => {
     if (theme) {
         return theme;
     }
-    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
         localStorage.setItem("theme", "dark");
         return "dark";
     }
-    localStorage.setItem("theme", "light");    
+    localStorage.setItem("theme", "light");
     return "light";
 };
 
@@ -41,7 +41,7 @@ export const ThemeProvider = ({ children }) => {
     }, [theme]);
 
     return (
-        <ThemeContext.Provider value={{theme, setTheme, toggleTheme}}>
+        <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
             {children}
         </ThemeContext.Provider>
     );
