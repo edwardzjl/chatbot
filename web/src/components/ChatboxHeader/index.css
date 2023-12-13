@@ -1,0 +1,9 @@
+.chatbox-header {
+    top: 0;
+    position: sticky;
+    min-height: 4vw;
+    display: flex;
+    flex-direction: row;
+    background-color: var(--bg-primary);
+    opacity: 0.8;
+}
