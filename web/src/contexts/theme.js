@@ -3,9 +3,7 @@ import { createContext, useEffect, useState } from "react";
 export const ThemeContext = createContext({
     theme: "",
     setTheme: () => { },
-    toggleTheme: () => { },
-}, () => { });
-
+});
 
 
 const getTheme = () => {
@@ -24,14 +22,6 @@ const getTheme = () => {
 export const ThemeProvider = ({ children }) => {
     const [theme, setTheme] = useState(getTheme);
 
-    function toggleTheme() {
-        if (theme === "dark") {
-            setTheme("light");
-        } else {
-            setTheme("dark");
-        }
-    };
-
     useEffect(() => {
         const refreshTheme = () => {
             localStorage.setItem("theme", theme);
@@ -41,7 +31,7 @@ export const ThemeProvider = ({ children }) => {
     }, [theme]);
 
     return (
-        <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
+        <ThemeContext.Provider value={{ theme, setTheme }}>
             {children}
         </ThemeContext.Provider>
     );
