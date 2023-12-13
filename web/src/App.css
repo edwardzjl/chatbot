@@ -17,7 +17,6 @@
   --border-color: var(--gray-6);
 }
 
-
 .App {
   text-align: center;
   display: flex;
@@ -29,7 +28,6 @@
   left: 0;
   right: 0;
 }
-
 
 .chatbox {
   display: flex;
