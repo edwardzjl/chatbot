@@ -1,9 +1,7 @@
 import "./index.css";
 
 import { useContext, useState, useRef, useEffect } from "react";
-import Input from "@mui/material/Input";
 
-import { ThemeContext } from "contexts/theme";
 import { ConversationContext } from "contexts/conversation";
 import { UserContext } from "contexts/user";
 import { WebsocketContext } from "contexts/websocket";
@@ -12,7 +10,6 @@ import { WebsocketContext } from "contexts/websocket";
  *
  */
 const ChatInput = () => {
-  const { theme } = useContext(ThemeContext);
   const { username } = useContext(UserContext);
   const { conversations, currentConv, dispatch } = useContext(ConversationContext);
   const [ready, send] = useContext(WebsocketContext);
@@ -21,13 +18,16 @@ const ChatInput = () => {
   const inputRef = useRef(null);
 
   /**
-   * Focus on input when currentConvId changes.
+   * Adjusting height of textarea.
+   * Ref: <https://blog.muvon.io/frontend/creating-textarea-with-dynamic-height-react>
    */
   useEffect(() => {
-    if (currentConv?.id) {
-      inputRef.current.focus();
+    if (inputRef.current) {
+      inputRef.current.style.height = '0px';
+      const { scrollHeight } = inputRef.current;
+      inputRef.current.style.height = `${scrollHeight}px`
     }
-  }, [currentConv]);
+  }, [inputRef, input]);
 
   const handleSubmit = async (e) => {
     if (!ready) {
@@ -71,29 +71,13 @@ const ChatInput = () => {
 
   return (
     <form onSubmit={handleSubmit} className="input-container">
-      <div className="input-box">
-        <Input
-          id="chat-input"
-          // TODO: className not working
-          // className="input-text"
-          inputProps={{
-            style: {
-              padding: "12px",
-              color: theme === "dark" ? "white" : "black",
-              fontSize: "1.25em",
-            },
-          }}
-          multiline
-          inputRef={inputRef}
+        <textarea
+          className="input-text"
+          ref={inputRef}
+          autoFocus
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          aria-describedby="input-helper-text"
-        />
-        <div className="input-helper">
-          Enter to send message, Shift + Enter to add a new line
-        </div>
-      </div>
+          onKeyDown={handleKeyDown} />
       <button disabled={!ready} className="input-submit-button" type="submit">
         Send
       </button>

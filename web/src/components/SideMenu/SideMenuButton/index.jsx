@@ -1,7 +1,6 @@
 import "./index.css";
 
 import { useState, useEffect, useRef, useContext } from "react";
-import Input from "@mui/material/Input";
 import Tooltip from "@mui/material/Tooltip";
 import { ClickAwayListener } from "@mui/base/ClickAwayListener";
 
@@ -10,7 +9,6 @@ import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutli
 import CheckOutlinedIcon from "@mui/icons-material/CheckOutlined";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 
-import { ThemeContext } from "contexts/theme";
 import { ConversationContext, conversationsReducer } from "contexts/conversation";
 import { SnackbarContext } from "contexts/snackbar";
 import {
@@ -29,7 +27,6 @@ import {
  * @returns
  */
 const ChatTab = ({ chat }) => {
-  const { theme } = useContext(ThemeContext);
   const { conversations, dispatch } = useContext(ConversationContext);
   const { setSnackbar } = useContext(SnackbarContext);
 
@@ -164,6 +161,7 @@ const ChatTab = ({ chat }) => {
     e.preventDefault();
     e.stopPropagation();
     setOperationConfirm({ onConfirm: false });
+    setTitleReadOnly(true);
   };
 
   return (
@@ -172,23 +170,11 @@ const ChatTab = ({ chat }) => {
       onClick={(e) => selectChat(e, chat)}
     >
       <Tooltip title={title}>
-        <Input
-          id="chat-title"
-          // TODO: className not working
-          // className="chat-title"
-          disableUnderline
-          inputProps={{
-            style: {
-              width: 160,
-              height: 10,
-              color: theme === "dark" ? "white" : "black",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            },
-          }}
-          readOnly={titleReadOnly}
-          inputRef={titleRef}
+        <input
+          className="chat-title"
+          ref={titleRef}
           value={title}
+          disabled={titleReadOnly}
           onChange={(e) => handleTitleChange(e)}
         />
       </Tooltip>
@@ -196,10 +182,12 @@ const ChatTab = ({ chat }) => {
       <div className="sidemenu-button-operations">
         {/* Operations */}
         {!operationConfirm?.onConfirm && (
-          <div>
-            <DriveFileRenameOutlineIcon onClick={(e) => onUpdateClick(e)} />
-            <DeleteOutlineIcon onClick={(e) => onDeleteClick(e)} />
-          </div>
+          <ClickAwayListener onClickAway={onCancel}>
+            <div>
+              <DriveFileRenameOutlineIcon onClick={(e) => onUpdateClick(e)} />
+              <DeleteOutlineIcon onClick={(e) => onDeleteClick(e)} />
+            </div>
+          </ClickAwayListener>
         )}
         {/* Confirmations */}
         {operationConfirm?.onConfirm && (
