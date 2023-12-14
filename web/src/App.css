@@ -3,10 +3,10 @@
 
 .theme-light {
   --bg-primary: var(--gray-1);
-  --bg-secondary: var(--gray-2);
+  --bg-secondary: var(--gray-3);
   --text-primary: var(--gray-8);
   --text-secondary: var(--gray-7);
-  --border-color: var(--gray-3);
+  --border-color: var(--gray-5);
 }
 
 .theme-dark {
@@ -15,6 +15,27 @@
   --text-primary: var(--gray-3);
   --text-secondary: var(--gray-4);
   --border-color: var(--gray-6);
+}
+
+/* TODO: investigate if we can inherit */
+@media (prefers-color-scheme: dark) {
+  .theme-system {
+    --bg-primary: var(--gray-8);
+    --bg-secondary: var(--gray-7);
+    --text-primary: var(--gray-3);
+    --text-secondary: var(--gray-4);
+    --border-color: var(--gray-6);
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  .theme-system {
+    --bg-primary: var(--gray-1);
+    --bg-secondary: var(--gray-3);
+    --text-primary: var(--gray-8);
+    --text-secondary: var(--gray-7);
+    --border-color: var(--gray-5);
+  }
 }
 
 .App {
