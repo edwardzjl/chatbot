@@ -1,0 +1,14 @@
+.dropdown-list {
+    position: absolute;
+    z-index: 1;
+    padding: 0.5rem;
+}
+
+.dropdown-list.hidden {
+    display: none;
+}
+
+.dropdown-list li {
+    list-style: none;
+    width: 100%;
+}
