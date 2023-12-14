@@ -1,9 +1,48 @@
 .chatbox-header {
     top: 0;
     position: sticky;
-    min-height: 4vw;
+    min-height: 60px;
     display: flex;
     flex-direction: row;
+    align-items: center;
     background-color: var(--bg-primary);
     opacity: 0.8;
+}
+
+.theme-menu {
+    margin: 1vw;
+    margin-left: auto;
+    margin-right: 2vw;
+    display: block;
+}
+
+.theme-menu-title {
+    background-color: transparent;
+    border: none;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    border: 2px solid var(--border-color);
+    border-radius: 5px;
+}
+
+.theme-menu-text {
+    margin: 0.3em;
+    text-align: start;
+}
+
+.theme-menu-list {
+    border: 2px solid var(--border-color);
+    border-radius: 5px;
+}
+
+.theme-menu-item {
+    background-color: transparent;
+    border: none;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    width: 100%;
+    text-align: left;
+    margin: auto;
 }
