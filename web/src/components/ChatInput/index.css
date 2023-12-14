@@ -5,11 +5,13 @@
     bottom: 0;
     left: 0;
     right: 0;
-    padding: 12px;
+    padding: 5px;
     width: 40vw;
     display: flex;
     flex-direction: row;
+    align-items: center;
     position: sticky;
+    background: transparent;
 }
 
 .input-box {
@@ -17,32 +19,42 @@
     flex-direction: column;
     position: relative;
     vertical-align: top;
-    background-color: var(--bg-primary);
+    background: transparent;
     width: 100%;
-    border-top-left-radius: 5px;
-    border-bottom-left-radius: 5px;
     box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.5);
 }
 
 .input-text {
+    width: 100%;
     padding: 12px;
     color: var(--text-primary);
+    background-color: var(--bg-secondary);
     font-size: 1.25em;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    resize: none;
+}
+
+.input-text:focus {
+    outline: none !important;
+    border: 1px solid var(--border-color);
 }
 
 .input-helper {
     font-size: 0.75em;
     text-align: start;
     padding-left: 12px;
+    border-bottom-left-radius: 5px;
     color: var(--text-secondary);
 }
 
 .input-submit-button {
-    min-width: 60px;
+    width: 3vw;
+    height: 3vw;
+    margin: 2vw;
     background-color: #0da37f;
     border: unset;
-    border-top-right-radius: 5px;
-    border-bottom-right-radius: 5px;
+    border-radius: 5px;
     cursor: pointer;
     color: var(--text-primary);
 }
