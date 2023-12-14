@@ -5,28 +5,22 @@ export const ThemeContext = createContext({
     setTheme: () => { },
 });
 
-
 const getTheme = () => {
     const theme = localStorage.getItem("theme");
     if (theme) {
         return theme;
     }
-    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-        localStorage.setItem("theme", "dark");
-        return "dark";
-    }
-    localStorage.setItem("theme", "light");
-    return "light";
+    return "system";
 };
 
 export const ThemeProvider = ({ children }) => {
-    const [theme, setTheme] = useState(getTheme);
+    // "light", "dark", "system"
+    const [theme, setTheme] = useState(getTheme());
 
     useEffect(() => {
         const refreshTheme = () => {
             localStorage.setItem("theme", theme);
         };
-
         refreshTheme();
     }, [theme]);
 
