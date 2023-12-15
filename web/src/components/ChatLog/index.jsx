@@ -1,12 +1,10 @@
-import "./index.css";
-
 import { useEffect, useRef } from "react";
 
 /**
  * ChatLog is a container for ChatMessage that will automatically scroll to bottom when window size changes.
  * @param {Array} children
  */
-const ChatLog = ({ children }) => {
+const ChatLog = ({ children, className }) => {
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -28,7 +26,7 @@ const ChatLog = ({ children }) => {
   }, []);
 
   return (
-    <div id="chat-log" className="chat-log">
+    <div id="chat-log" className={className}>
       {children}
       <div ref={messagesEndRef} />
     </div>

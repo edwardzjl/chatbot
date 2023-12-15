@@ -50,16 +50,6 @@
   right: 0;
 }
 
-.chatbox {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  overflow: auto;
-  border: 1px solid var(--border-color);
-  background-color: var(--bg-secondary);
-  position: relative;
-}
-
 .App-logo {
   height: 40vmin;
   pointer-events: none;
@@ -68,6 +58,16 @@
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
     animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
   }
 }
 
@@ -86,12 +86,32 @@
   color: #61dafb;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
+.chatbox {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  overflow: auto;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  position: relative;
+}
 
-  to {
-    transform: rotate(360deg);
-  }
+.chat-log {
+  text-align: left;
+  scroll-behavior: smooth;
+}
+
+.input-bottom {
+  position: sticky;
+  bottom: 0;
+  margin-top: auto;
+  background-color: var(--bg-secondary);
+  display: flex;
+  flex-direction: column;
+}
+
+.footer {
+  color: var(--text-secondary);
+  font-size: 0.75em;
+  margin: 5px;
 }
