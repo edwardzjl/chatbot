@@ -1,17 +1,10 @@
 .input-container {
-    margin-top: auto;
     margin-left: auto;
     margin-right: auto;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 5px;
     width: 40vw;
     display: flex;
     flex-direction: row;
     align-items: center;
-    position: sticky;
-    background: transparent;
 }
 
 .input-box {
