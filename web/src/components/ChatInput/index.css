@@ -49,9 +49,9 @@
 }
 
 .input-submit-button {
-    width: 3vw;
-    height: 3vw;
-    margin: 2vw;
+    width: 70px;
+    height: 60px;
+    margin-left: 2vw;
     background-color: #0da37f;
     border: unset;
     border-radius: 5px;
