@@ -10,7 +10,11 @@ import {
 /**
  * conversations, currentConversation, dispatch
  */
-export const ConversationContext = createContext([], undefined, () => { });
+export const ConversationContext = createContext({
+    conversations: [],
+    currentConv: undefined,
+    dispatch: () => { },
+});
 
 export const ConversationProvider = ({ children }) => {
     const [conversations, dispatch] = useReducer(
