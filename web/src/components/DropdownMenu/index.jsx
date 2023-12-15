@@ -7,7 +7,7 @@ const DropdownContext = createContext({
     setOpen: () => { },
 });
 
-export const DropdownMenu = ({ children, ...props }) => {
+export const DropdownMenu = ({ children, className, ...props }) => {
     const [open, setOpen] = useState(false);
     const dropdownRef = useRef(null);
 
@@ -28,20 +28,21 @@ export const DropdownMenu = ({ children, ...props }) => {
 
     return (
         <DropdownContext.Provider value={{ open, setOpen }}>
-            <div ref={dropdownRef} {...props}>{children}</div>
+            <div className={className} ref={dropdownRef} {...props}>{children}</div>
         </DropdownContext.Provider>
     );
 };
 
-export const DropdownHeader = ({ children, ...props }) => {
+export const DropdownHeader = ({ children, className, ...props }) => {
     const { open, setOpen } = useContext(DropdownContext);
 
-    const toggleOpen = () => {
+    const toggleOpen = (e) => {
+        e.stopPropagation();
         setOpen(!open);
     };
 
     return (
-        <button onClick={toggleOpen} {...props}>
+        <button className={className} onClick={toggleOpen} {...props}>
             {children}
         </button>
     );
