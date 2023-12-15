@@ -10,7 +10,7 @@ from chatbot.callbacks import (
     UpdateConversationCallbackHandler,
 )
 from chatbot.context import session_id
-from chatbot.dependencies import UserIdHeader, get_conv_chain
+from chatbot.dependencies import ConvChain, UserIdHeader
 from chatbot.prompts import INSTRUCTION
 from chatbot.schemas import ChatMessage
 
@@ -23,7 +23,7 @@ router = APIRouter(
 @router.websocket("")
 async def chat(
     websocket: WebSocket,
-    conv_chain: Annotated[Chain, Depends(get_conv_chain)],
+    conv_chain: Annotated[Chain, Depends(ConvChain)],
     userid: Annotated[str | None, UserIdHeader()] = None,
 ):
     await websocket.accept()

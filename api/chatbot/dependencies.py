@@ -26,7 +26,7 @@ def UserIdHeader(alias: Optional[str] = None, **kwargs):
     return Header(alias=alias, **kwargs)
 
 
-def get_message_history() -> BaseChatMessageHistory:
+def MessageHistory() -> BaseChatMessageHistory:
     return ContextAwareMessageHistory(
         url=str(settings.redis_om_url),
         key_prefix="chatbot:messages:",
@@ -34,8 +34,8 @@ def get_message_history() -> BaseChatMessageHistory:
     )
 
 
-def get_memory(
-    history: Annotated[BaseChatMessageHistory, Depends(get_message_history)]
+def ChatMemory(
+    history: Annotated[BaseChatMessageHistory, Depends(MessageHistory)]
 ) -> BaseMemory:
     return FlexConversationBufferWindowMemory(
         human_prefix=human_prefix,
@@ -49,7 +49,7 @@ def get_memory(
     )
 
 
-def get_llm() -> BaseLLM:
+def Llm() -> BaseLLM:
     return HuggingFaceTextGenInference(
         inference_server_url=str(settings.inference_server_url),
         max_new_tokens=1024,
@@ -58,9 +58,9 @@ def get_llm() -> BaseLLM:
     )
 
 
-def get_conv_chain(
-    llm: Annotated[BaseLLM, Depends(get_llm)],
-    memory: Annotated[BaseMemory, Depends(get_memory)],
+def ConvChain(
+    llm: Annotated[BaseLLM, Depends(Llm)],
+    memory: Annotated[BaseMemory, Depends(ChatMemory)],
 ) -> Chain:
     return LLMChain(
         llm=llm,

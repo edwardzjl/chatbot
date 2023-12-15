@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 from langchain_core.chat_history import BaseChatMessageHistory
 
 from chatbot.context import session_id
-from chatbot.dependencies import UserIdHeader, get_message_history
+from chatbot.dependencies import MessageHistory, UserIdHeader
 from chatbot.models import Conversation as ORMConversation
 from chatbot.schemas import (
     ChatMessage,
@@ -31,7 +31,7 @@ async def get_conversations(
 @router.get("/{conversation_id}")
 async def get_conversation(
     conversation_id: str,
-    history: Annotated[BaseChatMessageHistory, Depends(get_message_history)],
+    history: Annotated[BaseChatMessageHistory, Depends(MessageHistory)],
     userid: Annotated[str | None, UserIdHeader()] = None,
 ) -> ConversationDetail:
     conv = await ORMConversation.get(conversation_id)
