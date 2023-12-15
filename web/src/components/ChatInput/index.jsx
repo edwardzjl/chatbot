@@ -71,13 +71,13 @@ const ChatInput = () => {
 
   return (
     <form onSubmit={handleSubmit} className="input-container">
-        <textarea
-          className="input-text"
-          ref={inputRef}
-          autoFocus
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown} />
+      <textarea
+        className="input-text"
+        ref={inputRef}
+        autoFocus
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        onKeyDown={handleKeyDown} />
       <button disabled={!ready} className="input-submit-button" type="submit">
         Send
       </button>
