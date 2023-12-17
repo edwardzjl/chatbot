@@ -2,17 +2,16 @@ import "./index.css";
 
 import { useState, useEffect, useRef, useContext } from "react";
 import Tooltip from "@mui/material/Tooltip";
-import { ClickAwayListener } from "@mui/base/ClickAwayListener";
 
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutline";
-import CheckOutlinedIcon from "@mui/icons-material/CheckOutlined";
-import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 
-import { ConversationContext, conversationsReducer } from "contexts/conversation";
+import { DropdownMenu, DropdownHeader, DropdownList } from "components/DropdownMenu";
+import { ConversationContext } from "contexts/conversation";
 import { SnackbarContext } from "contexts/snackbar";
 import {
-  createConversation,
   deleteConversation,
   getConversation,
   updateConversation,
@@ -26,33 +25,34 @@ import {
  * @param {boolean} chat.active whether this chat is active
  * @returns
  */
-const ChatTab = ({ chat }) => {
-  const { conversations, dispatch } = useContext(ConversationContext);
+const ChatTab = ({ chat, onConvDeleted }) => {
+  const { dispatch } = useContext(ConversationContext);
   const { setSnackbar } = useContext(SnackbarContext);
 
   const [title, setTitle] = useState(chat?.title);
+  const [titleReadOnly, setTitleReadOnly] = useState(true);
+  const titleRef = useRef(null);
   useEffect(() => {
     setTitle(chat?.title);
   }, [chat?.title]);
-  const titleRef = useRef(null);
-
-  const [titleReadOnly, setTitleReadOnly] = useState(true);
-
-  const [operationConfirm, setOperationConfirm] = useState(
-    /** @type {[{onConfirm: boolean, operation: string}]} */ {
-      onConfirm: false,
-    }
-  );
-
   const handleTitleChange = (e) => {
     e.preventDefault();
     e.stopPropagation();
     setTitle(() => e.target.value);
   };
 
-  const selectChat = async (e, chat) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const [delDialogOpen, setDelDialogOpen] = useState(false);
+  const delDialogRef = useRef();
+
+  useEffect(() => {
+    if (delDialogOpen) {
+      delDialogRef.current?.showModal();
+    } else {
+      delDialogRef.current?.close();
+    }
+  }, [delDialogOpen]);
+
+  const selectChat = async (chat) => {
     if (chat.active) {
       return;
     }
@@ -67,35 +67,11 @@ const ChatTab = ({ chat }) => {
   const deleteChat = async (chatId) => {
     deleteConversation(chatId)
       .then(() => {
-        const deleteAction = {
+        dispatch({
           type: "deleted",
           id: chatId,
-        };
-        const nextState = conversationsReducer(conversations, deleteAction);
-        if (!nextState.length) {
-          createConversation().then((data) => {
-            dispatch(deleteAction);
-            dispatch({
-              type: "added",
-              conversation: data,
-            });
-          });
-        } else {
-          // there's still conversations left, check if we are deleting the active one
-          const toDelete = conversations.find((c) => c.id === chatId);
-          if (toDelete.active) {
-            // switch to the first conversation
-            // select before delete makes the page more smooth
-            getConversation(nextState[0].id)
-              .then((data) => {
-                dispatch({
-                  type: "selected",
-                  data: data,
-                });
-              });
-          }
-          dispatch(deleteAction);
-        }
+        });
+        onConvDeleted(chat);
         setSnackbar({
           open: true,
           severity: "success",
@@ -112,9 +88,11 @@ const ChatTab = ({ chat }) => {
       });
   };
 
-  const renameChat = async (id, title) => {
+  const renameChat = async (e) => {
+    // preventDefault prevents refresh page on form submit
+    e.preventDefault();
     setTitleReadOnly(true);
-    updateConversation(id, title).then((res) => {
+    updateConversation(chat.id, title).then((res) => {
       if (res.ok) {
         setSnackbar({
           open: true,
@@ -133,72 +111,76 @@ const ChatTab = ({ chat }) => {
   };
 
   const onUpdateClick = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    titleRef.current.focus();
-    setOperationConfirm({ onConfirm: true, operation: "rename" });
+    // TODO: if we stop propagation, the dropdown menu will not close
+    // but if we don't, the chat title will be selected
+    console.log("onUpdateClick", titleRef);
+    // e.stopPropagation();
     setTitleReadOnly(false);
-  };
-
-  const onDeleteClick = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setOperationConfirm({ onConfirm: true, operation: "delete" });
-  };
-
-  const onConfirm = async (e, chatId) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (operationConfirm.operation === "delete") {
-      deleteChat(chatId);
-    } else if (operationConfirm.operation === "rename") {
-      renameChat(chatId, title);
-    }
-    setOperationConfirm({ onConfirm: false });
-  };
-
-  const onCancel = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setOperationConfirm({ onConfirm: false });
-    setTitleReadOnly(true);
+    console.log("focusing")
+    // TODO: does not work on first click without `setTimeout`, but works on following clicks, no clue why
+    // take a look at <https://github.com/microsoft/react-native-windows/issues/9292>
+    // and <https://github.com/facebook/react/issues/17894>
+    setTimeout(() => {
+      titleRef.current.focus();
+    }, 100);
   };
 
   return (
     <div
       className={`sidemenu-button ${chat.active && "selected"}`}
-      onClick={(e) => selectChat(e, chat)}
+      onClick={() => selectChat(chat)}
     >
+      {/* TODO: when the title is disabled (non active chats), there's no click event on the title
+        * so the user need to click in the chattab but out of chat title, which is really difficult
+        */}
       <Tooltip title={title}>
-        <input
-          className="chat-title"
-          ref={titleRef}
-          value={title}
-          disabled={titleReadOnly}
-          onChange={(e) => handleTitleChange(e)}
-        />
+        <form className="chat-title" onSubmit={(e) => renameChat(e)}>
+          <input
+            ref={titleRef}
+            value={title}
+            disabled={titleReadOnly}
+            onChange={(e) => handleTitleChange(e)}
+          />
+        </form>
       </Tooltip>
-
-      <div className="sidemenu-button-operations">
-        {/* Operations */}
-        {!operationConfirm?.onConfirm && (
-          <ClickAwayListener onClickAway={onCancel}>
-            <div>
-              <DriveFileRenameOutlineIcon onClick={(e) => onUpdateClick(e)} />
-              <DeleteOutlineIcon onClick={(e) => onDeleteClick(e)} />
-            </div>
-          </ClickAwayListener>
-        )}
-        {/* Confirmations */}
-        {operationConfirm?.onConfirm && (
-          <ClickAwayListener onClickAway={onCancel}>
-            <div>
-              <CheckOutlinedIcon onClick={(e) => onConfirm(e, chat.id)} />
-              <CloseOutlinedIcon onClick={(e) => onCancel(e)} />
-            </div>
-          </ClickAwayListener>
-        )}
-      </div>
+      {chat.active && (
+        <DropdownMenu className="chat-op-menu">
+          <DropdownHeader className="chat-op-menu-icon" >
+            <MoreVertIcon />
+          </DropdownHeader>
+          <DropdownList className="chat-op-menu-list">
+            <li>
+              <button className="chat-op-menu-item" onClick={(e) => onUpdateClick(e)}>
+                <AutoAwesomeIcon />
+                <span className="chat-op-menu-item-text">Generate title</span>
+              </button>
+            </li>
+            <li>
+              <button className="chat-op-menu-item" onClick={(e) => onUpdateClick(e)}>
+                <DriveFileRenameOutlineIcon />
+                <span className="chat-op-menu-item-text">Change title</span>
+              </button>
+            </li>
+            <li>
+              <button className="chat-op-menu-item" onClick={() => setDelDialogOpen(true)}>
+                <DeleteOutlineIcon />
+                <span className="chat-op-menu-item-text">Delete</span>
+              </button>
+            </li>
+          </DropdownList>
+        </DropdownMenu>
+      )}
+      <dialog
+        className="del-dialog"
+        ref={delDialogRef}
+      >
+        <h2>Delete conversation?</h2>
+        <p>This will delete '{title}'</p>
+        <div className="del-dialog-actions">
+          <button autoFocus onClick={() => deleteChat(chat.id)}>Delete</button>
+          <button onClick={() => setDelDialogOpen(false)}>Cancel</button>
+        </div>
+      </dialog>
     </div>
   );
 };
