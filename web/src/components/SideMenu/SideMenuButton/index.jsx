@@ -15,6 +15,7 @@ import {
   deleteConversation,
   getConversation,
   updateConversation,
+  summarizeConversation,
 } from "requests";
 
 /**
@@ -52,7 +53,7 @@ const ChatTab = ({ chat, onConvDeleted }) => {
     }
   }, [delDialogOpen]);
 
-  const selectChat = async (chat) => {
+  const selectChat = async () => {
     if (chat.active) {
       return;
     }
@@ -64,12 +65,12 @@ const ChatTab = ({ chat, onConvDeleted }) => {
     });
   };
 
-  const deleteChat = async (chatId) => {
-    deleteConversation(chatId)
+  const deleteChat = async () => {
+    deleteConversation(chat.id)
       .then(() => {
         dispatch({
           type: "deleted",
-          id: chatId,
+          id: chat.id,
         });
         onConvDeleted(chat);
         setSnackbar({
@@ -125,21 +126,32 @@ const ChatTab = ({ chat, onConvDeleted }) => {
     }, 100);
   };
 
+  const onSummarizeClick = async () => {
+    summarizeConversation(chat.id)
+      .then(data => {
+        setTitle(data.title);
+        dispatch({
+          type: "updated",
+          conversation: { ...chat, title: data.title },
+        });
+      });
+  }
+
   return (
     <div
       className={`sidemenu-button ${chat.active && "selected"}`}
-      onClick={() => selectChat(chat)}
+      onClick={selectChat}
     >
       {/* TODO: when the title is disabled (non active chats), there's no click event on the title
         * so the user need to click in the chattab but out of chat title, which is really difficult
         */}
       <Tooltip title={title}>
-        <form className="chat-title" onSubmit={(e) => renameChat(e)}>
+        <form className="chat-title" onSubmit={renameChat}>
           <input
             ref={titleRef}
             value={title}
             disabled={titleReadOnly}
-            onChange={(e) => handleTitleChange(e)}
+            onChange={handleTitleChange}
           />
         </form>
       </Tooltip>
@@ -150,13 +162,13 @@ const ChatTab = ({ chat, onConvDeleted }) => {
           </DropdownHeader>
           <DropdownList className="chat-op-menu-list">
             <li>
-              <button className="chat-op-menu-item" onClick={(e) => onUpdateClick(e)}>
+              <button className="chat-op-menu-item" onClick={onSummarizeClick}>
                 <AutoAwesomeIcon />
                 <span className="chat-op-menu-item-text">Generate title</span>
               </button>
             </li>
             <li>
-              <button className="chat-op-menu-item" onClick={(e) => onUpdateClick(e)}>
+              <button className="chat-op-menu-item" onClick={onUpdateClick}>
                 <DriveFileRenameOutlineIcon />
                 <span className="chat-op-menu-item-text">Change title</span>
               </button>
@@ -177,7 +189,7 @@ const ChatTab = ({ chat, onConvDeleted }) => {
         <h2>Delete conversation?</h2>
         <p>This will delete '{title}'</p>
         <div className="del-dialog-actions">
-          <button autoFocus onClick={() => deleteChat(chat.id)}>Delete</button>
+          <button autoFocus onClick={deleteChat}>Delete</button>
           <button onClick={() => setDelDialogOpen(false)}>Cancel</button>
         </div>
       </dialog>

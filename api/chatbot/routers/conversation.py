@@ -2,9 +2,11 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 from langchain_core.chat_history import BaseChatMessageHistory
+from langchain_core.language_models import BaseLLM
+from langchain_core.memory import BaseMemory
 
 from chatbot.context import session_id
-from chatbot.dependencies import MessageHistory, UserIdHeader
+from chatbot.dependencies import ChatMemory, Llm, MessageHistory, UserIdHeader
 from chatbot.models import Conversation as ORMConversation
 from chatbot.schemas import (
     ChatMessage,
@@ -12,6 +14,7 @@ from chatbot.schemas import (
     ConversationDetail,
     UpdateConversation,
 )
+from chatbot.summarization import summarize as summarize_conv
 
 router = APIRouter(
     prefix="/api/conversations",
@@ -75,3 +78,18 @@ async def delete_conversation(
     userid: Annotated[str | None, UserIdHeader()] = None,
 ) -> None:
     await ORMConversation.delete(conversation_id)
+
+
+@router.post("/{conversation_id}/summarization", status_code=201)
+async def summarize(
+    conversation_id: str,
+    llm: Annotated[BaseLLM, Depends(Llm)],
+    memory: Annotated[BaseMemory, Depends(ChatMemory)],
+    userid: Annotated[str | None, UserIdHeader()] = None,
+) -> dict[str, str]:
+    session_id.set(f"{userid}:{conversation_id}")
+    title = await summarize_conv(llm, memory)
+    conv = await ORMConversation.get(conversation_id)
+    conv.title = title
+    await conv.save()
+    return {"title": title}
