@@ -6,9 +6,9 @@ import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 
 import { getFirstLetters, stringToColor, getCookie } from "commons";
-import { ConversationContext } from "contexts/conversation";
+import { ConversationContext, conversationsReducer } from "contexts/conversation";
 import { UserContext } from "contexts/user";
-import { createConversation } from "requests";
+import { createConversation, getConversation } from "requests";
 import ChatTab from "components/SideMenu/SideMenuButton";
 
 /**
@@ -30,6 +30,35 @@ const SideMenu = () => {
       });
   };
 
+  const onConvDeleted = (conv) => {
+    const deleteAction = {
+      type: "deleted",
+      id: conv.id,
+    };
+    const nextState = conversationsReducer(conversations, deleteAction);
+    if (!nextState.length) {
+      createConversation()
+        .then((data) => {
+          dispatch({
+            type: "added",
+            conversation: data,
+          });
+        });
+    } else {
+      // there's still conversations left, check if we are deleting the active one
+      if (conv.active) {
+        // switch to the first conversation
+        getConversation(nextState[0].id)
+          .then((data) => {
+            dispatch({
+              type: "selected",
+              data: data,
+            });
+          });
+      }
+    }
+  }
+
   const handleLogout = async (e) => {
     e.preventDefault();
     const sessionId = getCookie("authservice_session");
@@ -50,7 +79,7 @@ const SideMenu = () => {
         New Chat
       </div>
       {conversations?.map((chat) => (
-        <ChatTab key={chat.id} chat={chat} />
+        <ChatTab key={chat.id} chat={chat} onConvDeleted={onConvDeleted}/>
       ))}
       <hr className="sidemenu-userinfo-hr" />
       <div className="sidemenu-userinfo">

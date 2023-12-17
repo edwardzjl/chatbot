@@ -18,7 +18,6 @@
 
 .theme-menu-title {
     background-color: transparent;
-    border: none;
     color: var(--text-primary);
     display: flex;
     align-items: center;

@@ -27,10 +27,6 @@
     background-color: var(--bg-secondary);
 }
 
-.sidemenu-button-operations {
-    margin-left: auto;
-}
-
 .sidemenu-userinfo-hr {
     margin-top: auto;
     width: 90%;
