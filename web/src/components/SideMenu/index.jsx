@@ -1,6 +1,6 @@
 import "./index.css";
 
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import Avatar from "@mui/material/Avatar";
 import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
@@ -17,6 +17,7 @@ import ChatTab from "components/SideMenu/SideMenuButton";
 const SideMenu = () => {
   const { username } = useContext(UserContext);
   const { conversations, dispatch } = useContext(ConversationContext);
+  const [groupedConvs, setGroupedConvs] = useState({});
 
   const createChat = () => {
     createConversation()
@@ -72,14 +73,44 @@ const SideMenu = () => {
     window.location.reload();
   };
 
+  useEffect(() => {
+    const groupConvs = () => {
+      const today = new Date();
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const lastSevenDays = new Date(today);
+      lastSevenDays.setDate(lastSevenDays.getDate() - 7);
+
+      const _groupedConvs = Object.groupBy(conversations, (item) => {
+        const itemDate = new Date(item.updated_at);
+        if (itemDate.toDateString() === today.toDateString()) {
+          return "Today";
+        } else if (itemDate.toDateString() === yesterday.toDateString()) {
+          return "Yesterday";
+        } else if (itemDate > lastSevenDays) {
+          return "Last seven days";
+        } else {
+          return `${itemDate.toLocaleString("default", { month: "long" })} ${itemDate.getFullYear()}`;
+        }
+      });
+      setGroupedConvs(_groupedConvs);
+    };
+    groupConvs();
+
+    return () => { };
+  }, [conversations]);
+
   return (
     <aside className="sidemenu">
       <div className="sidemenu-button" onClick={createChat}>
         <AddOutlinedIcon />
         New Chat
       </div>
-      {conversations?.map((chat) => (
-        <ChatTab key={chat.id} chat={chat} onConvDeleted={onConvDeleted}/>
+      {groupedConvs && Object.entries(groupedConvs).flatMap(([grp, convs]) => (
+        [
+          <div key={grp} className="sidemenu-date-group">{grp}</div>,
+          convs.map((conv) => (<ChatTab key={conv.id} chat={conv} onConvDeleted={onConvDeleted} />))
+        ]
       ))}
       <hr className="sidemenu-userinfo-hr" />
       <div className="sidemenu-userinfo">
