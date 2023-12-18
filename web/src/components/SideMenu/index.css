@@ -15,11 +15,11 @@
 }
 
 .sidemenu-button {
-    margin: 5px;
-    align-items: center;
+    height: 2rem;
+    margin: 2px;
+    padding: 3px;
     border: none;
     border-radius: 5px;
-    text-align: left;
     transition: ease 0.25s all;
     display: flex;
     flex-direction: row;

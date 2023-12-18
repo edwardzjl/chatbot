@@ -30,17 +30,8 @@ const ChatTab = ({ chat, onConvDeleted }) => {
   const { dispatch } = useContext(ConversationContext);
   const { setSnackbar } = useContext(SnackbarContext);
 
-  const [title, setTitle] = useState(chat?.title);
-  const [titleReadOnly, setTitleReadOnly] = useState(true);
   const titleRef = useRef(null);
-  useEffect(() => {
-    setTitle(chat?.title);
-  }, [chat?.title]);
-  const handleTitleChange = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setTitle(() => e.target.value);
-  };
+  const [titleEditable, setTitleEditable] = useState("false");
 
   const [delDialogOpen, setDelDialogOpen] = useState(false);
   const delDialogRef = useRef();
@@ -89,10 +80,16 @@ const ChatTab = ({ chat, onConvDeleted }) => {
       });
   };
 
-  const renameChat = async (e) => {
-    // preventDefault prevents refresh page on form submit
-    e.preventDefault();
-    setTitleReadOnly(true);
+  const handleKeyDown = async (e) => {
+    // TODO: this will trigger in Chinese IME on OSX
+    if (e.key === "Enter") {
+      e.preventDefault();
+      await renameChat(titleRef.current.innerText);
+    }
+  };
+
+  const renameChat = async (title) => {
+    setTitleEditable("false");
     updateConversation(chat.id, title).then((res) => {
       if (res.ok) {
         setSnackbar({
@@ -101,7 +98,6 @@ const ChatTab = ({ chat, onConvDeleted }) => {
           message: "Update chat success",
         });
       } else {
-        console.error("error updating chat");
         setSnackbar({
           open: true,
           severity: "error",
@@ -114,10 +110,8 @@ const ChatTab = ({ chat, onConvDeleted }) => {
   const onUpdateClick = async (e) => {
     // TODO: if we stop propagation, the dropdown menu will not close
     // but if we don't, the chat title will be selected
-    console.log("onUpdateClick", titleRef);
     // e.stopPropagation();
-    setTitleReadOnly(false);
-    console.log("focusing")
+    setTitleEditable("plaintext-only");
     // TODO: does not work on first click without `setTimeout`, but works on following clicks, no clue why
     // take a look at <https://github.com/microsoft/react-native-windows/issues/9292>
     // and <https://github.com/facebook/react/issues/17894>
@@ -129,7 +123,7 @@ const ChatTab = ({ chat, onConvDeleted }) => {
   const onSummarizeClick = async () => {
     summarizeConversation(chat.id)
       .then(data => {
-        setTitle(data.title);
+        titleRef.current.innerText = data.title;
         dispatch({
           type: "updated",
           conversation: { ...chat, title: data.title },
@@ -142,18 +136,18 @@ const ChatTab = ({ chat, onConvDeleted }) => {
       className={`sidemenu-button ${chat.active && "selected"}`}
       onClick={selectChat}
     >
-      {/* TODO: when the title is disabled (non active chats), there's no click event on the title
-        * so the user need to click in the chattab but out of chat title, which is really difficult
-        */}
-      <Tooltip title={title}>
-        <form className="chat-title" onSubmit={renameChat}>
-          <input
-            ref={titleRef}
-            value={title}
-            disabled={titleReadOnly}
-            onChange={handleTitleChange}
-          />
-        </form>
+      <Tooltip title={titleRef.current?.innerText}>
+        {/* contentEditable moves control out of react, so useState won't work correctly.
+          * I use ref to get the value instead.
+          */}
+        <span
+          aria-label="chat title"
+          ref={titleRef}
+          className="chat-title"
+          contentEditable={titleEditable}
+          suppressContentEditableWarning={true}  // TODO: I'm not sure whether I can ignore this warning
+          onKeyDown={handleKeyDown}
+        >{chat.title}</span>
       </Tooltip>
       {chat.active && (
         <DropdownMenu className="chat-op-menu">
@@ -187,7 +181,7 @@ const ChatTab = ({ chat, onConvDeleted }) => {
         ref={delDialogRef}
       >
         <h2>Delete conversation?</h2>
-        <p>This will delete '{title}'</p>
+        <p>This will delete '{titleRef.current?.innerText}'</p>
         <div className="del-dialog-actions">
           <button autoFocus onClick={deleteChat}>Delete</button>
           <button onClick={() => setDelDialogOpen(false)}>Cancel</button>
