@@ -77,5 +77,10 @@ class ConversationDetail(Conversation):
     messages: list[ChatMessage] = []
 
 
+class CreateConversation(BaseModel):
+    title: str
+    messages: Optional[list[ChatMessage]] = None
+
+
 class UpdateConversation(BaseModel):
     title: str

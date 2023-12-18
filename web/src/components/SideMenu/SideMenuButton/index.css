@@ -1,22 +1,15 @@
 .chat-title {
-  height: 2rem;
-  width: 100%;
-  margin: 2px;
-  flex-grow: 1;
-}
-
-.chat-title>input {
-  height: 2rem;
-  width: 100%;
-  box-sizing: border-box;
-  margin-left: 2px;
-  text-overflow: ellipsis;
-  background: transparent;
+  margin-left: 5px;
+  height: 1.3rem;
   color: var(--text-primary);
   border: none;
+  /* the following 3 lines ellipsis text */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.chat-title>input:focus {
+.chat-title:focus {
   outline: none !important;
   border: none;
   border-bottom: 1px solid var(--text-primary);
