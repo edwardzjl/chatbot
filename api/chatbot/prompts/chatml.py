@@ -1,23 +1,35 @@
-"""Prompt template for OpenAI's Chat Markup Language, or ChatML.
-See <https://github.com/openai/openai-python/blob/main/chatml.md> for more details."""
+from typing import Any, Literal
 
-from langchain.prompts import PromptTemplate
+from langchain_core.prompt_values import PromptValue
+from langchain_core.prompts import ChatPromptTemplate
 
-human_prefix = "<|im_start|>user"
-ai_prefix = "<|im_start|>assistant"
-human_suffix = "<|im_end|>"
-ai_suffix = "<|im_end|>"
+from chatbot.prompts.base import FlexPromptValue
 
-template = f"""<|im_start|>system
-{{system_message}}<|im_end|>
+# TODO: this section is mainly used for formatting histroy messages.
+# As Literal cannot use variables, this lead to a bit of duplication.
+HUMAN_PREFIX = "<|im_start|>user\n"
+HUMAN_SUFFIX = "<|im_end|>"
+AI_PREFIX = "<|im_start|>assistant\n"
+AI_SUFFIX = "<|im_end|>"
 
-{{history}}
-{human_prefix}
-{{input}}{human_suffix}
-{ai_prefix}
-"""
 
-prompt = PromptTemplate(
-    input_variables=["system_message", "history", "input"],
-    template=template,
-)
+class ChatMLPromptTemplate(ChatPromptTemplate):
+    """A prompt template for Chat Markup Language models.
+    See <https://github.com/openai/openai-python/blob/main/chatml.md>
+    """
+
+    def format_prompt(self, **kwargs: Any) -> PromptValue:
+        """Format prompt."""
+        messages = self.format_messages(**kwargs)
+        return ChatMLPromptValue(messages=messages)
+
+
+class ChatMLPromptValue(FlexPromptValue):
+    """Chat Markup Language prompt value."""
+
+    system_prefix: Literal["<|im_start|>system\n"] = "<|im_start|>system\n"
+    system_suffix: Literal["<|im_end|>"] = "<|im_end|>"
+    human_prefix: Literal["<|im_start|>user\n"] = "<|im_start|>user\n"
+    human_suffix: Literal["<|im_end|>"] = "<|im_end|>"
+    ai_prefix: Literal["<|im_start|>assistant\n"] = "<|im_start|>assistant\n"
+    ai_suffix: Literal["<|im_end|>"] = "<|im_end|>"

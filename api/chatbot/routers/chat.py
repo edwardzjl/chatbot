@@ -11,7 +11,6 @@ from chatbot.callbacks import (
 )
 from chatbot.context import session_id
 from chatbot.dependencies import ConvChain, UserIdHeader
-from chatbot.prompts import INSTRUCTION
 from chatbot.schemas import ChatMessage
 
 router = APIRouter(
@@ -31,7 +30,6 @@ async def chat(
     while True:
         try:
             payload: str = await websocket.receive_text()
-            system_message = INSTRUCTION.format(date=date.today())
             message = ChatMessage.model_validate_json(payload)
             session_id.set(f"{userid}:{message.conversation}")
             streaming_callback = StreamingLLMCallbackHandler(
@@ -40,8 +38,9 @@ async def chat(
             update_conversation_callback = UpdateConversationCallbackHandler(
                 message.conversation
             )
+            # create a new date on every message to solve message across days.
             await conv_chain.arun(
-                system_message=system_message,
+                date=date.today(),
                 input=message.content,
                 callbacks=[streaming_callback, update_conversation_callback],
             )

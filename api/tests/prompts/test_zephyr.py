@@ -8,10 +8,10 @@ from langchain_core.prompts.chat import (
     SystemMessagePromptTemplate,
 )
 
-from chatbot.prompts.vicuna import VicunaPromptTemplate
+from chatbot.prompts.zephyr import ZephyrPromptTemplate
 
 
-class TestVicunaPromptTemplate(unittest.TestCase):
+class TestZephyrPromptTemplate(unittest.TestCase):
     def test_format(self):
         system_prompt = PromptTemplate(
             template="{sys}",
@@ -22,14 +22,24 @@ class TestVicunaPromptTemplate(unittest.TestCase):
             MessagesPlaceholder(variable_name="history"),
             HumanMessagePromptTemplate.from_template("{input}"),
         ]
-        tmpl = VicunaPromptTemplate(input_variables=["input"], messages=messages)
-        history = []
+        tmpl = ZephyrPromptTemplate(input_variables=["input"], messages=messages)
+        history = [
+            HumanMessage(content="question 1"),
+            AIMessage(content="answer 1"),
+        ]
         actual = tmpl.format(
-            sys="system instruction", history=history, input="question 1"
+            sys="system instruction", history=history, input="question 2"
         )
-        expected = """system instruction
-USER: question 1
-ASSISTANT:"""
+        expected = """<|system|>
+system instruction</s>
+<|user|>
+question 1</s>
+<|assistant|>
+answer 1</s>
+<|user|>
+question 2</s>
+<|assistant|>
+"""
         self.assertEqual(actual, expected)
 
 
