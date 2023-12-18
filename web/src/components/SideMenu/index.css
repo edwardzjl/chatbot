@@ -7,16 +7,23 @@
     flex-direction: column;
 }
 
+.sidemenu-date-group {
+    color: var(--text-3);
+    text-align: start;
+    margin: 10px;
+    margin-top: 20px;
+}
+
 .sidemenu-button {
     margin: 5px;
     align-items: center;
-    padding: 12px;
-    border: 1px solid rgba(255, 255, 255, .2);
+    border: none;
     border-radius: 5px;
     text-align: left;
     transition: ease 0.25s all;
     display: flex;
     flex-direction: row;
+    align-items: center;
 }
 
 .sidemenu-button:hover {

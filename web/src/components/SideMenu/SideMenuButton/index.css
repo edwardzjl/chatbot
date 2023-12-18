@@ -1,12 +1,15 @@
 .chat-title {
   height: 2rem;
   width: 100%;
+  margin: 2px;
   flex-grow: 1;
 }
 
 .chat-title>input {
   height: 2rem;
   width: 100%;
+  box-sizing: border-box;
+  margin-left: 2px;
   text-overflow: ellipsis;
   background: transparent;
   color: var(--text-primary);
