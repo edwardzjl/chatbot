@@ -8,33 +8,30 @@ from chatbot.prompts.base import FlexPromptValue
 
 # TODO: this section is mainly used for formatting histroy messages.
 # As Literal cannot use variables, this lead to a bit of duplication.
-HUMAN_PREFIX = "<s>[INST] "
+HUMAN_PREFIX = "[INST] "
 HUMAN_SUFFIX = " [/INST]"
 AI_PREFIX = " "
-AI_SUFFIX = " </s>"
+AI_SUFFIX = "</s>"
 
 
-class Llama2PromptTemplate(ChatPromptTemplate):
-    """Llama 2 prompt template.
-    Llama 2 has a very special prompt format,
+class MistralPromptTemplate(ChatPromptTemplate):
+    """Mistral prompt template.
+    Mistral has a very special prompt format similar to Llama 2,
     in which the system message is 'squashed' into the first user message.
-    See <https://github.com/facebookresearch/llama/blob/6c7fe276574e78057f917549435a2554000a876d/llama/generation.py#L213>
-    and <https://huggingface.co/TheBloke/Llama-2-13B-chat-GPTQ/discussions/5>
+    See <https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.1#instruction-format>
     """
 
     def format_prompt(self, **kwargs: Any) -> PromptValue:
         """Format prompt."""
         messages = self.format_messages(**kwargs)
-        return Llama2PromptValue(messages=messages)
+        return MistralPromptValue(messages=messages)
 
 
-class Llama2PromptValue(FlexPromptValue):
-    system_prefix: Literal["<<SYS>>"] = "<<SYS>>"
-    system_suffix: Literal["<</SYS>>"] = "<</SYS>>"
-    human_prefix: Literal["<s>[INST] "] = "<s>[INST] "
+class MistralPromptValue(FlexPromptValue):
+    human_prefix: Literal["[INST] "] = "[INST] "
     human_suffix: Literal[" [/INST]"] = " [/INST]"
     ai_prefix: Literal[" "] = " "
-    ai_suffix: Literal[" </s>"] = " </s>"
+    ai_suffix: Literal["</s>"] = "</s>"
 
     def to_string(self) -> str:
         """Return prompt as string."""
@@ -44,7 +41,7 @@ class Llama2PromptValue(FlexPromptValue):
             msgs = [
                 BaseMessage(
                     type=self.messages[1].type,
-                    content=f"{self.system_prefix}\n{self.messages[0].content}\n{self.system_suffix}\n\n{self.messages[1].content}",
+                    content=f"{self.messages[0].content} {self.messages[1].content}",
                 )
             ] + self.messages[2:]
 
@@ -57,4 +54,4 @@ class Llama2PromptValue(FlexPromptValue):
                 message += f"{m.additional_kwargs['function_call']}"
             string_messages.append(message)
         msgs = "".join(string_messages)
-        return msgs
+        return "<s>" + msgs

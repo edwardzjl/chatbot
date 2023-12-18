@@ -1,18 +1,35 @@
-"""
-<https://github.com/lm-sys/FastChat/blob/main/fastchat/conversation.py>
-"""
+from typing import Any, Literal
 
-from langchain.prompts import PromptTemplate
+from langchain_core.prompt_values import PromptValue
+from langchain_core.prompts import ChatPromptTemplate
 
-human_prefix = "USER"
-ai_prefix = "ASSISTANT"
-human_suffix = None
-ai_suffix = "</s>"
+from chatbot.prompts.base import FlexPromptValue
 
-template = f"""A chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions.
+# TODO: this section is mainly used for formatting histroy messages.
+# As Literal cannot use variables, this lead to a bit of duplication.
+HUMAN_PREFIX = "User: "
+HUMAN_SUFFIX = "\n"
+AI_PREFIX = "ASSISTANT: "
+AI_SUFFIX = "\n"
 
-{{history}}
-{human_prefix}: {{input}}
-{ai_prefix}:"""
 
-prompt = PromptTemplate(input_variables=["history", "input"], template=template)
+class VicunaPromptTemplate(ChatPromptTemplate):
+    """Vicuna prompt template.
+    See <https://github.com/lm-sys/FastChat/blob/main/fastchat/conversation.py>
+    """
+
+    def format_prompt(self, **kwargs: Any) -> PromptValue:
+        """Format prompt."""
+        messages = self.format_messages(**kwargs)
+        return VicunaPromptValue(messages=messages)
+
+
+class VicunaPromptValue(FlexPromptValue):
+    """Vicuna prompt value."""
+
+    human_prefix: Literal["USER: "] = "USER: "
+    ai_prefix: Literal["ASSISTANT: "] = "ASSISTANT: "
+
+    def to_string(self) -> str:
+        seq = super().to_string()
+        return seq[:-1]

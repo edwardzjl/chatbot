@@ -1,21 +1,46 @@
 import unittest
 
-from chatbot.prompts.chatml import prompt
+from langchain_core.messages import AIMessage, HumanMessage
+from langchain_core.prompts import PromptTemplate
+from langchain_core.prompts.chat import (
+    HumanMessagePromptTemplate,
+    MessagesPlaceholder,
+    SystemMessagePromptTemplate,
+)
+
+from chatbot.prompts.chatml import ChatMLPromptTemplate
 
 
 class TestChatMLPromptTemplate(unittest.TestCase):
     def test_format(self):
+        system_prompt = PromptTemplate(
+            template="{sys}",
+            input_variables=["sys"],
+        )
+        messages = [
+            SystemMessagePromptTemplate(prompt=system_prompt),
+            MessagesPlaceholder(variable_name="history"),
+            HumanMessagePromptTemplate.from_template("{input}"),
+        ]
+        tmpl = ChatMLPromptTemplate(input_variables=["input"], messages=messages)
+        history = [
+            HumanMessage(content="question 1"),
+            AIMessage(content="answer 1"),
+        ]
+        actual = tmpl.format(
+            sys="system instruction", history=history, input="question 2"
+        )
         expected = """<|im_start|>system
-foo<|im_end|>
-
-bar
+system instruction<|im_end|>
 <|im_start|>user
-baz<|im_end|>
+question 1<|im_end|>
+<|im_start|>assistant
+answer 1<|im_end|>
+<|im_start|>user
+question 2<|im_end|>
 <|im_start|>assistant
 """
-        self.assertEqual(
-            prompt.format(system_message="foo", history="bar", input="baz"), expected
-        )
+        self.assertEqual(actual, expected)
 
 
 if __name__ == "__main__":
