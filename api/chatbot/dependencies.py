@@ -4,6 +4,7 @@ from fastapi import Depends, Header
 from langchain.chains import LLMChain
 from langchain.chains.base import Chain
 from langchain.llms.huggingface_text_gen_inference import HuggingFaceTextGenInference
+from langchain.memory import ConversationBufferWindowMemory
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.language_models import BaseLLM
 from langchain_core.memory import BaseMemory
@@ -16,14 +17,7 @@ from langchain_core.prompts.chat import (
 
 from chatbot.config import settings
 from chatbot.history import ContextAwareMessageHistory
-from chatbot.memory import FlexConversationBufferWindowMemory
-from chatbot.prompts.chatml import (
-    AI_PREFIX,
-    AI_SUFFIX,
-    HUMAN_PREFIX,
-    HUMAN_SUFFIX,
-    ChatMLPromptTemplate,
-)
+from chatbot.prompts.chatml import AI_SUFFIX, HUMAN_PREFIX, ChatMLPromptTemplate
 
 
 def UserIdHeader(alias: Optional[str] = None, **kwargs):
@@ -43,12 +37,7 @@ def MessageHistory() -> BaseChatMessageHistory:
 def ChatMemory(
     history: Annotated[BaseChatMessageHistory, Depends(MessageHistory)]
 ) -> BaseMemory:
-    return FlexConversationBufferWindowMemory(
-        human_prefix=HUMAN_PREFIX,
-        ai_prefix=AI_PREFIX,
-        prefix_delimiter="\n",
-        human_suffix=HUMAN_SUFFIX,
-        ai_suffix=AI_SUFFIX,
+    return ConversationBufferWindowMemory(
         memory_key="history",
         input_key="input",
         chat_memory=history,
