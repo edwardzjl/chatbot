@@ -9,11 +9,12 @@
     opacity: 0.8;
 }
 
-.theme-menu {
-    margin: 1vw;
+.right-elems {
+    display: flex;
+    flex-direction: row;
+    /* align-items: center; */
     margin-left: auto;
     margin-right: 2vw;
-    display: block;
 }
 
 .theme-menu-title {
@@ -21,27 +22,66 @@
     color: var(--text-primary);
     display: flex;
     align-items: center;
-    border: 2px solid var(--border-color);
+    justify-content: center;
+    border: none;
+}
+
+.theme-menu-title:hover {
+    background-color: var(--bg-secondary);
     border-radius: 5px;
 }
 
 .theme-menu-text {
     margin: 0.3em;
     text-align: start;
+    font-size: 0.8rem;
 }
 
 .theme-menu-list {
-    border: 2px solid var(--border-color);
-    border-radius: 5px;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    position: absolute;
+    z-index: 1;
+    padding: 0.5rem;
 }
 
 .theme-menu-item {
+    width: 100%;
+    margin: 2px;
     background-color: transparent;
-    border: none;
+    /* must add transparent border or the button will shake on hover */
+    border: 1px solid transparent;
     color: var(--text-primary);
     display: flex;
     align-items: center;
-    width: 100%;
-    text-align: left;
-    margin: auto;
+}
+
+.theme-menu-item:hover {
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+}
+
+.theme-menu-item.selected {
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+}
+
+.user-info-menu-avatar {
+    background-color: transparent;
+    border: none;
+}
+
+.user-info-menu-list {
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    position: absolute;
+    right: 2vw;
+    z-index: 1;
+    padding: 0.5rem;
+}
+
+.user-info-menu-username-hr {
+    border: 1px solid var(--border-color);
 }
