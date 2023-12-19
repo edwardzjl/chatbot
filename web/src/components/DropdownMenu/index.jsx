@@ -37,7 +37,8 @@ export const DropdownHeader = ({ children, className, ...props }) => {
     const { open, setOpen } = useContext(DropdownContext);
 
     const toggleOpen = (e) => {
-        e.stopPropagation();
+        // if I stop propagation here the dropdown list will not be closed when click on another dropdown menu.
+        // e.stopPropagation();
         setOpen(!open);
     };
 
