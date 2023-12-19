@@ -1,13 +1,12 @@
 import "./index.css";
 
 import { useContext, useEffect, useState } from "react";
-import Avatar from "@mui/material/Avatar";
 import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
-import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import GitHubIcon from '@mui/icons-material/GitHub';
+import MailOutlineIcon from '@mui/icons-material/MailOutline';
 
-import { getFirstLetters, stringToColor, getCookie } from "commons";
 import { ConversationContext, conversationsReducer } from "contexts/conversation";
-import { UserContext } from "contexts/user";
 import { createConversation, getConversation } from "requests";
 import ChatTab from "components/SideMenu/SideMenuButton";
 
@@ -15,7 +14,6 @@ import ChatTab from "components/SideMenu/SideMenuButton";
  *
  */
 const SideMenu = () => {
-  const { username } = useContext(UserContext);
   const { conversations, dispatch } = useContext(ConversationContext);
   const [groupedConvs, setGroupedConvs] = useState({});
 
@@ -60,19 +58,6 @@ const SideMenu = () => {
     }
   }
 
-  const handleLogout = async (e) => {
-    e.preventDefault();
-    const sessionId = getCookie("authservice_session");
-    await fetch("/authservice/logout", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${sessionId}`,
-      },
-    });
-    // refresh whether logout success or failure.
-    window.location.reload();
-  };
-
   useEffect(() => {
     const groupConvs = () => {
       const today = new Date();
@@ -112,24 +97,19 @@ const SideMenu = () => {
           convs.map((conv) => (<ChatTab key={conv.id} chat={conv} onConvDeleted={onConvDeleted} />))
         ]
       ))}
-      <hr className="sidemenu-userinfo-hr" />
-      <div className="sidemenu-userinfo">
-        <Avatar
-          // className not working on Avatar
-          sx={{
-            width: 24,
-            height: 24,
-            fontSize: "0.6rem",
-            bgcolor: stringToColor(username),
-          }}
-        >
-          {getFirstLetters(username)}
-        </Avatar>
-        <div className="sidemenu-userinfo-username">{username}</div>
-        <LogoutOutlinedIcon
-          className="sidemenu-userinfo-logout"
-          onClick={handleLogout}
-        />
+      <hr className="sidemenu-bottom" />
+      <div className="sidemenu-bottom-group">
+        <div className="sidemenu-bottom-group-items">
+          <InfoOutlinedIcon />
+        </div>
+        <div className="sidemenu-bottom-group-items">
+          <a className="link-icon" href="https://github.com/edwardzjl/chatbot" target="_blank" rel="noreferrer"> <GitHubIcon /> </a>
+        </div>
+        <div className="sidemenu-bottom-group-items">
+          <a className="link-icon" href="mailto:jameszhou2108@hotmail.com">
+            <MailOutlineIcon />
+          </a>
+        </div>
       </div>
     </aside>
   );

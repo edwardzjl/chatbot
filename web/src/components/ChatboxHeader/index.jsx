@@ -2,13 +2,17 @@ import "./index.css";
 
 import { useContext } from "react";
 
+import Avatar from "@mui/material/Avatar";
+
 import Brightness4OutlinedIcon from '@mui/icons-material/Brightness4Outlined';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 
 import { DropdownMenu, DropdownHeader, DropdownList } from "components/DropdownMenu";
 import { ThemeContext } from "contexts/theme";
-
+import { UserContext } from "contexts/user";
+import { getFirstLetters, stringToColor } from "commons";
+import { logout } from "requests";
 
 
 const ThemeIcon = ({ theme }) => {
@@ -25,35 +29,68 @@ const ThemeIcon = ({ theme }) => {
 
 const ChatboxHeader = () => {
     const { theme, setTheme } = useContext(ThemeContext);
+    const { username } = useContext(UserContext);
 
     const onThemeClick = (theme) => {
         setTheme(theme);
     }
 
+    const handleLogout = async (e) => {
+        e.preventDefault();
+        await logout();
+        // refresh whether logout success or failure.
+        window.location.reload();
+      };
+
     return (
         <div className="chatbox-header">
-            <DropdownMenu className="theme-menu">
-                <DropdownHeader className="theme-menu-title">
-                    <ThemeIcon theme={theme} /><span className="theme-menu-text">Theme</span>
-                </DropdownHeader>
-                <DropdownList className="theme-menu-list">
-                    <li>
-                        <button className="theme-menu-item" onClick={() => onThemeClick("system")}>
-                            <Brightness4OutlinedIcon /><span className="theme-menu-text">OS Default</span>
-                        </button>
-                    </li>
-                    <li>
-                        <button className="theme-menu-item" onClick={() => onThemeClick("light")}>
-                            <LightModeIcon /><span className="theme-menu-text">Light</span>
-                        </button>
-                    </li>
-                    <li>
-                        <button className="theme-menu-item" onClick={() => onThemeClick("dark")}>
-                            <DarkModeIcon /><span className="theme-menu-text">Dark</span>
-                        </button>
-                    </li>
-                </DropdownList>
-            </DropdownMenu>
+            <div className="right-elems">
+                <DropdownMenu>
+                    <DropdownHeader className="theme-menu-title">
+                        <ThemeIcon theme={theme} /><span className="theme-menu-text">Theme</span>
+                    </DropdownHeader>
+                    <DropdownList className="theme-menu-list">
+                        <li>
+                            <button className={`theme-menu-item ${theme === "system" && "selected"}`} onClick={() => onThemeClick("system")}>
+                                <Brightness4OutlinedIcon /><span className="theme-menu-text">OS Default</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button className={`theme-menu-item ${theme === "light" && "selected"}`} onClick={() => onThemeClick("light")}>
+                                <LightModeIcon /><span className="theme-menu-text">Light</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button className={`theme-menu-item ${theme === "dark" && "selected"}`} onClick={() => onThemeClick("dark")}>
+                                <DarkModeIcon /><span className="theme-menu-text">Dark</span>
+                            </button>
+                        </li>
+                    </DropdownList>
+                </DropdownMenu>
+                <DropdownMenu>
+                    <DropdownHeader className="user-info-menu-avatar">
+                        <Avatar
+                            // className not working on Avatar
+                            sx={{
+                                width: 24,
+                                height: 24,
+                                bgcolor: stringToColor(username),
+                            }}
+                        >
+                            {getFirstLetters(username)}
+                        </Avatar>
+                    </DropdownHeader>
+                    <DropdownList className="user-info-menu-list">
+                        <li><span>{username}</span></li>
+                        <hr className="user-info-menu-username-hr" />
+                        <li>
+                            <button className="theme-menu-item" onClick={handleLogout}>
+                                <span className="theme-menu-text">Logout</span>
+                            </button>
+                        </li>
+                    </DropdownList>
+                </DropdownMenu>
+            </div>
         </div>
     );
 };

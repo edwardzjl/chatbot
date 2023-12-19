@@ -34,31 +34,22 @@
     background-color: var(--bg-secondary);
 }
 
-.sidemenu-userinfo-hr {
+.sidemenu-bottom {
     margin-top: auto;
     width: 90%;
     border: 1px solid var(--border-color);
 }
 
-.sidemenu-userinfo {
-    padding: 12px;
-    border-radius: 5px;
-    text-align: center;
-    transition: ease 0.25s all;
+.sidemenu-bottom-group {
+    margin: 1rem;
     display: flex;
-    flex-direction: row;
-    align-items: center;
 }
 
-.sidemenu-userinfo:hover {
-    background-color: var(--bg-secondary);
+.sidemenu-bottom-group-items {
+    margin: 0.5rem;
 }
 
-.sidemenu-userinfo-username {
-    padding: 12px;
-    text-align: center;
-}
-
-.sidemenu-userinfo-logout {
-    margin-left: auto;
+.link-icon {
+    color: unset;
+    text-decoration: none;
 }
