@@ -3,6 +3,8 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from langchain.chains.base import Chain
+from langchain_core.language_models import BaseLLM
+from langchain_core.memory import BaseMemory
 from loguru import logger
 
 from chatbot.callbacks import (
@@ -10,8 +12,10 @@ from chatbot.callbacks import (
     UpdateConversationCallbackHandler,
 )
 from chatbot.context import session_id
-from chatbot.dependencies import ConvChain, UserIdHeader
-from chatbot.schemas import ChatMessage
+from chatbot.dependencies import ChatMemory, ConvChain, Llm, UserIdHeader
+from chatbot.models import Conversation as ORMConversation
+from chatbot.schemas import ChatMessage, Conversation, InfoMessage
+from chatbot.summarization import summarize
 
 router = APIRouter(
     prefix="/api/chat",
@@ -23,6 +27,8 @@ router = APIRouter(
 async def chat(
     websocket: WebSocket,
     conv_chain: Annotated[Chain, Depends(ConvChain)],
+    llm: Annotated[BaseLLM, Depends(Llm)],
+    memory: Annotated[BaseMemory, Depends(ChatMemory)],
     userid: Annotated[str | None, UserIdHeader()] = None,
 ):
     await websocket.accept()
@@ -44,6 +50,25 @@ async def chat(
                 input=message.content,
                 callbacks=[streaming_callback, update_conversation_callback],
             )
+            # summarize if required
+            if (
+                message.additional_kwargs
+                and "require_summarization" in message.additional_kwargs
+                and message.additional_kwargs["require_summarization"]
+            ):
+                title = await summarize(llm, memory)
+                conv = await ORMConversation.get(message.conversation)
+                conv.title = title
+                await conv.save()
+                info_message = InfoMessage(
+                    conversation=message.conversation,
+                    from_="ai",
+                    content={
+                        "type": "update_conv",
+                        "payload": Conversation(**conv.dict()).model_dump(),
+                    },
+                )
+                await websocket.send_text(info_message.model_dump_json())
         except WebSocketDisconnect:
             logger.info("websocket disconnected")
             return

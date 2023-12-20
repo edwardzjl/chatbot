@@ -5,6 +5,7 @@ import { useContext, useState, useRef, useEffect } from "react";
 import { ConversationContext } from "contexts/conversation";
 import { UserContext } from "contexts/user";
 import { WebsocketContext } from "contexts/websocket";
+import { DEFAULT_CONV_TITLE } from "commons";
 
 /**
  *
@@ -30,17 +31,25 @@ const ChatInput = () => {
   }, [inputRef, input]);
 
   const handleSubmit = async (e) => {
+    e.preventDefault();
     if (!ready) {
       return;
     }
-    e.preventDefault();
-    const payload = input;
+    const message = { from: username, content: input, type: "text" };
+    const payload = {
+      conversation: currentConv.id,
+      ...message,
+    };
+    if (currentConv.title === DEFAULT_CONV_TITLE && currentConv.messages.length === 0) {
+      payload.additional_kwargs = { require_summarization: true }
+    }
+    send(JSON.stringify(payload));
     setInput("");
     // append user input to chatlog
     dispatch({
       type: "messageAdded",
       id: currentConv.id,
-      message: { from: username, content: payload, type: "text" },
+      message: message,
     });
     // if current chat is not the first in the list, move it to the first when send message.
     if (conversations[0].id !== currentConv.id) {
@@ -49,12 +58,6 @@ const ChatInput = () => {
         id: currentConv.id,
       });
     }
-    send(JSON.stringify({
-      conversation: currentConv.id,
-      from: username,
-      content: payload,
-      type: "text",
-    }));
   };
 
   const handleKeyDown = async (e) => {

@@ -3,7 +3,7 @@ from typing import Any, Literal, Optional
 from uuid import UUID, uuid4
 
 from langchain.schema import BaseMessage
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from chatbot.utils import utcnow
 
@@ -22,6 +22,7 @@ class ChatMessage(BaseModel):
         "text", "stream/start", "stream/text", "stream/end", "info", "error"
     ] = "text"
     feedback: Literal["thumbup", "thumbdown", None] = None
+    additional_kwargs: Optional[dict[str, Any]] = None
     # sent_at is not an important information for the user, as far as I can tell.
     # But it introduces some complexity in the code, so I'm removing it for now.
     # sent_at: datetime = Field(default_factory=datetime.now)
@@ -56,6 +57,11 @@ class ChatMessage(BaseModel):
         )
 
 
+class InfoMessage(ChatMessage):
+    content: dict[str, Any]
+    type: Literal["info"] = "info"
+
+
 class Conversation(BaseModel):
     id: Optional[str] = None
     title: str
@@ -80,6 +86,10 @@ class ConversationDetail(Conversation):
 class CreateConversation(BaseModel):
     title: str
     messages: Optional[list[ChatMessage]] = None
+
+
+class CreateConversation(BaseModel):
+    title: str
 
 
 class UpdateConversation(BaseModel):
