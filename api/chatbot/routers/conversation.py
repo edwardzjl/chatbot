@@ -12,6 +12,7 @@ from chatbot.schemas import (
     ChatMessage,
     Conversation,
     ConversationDetail,
+    CreateConversation,
     UpdateConversation,
 )
 from chatbot.summarization import summarize as summarize_conv
@@ -54,9 +55,9 @@ async def get_conversation(
 
 @router.post("", status_code=201)
 async def create_conversation(
-    userid: Annotated[str | None, UserIdHeader()] = None
+    payload: CreateConversation, userid: Annotated[str | None, UserIdHeader()] = None
 ) -> ConversationDetail:
-    conv = ORMConversation(title=f"New chat", owner=userid)
+    conv = ORMConversation(title=payload.title, owner=userid)
     await conv.save()
     return ConversationDetail(**conv.dict())
 

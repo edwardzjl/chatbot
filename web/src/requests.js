@@ -1,4 +1,4 @@
-import { getCookie } from "commons";
+import { getCookie, DEFAULT_CONV_TITLE } from "commons";
 
 /**
  * Create a conversation
@@ -10,6 +10,7 @@ export const createConversation = async () => {
         headers: {
             "Content-Type": "application/json",
         },
+        body: JSON.stringify({title: DEFAULT_CONV_TITLE}),
     }).then((res) => res.json());
 };
 

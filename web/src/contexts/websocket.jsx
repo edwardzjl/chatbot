@@ -65,6 +65,14 @@ export const WebsocketProvider = ({ children }) => {
                             break;
                         case "stream/end":
                             break;
+                        case "info":
+                            if (content.type === "update_conv") {
+                                dispatch({
+                                    type: "updated",
+                                    conversation: content.payload,
+                                });
+                            } 
+                            break;
                         case "error":
                             setSnackbar({
                                 open: true,
