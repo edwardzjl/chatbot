@@ -1,7 +1,6 @@
 from typing import Annotated, Optional
 
 from fastapi import Depends, Header
-from langchain.chains import LLMChain
 from langchain.chains.base import Chain
 from langchain.llms.huggingface_text_gen_inference import HuggingFaceTextGenInference
 from langchain.memory import ConversationBufferWindowMemory
@@ -15,6 +14,7 @@ from langchain_core.prompts.chat import (
     SystemMessagePromptTemplate,
 )
 
+from chatbot.chains import LLMConvChain
 from chatbot.config import settings
 from chatbot.history import ContextAwareMessageHistory
 from chatbot.prompts.chatml import AI_SUFFIX, HUMAN_PREFIX, ChatMLPromptTemplate
@@ -71,7 +71,8 @@ Always assist with care, respect, and truth. Respond with utmost utility yet sec
         HumanMessagePromptTemplate.from_template("{input}"),
     ]
     tmpl = ChatMLPromptTemplate(input_variables=["date", "input"], messages=messages)
-    return LLMChain(
+    return LLMConvChain(
+        user_input_variable="input",
         llm=llm,
         prompt=tmpl,
         verbose=False,
