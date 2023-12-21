@@ -101,8 +101,18 @@ export const conversationsReducer = (conversations, action) => {
             return [...action.conversations]
         }
         case "messageAdded": {
-            return conversations.map((c) =>
-                c.id !== action.id ? c : { ...c, messages: [...c.messages, { ...action.message }] }
+            return conversations.map((c) => {
+                if (c.id !== action.id) {
+                    return c;
+                }
+                // find reversly could potentially be faster as the full message usually is the last one (streamed).
+                const match = c.messages.findLastIndex(message => message.id === action.message.id);
+                if (match !== -1) {
+                    // message already exists, ignore it
+                    return c;
+                }
+                return { ...c, messages: [...c.messages, { ...action.message }] }
+            }
             );
         }
         case "messageAppended": {
@@ -110,10 +120,16 @@ export const conversationsReducer = (conversations, action) => {
                 if (c.id !== action.id) {
                     return c;
                 }
-                const lastMsg = c.messages[c.messages.length - 1];
+                // find reversly could potentially be faster as the streaming message usually is the last one.
+                const match = c.messages.findLastIndex(message => message.id === action.message.id);
+                if (match === -1) {
+                    // we don't have this message, ignore it
+                    // this could happen when the user switch to another conversation and switch back
+                    return c;
+                }
                 return {
                     ...c,
-                    messages: [...c.messages.slice(0, -1), { ...lastMsg, content: lastMsg.content + action.message.content }]
+                    messages: [...c.messages.slice(0, match), { ...c.messages[match], content: c.messages[match].content + action.message.content }, ...c.messages.slice(match + 1)]
                 };
             });
         }
