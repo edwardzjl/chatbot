@@ -70,6 +70,16 @@ class StreamingLLMCallbackHandler(AsyncCallbackHandler):
             type="stream/end",
         )
         await self.websocket.send_text(message.model_dump_json())
+        # send the full message again in case user switched to another tab
+        # so that the frontend can update the message
+        full_message = ChatMessage(
+            id=run_id,
+            conversation=self.conversation_id,
+            from_="ai",
+            content=response.generations[0][0].text,
+            type="text",
+        )
+        await self.websocket.send_text(full_message.model_dump_json())
 
     async def on_llm_error(
         self,
