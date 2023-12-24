@@ -28,7 +28,7 @@ class MistralPromptTemplate(ChatPromptTemplate):
 
 
 class MistralPromptValue(FlexPromptValue):
-    human_prefix: Literal["[INST] "] = "[INST] "
+    human_prefix: Literal[" [INST] "] = " [INST] "
     human_suffix: Literal[" [/INST]"] = " [/INST]"
     ai_prefix: Literal[" "] = " "
     ai_suffix: Literal["</s>"] = "</s>"
