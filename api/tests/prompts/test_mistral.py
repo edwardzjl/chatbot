@@ -11,7 +11,7 @@ from langchain_core.prompts.chat import (
 from chatbot.prompts.mistral import MistralPromptTemplate
 
 
-class TestZephyrPromptTemplate(unittest.TestCase):
+class TestMistralPromptTemplate(unittest.TestCase):
     def test_format(self):
         system_prompt = PromptTemplate(
             template="{sys}",
@@ -30,7 +30,7 @@ class TestZephyrPromptTemplate(unittest.TestCase):
         actual = tmpl.format(
             sys="system instruction", history=history, input="question 2"
         )
-        expected = """<s>[INST] system instruction question 1 [/INST] answer 1</s>[INST] question 2 [/INST]"""
+        expected = """<s> [INST] system instruction question 1 [/INST] answer 1</s> [INST] question 2 [/INST]"""
         self.assertEqual(actual, expected)
 
 
