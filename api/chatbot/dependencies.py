@@ -14,6 +14,7 @@ from langchain_core.prompts.chat import (
     SystemMessagePromptTemplate,
 )
 
+from chatbot.callbacks import TracingLLMCallbackHandler
 from chatbot.chains import LLMConvChain
 from chatbot.config import settings
 from chatbot.history import ContextAwareMessageHistory
@@ -51,6 +52,7 @@ def Llm() -> BaseLLM:
         max_new_tokens=1024,
         stop_sequences=[AI_SUFFIX, HUMAN_PREFIX],
         streaming=True,
+        callbacks=[TracingLLMCallbackHandler()],
     )
 
 
