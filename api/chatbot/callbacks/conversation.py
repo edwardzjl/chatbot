@@ -1,7 +1,7 @@
 from typing import Any, Optional
 from uuid import UUID
 
-from langchain.callbacks.base import AsyncCallbackHandler
+from langchain_core.callbacks import AsyncCallbackHandler
 
 from chatbot.models import Conversation
 from chatbot.utils import utcnow

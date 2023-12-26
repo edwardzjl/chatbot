@@ -1,10 +1,9 @@
 import unittest
 
-from langchain_core.messages import AIMessage, HumanMessage
-from langchain_core.prompts import PromptTemplate
-from langchain_core.prompts.chat import (
+from langchain_core.prompts import (
     HumanMessagePromptTemplate,
     MessagesPlaceholder,
+    PromptTemplate,
     SystemMessagePromptTemplate,
 )
 

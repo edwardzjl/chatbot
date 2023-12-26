@@ -2,15 +2,17 @@ from typing import Annotated, Optional
 
 from fastapi import Depends, Header
 from langchain.chains.base import Chain
-from langchain.llms.huggingface_text_gen_inference import HuggingFaceTextGenInference
 from langchain.memory import ConversationBufferWindowMemory
+from langchain_community.llms.huggingface_text_gen_inference import (
+    HuggingFaceTextGenInference,
+)
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.language_models import BaseLLM
 from langchain_core.memory import BaseMemory
-from langchain_core.prompts import PromptTemplate
-from langchain_core.prompts.chat import (
+from langchain_core.prompts import (
     HumanMessagePromptTemplate,
     MessagesPlaceholder,
+    PromptTemplate,
     SystemMessagePromptTemplate,
 )
 

@@ -1,6 +1,6 @@
 import unittest
 
-from langchain.schema import AIMessage, HumanMessage
+from langchain_core.messages import AIMessage, HumanMessage
 
 from chatbot.schemas import ChatMessage, Conversation
 
