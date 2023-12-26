@@ -2,8 +2,8 @@ from typing import Any, Optional
 from uuid import UUID
 
 from fastapi import WebSocket
-from langchain.callbacks.base import AsyncCallbackHandler
-from langchain.schema import LLMResult
+from langchain_core.callbacks import AsyncCallbackHandler
+from langchain_core.outputs import LLMResult
 
 from chatbot.schemas import ChatMessage
 
