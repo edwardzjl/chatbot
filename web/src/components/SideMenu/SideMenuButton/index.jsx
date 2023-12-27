@@ -1,6 +1,6 @@
 import "./index.css";
 
-import { useState, useEffect, useRef, useContext } from "react";
+import { useState, useRef, useContext } from "react";
 import Tooltip from "@mui/material/Tooltip";
 
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
@@ -33,16 +33,7 @@ const ChatTab = ({ chat, onConvDeleted }) => {
   const titleRef = useRef(null);
   const [titleEditable, setTitleEditable] = useState("false");
 
-  const [delDialogOpen, setDelDialogOpen] = useState(false);
   const delDialogRef = useRef();
-
-  useEffect(() => {
-    if (delDialogOpen) {
-      delDialogRef.current?.showModal();
-    } else {
-      delDialogRef.current?.close();
-    }
-  }, [delDialogOpen]);
 
   const selectChat = async () => {
     if (chat.active) {
@@ -168,7 +159,7 @@ const ChatTab = ({ chat, onConvDeleted }) => {
               </button>
             </li>
             <li>
-              <button className="chat-op-menu-item" onClick={() => setDelDialogOpen(true)}>
+              <button className="chat-op-menu-item" onClick={() => delDialogRef.current?.showModal()}>
                 <DeleteOutlineIcon />
                 <span className="chat-op-menu-item-text">Delete</span>
               </button>
@@ -184,7 +175,7 @@ const ChatTab = ({ chat, onConvDeleted }) => {
         <p>This will delete '{titleRef.current?.innerText}'</p>
         <div className="del-dialog-actions">
           <button autoFocus onClick={deleteChat}>Delete</button>
-          <button onClick={() => setDelDialogOpen(false)}>Cancel</button>
+          <button onClick={() => delDialogRef.current?.close()}>Cancel</button>
         </div>
       </dialog>
     </div>

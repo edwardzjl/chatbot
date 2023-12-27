@@ -54,6 +54,9 @@
 }
 
 .del-dialog {
+  width: 25vw;
+  display: flex;
+  flex-direction: column;
   color: var(--text-primary);
   background-color: var(--bg-primary);
   border: none;
@@ -61,6 +64,7 @@
 }
 
 .del-dialog-actions {
+  margin-top: auto;
   display: flex;
   flex-direction: row-reverse;
 }
