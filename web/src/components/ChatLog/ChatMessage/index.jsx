@@ -1,6 +1,6 @@
 import "./index.css";
 
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Markdown from "react-markdown";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import remarkGfm from "remark-gfm";
@@ -29,10 +29,29 @@ import { getFirstLetters, stringToColor } from "commons";
  */
 const ChatMessage = ({ convId, idx, message }) => {
   const { theme } = useContext(ThemeContext);
+  const [markdownTheme, setMarkdownTheme] = useState(darcula);
   const { dispatch } = useContext(ConversationContext);
   const [copyTooltipTitle, setCopyTooltipTitle] = useState("copy content");
   const [thumbUpTooltipTitle, setThumbUpTooltipTitle] = useState("good answer");
   const [thumbDownTooltipTitle, setThumbDownTooltipTitle] = useState("bad answer");
+
+  useEffect(() => {
+    switch (theme) {
+      case "dark":
+        setMarkdownTheme(darcula);
+        break;
+      case "light":
+        setMarkdownTheme(googlecode);
+        break;
+      default: {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          setMarkdownTheme(darcula);
+        } else {
+          setMarkdownTheme(googlecode);
+        }
+      }
+    }
+  }, [theme]);
 
   const onCopyClick = (content) => {
     navigator.clipboard.writeText(content);
@@ -108,7 +127,7 @@ const ChatMessage = ({ convId, idx, message }) => {
                   </div>
                   <SyntaxHighlighter
                     {...props}
-                    style={theme === "dark" ? darcula : googlecode}
+                    style={markdownTheme}
                     language={match[1]}
                     PreTag="div"
                   >
