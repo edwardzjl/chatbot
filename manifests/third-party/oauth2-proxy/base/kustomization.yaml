@@ -1,0 +1,33 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+labels:
+  - pairs:
+      app.kubernetes.io/name: oauth2-proxy
+      app.kubernetes.io/version: v7.5.1
+      app.kubernetes.io/managed-by: kubectl
+    includeSelectors: false
+
+resources:
+  - rbac.yaml
+  - deployment.yaml
+  - service.yaml
+
+configMapGenerator:
+  - name: oauth2-proxy
+    files:
+      - oauth2-proxy.yaml
+
+secretGenerator:
+  - name: oauth2-proxy
+    envs:
+      - secret-params.env
+
+# we will mount configmaps so we can't use suffix hash
+generatorOptions:
+  disableNameSuffixHash: true
+
+images:
+  - name: quay.io/oauth2-proxy/oauth2-proxy
+    newName: zjuici/mirror.oauth2-proxy.oauth2-proxy
+    newTag: v7.5.1

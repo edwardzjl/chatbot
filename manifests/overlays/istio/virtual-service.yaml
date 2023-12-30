@@ -3,17 +3,26 @@ kind: VirtualService
 metadata:
   name: chatbot
 spec:
-  hosts:
-    - chatbot.agi.zjuici.com
   gateways:
     - istio-system/istio-ingressgateway
+  hosts:
+    - chatbot.agi.zjuici.com
   http:
+    - name: chatbot-oauth2-proxy-route
+      match:
+        - uri:
+            prefix: /oauth2/
+      route:
+        - destination:
+            host: oauth2-proxy
+            port:
+              number: 8080
     - name: chatbot-route
       match:
         - uri:
             prefix: /
       route:
         - destination:
-            host: chatbot.jlzhou-chatbot.svc.cluster.local
+            host: chatbot
             port:
               number: 8000

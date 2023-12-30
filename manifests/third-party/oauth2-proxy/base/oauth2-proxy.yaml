@@ -1,0 +1,50 @@
+injectRequestHeaders:
+  - name: X-Forwarded-Groups
+    values:
+      - claim: groups
+  - name: X-Forwarded-User
+    values:
+      - claim: user
+  - name: X-Forwarded-Email
+    values:
+      - claim: email
+  - name: X-Forwarded-Preferred-Username
+    values:
+      - claim: preferred_username
+injectResponseHeaders:
+  - name: kubeflow-userid
+    values:
+      - claim: email
+metricsServer:
+  BindAddress: ""
+  SecureBindAddress: ""
+  TLS: null
+providers:
+  # only the first provider works now.
+  # see <https://github.com/oauth2-proxy/oauth2-proxy/issues/926>
+  - provider: github
+    id: github
+    name: github
+    clientID: 13cf570549ff0674230c
+    clientSecret: 4b7409c02ebaab91a96152d2ac5cc2cc31c4292b
+  - provider: google
+    id: google
+    name: google
+    clientID: 210937179771-sfbnkrnfa5osl6fdrelrk6um4qr11dii.apps.googleusercontent.com
+    clientSecret: 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
+    googleConfig: {}
+    loginURLParameters:
+      - default:
+          - force
+        name: approval_prompt
+server:
+  BindAddress: 0.0.0.0:4180
+  SecureBindAddress: ""
+  TLS: null
+# upstreamConfig is required or we will get 404 error.
+upstreamConfig:
+  upstreams:
+  - id: static://200
+    path: /
+    static: true
+    staticCode: 200

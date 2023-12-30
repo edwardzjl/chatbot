@@ -9,5 +9,7 @@ namespace: jlzhou-chatbot
 
 resources:
   - ../../third-party/redis
+  - ../../third-party/oauth2-proxy/base
   - ../../base
   - virtual-service.yaml
+  - authorizationpolicy.yaml
