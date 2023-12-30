@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oauth2-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: oauth2-proxy
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+      labels:
+        app.kubernetes.io/name: oauth2-proxy
+    spec:
+      containers:
+        - name: oauth2-proxy
+          image: quay.io/oauth2-proxy/oauth2-proxy:latest
+          args:
+            - --email-domain=* # --email-domain cannot be set through environment variables
+            - --alpha-config=/etc/oauth2-proxy/oauth2-proxy.yaml
+            - --redirect-url=/oauth2/callback
+          envFrom:
+            - secretRef:
+                name: oauth2-proxy
+          ports:
+            - containerPort: 4180
+              name: http-api
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: http-api
+              scheme: HTTP
+          readinessProbe:
+            httpGet:
+              path: /ping
+              port: http-api
+              scheme: HTTP
+          volumeMounts:
+            - name: config
+              mountPath: /etc/oauth2-proxy
+      volumes:
+        - name: config
+          configMap:
+            name: oauth2-proxy
+            defaultMode: 420
