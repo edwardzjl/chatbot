@@ -12,7 +12,6 @@ import { DropdownMenu, DropdownHeader, DropdownList } from "components/DropdownM
 import { ThemeContext } from "contexts/theme";
 import { UserContext } from "contexts/user";
 import { getFirstLetters, stringToColor } from "commons";
-import { logout } from "requests";
 
 
 const ThemeIcon = ({ theme }) => {
@@ -37,9 +36,9 @@ const ChatboxHeader = () => {
 
     const handleLogout = async (e) => {
         e.preventDefault();
-        await logout();
-        // refresh whether logout success or failure.
-        window.location.reload();
+        // See <https://oauth2-proxy.github.io/oauth2-proxy/docs/features/endpoints/>
+        // This is a bit hard-coded?
+        window.location.href = "/oauth2/sign_out";
       };
 
     return (
