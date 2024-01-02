@@ -1,4 +1,4 @@
-import { getCookie, DEFAULT_CONV_TITLE } from "commons";
+import { DEFAULT_CONV_TITLE } from "commons";
 
 /**
  * Create a conversation
@@ -70,14 +70,4 @@ export const summarizeConversation = async (conversationId) => {
     return fetch(`/api/conversations/${conversationId}/summarization`, {
         method: "POST",
     }).then(res => res.json());
-}
-
-export const logout = async () => {
-    const sessionId = getCookie("authservice_session");
-    await fetch("/authservice/logout", {
-        method: "POST",
-        headers: {
-            Authorization: `Bearer ${sessionId}`,
-        },
-    });
 }
