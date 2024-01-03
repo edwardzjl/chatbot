@@ -24,4 +24,4 @@ generatorOptions:
 
 images:
   - name: edwardlol/chatbot
-    newTag: 0.6.3
+    newTag: 0.6.4
