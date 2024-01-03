@@ -10,10 +10,11 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from loguru import logger
 
-from chatbot.dependencies import UserIdHeader
+from chatbot.dependencies import EmailHeader, UserIdHeader, UsernameHeader
 from chatbot.routers.chat import router as chat_router
 from chatbot.routers.conversation import router as conversation_router
 from chatbot.routers.message import router as message_router
+from chatbot.schemas import UserProfile
 
 
 @asynccontextmanager
@@ -35,8 +36,16 @@ def healthz():
 
 
 @app.get("/api/userinfo")
-def userinfo(userid: Annotated[str | None, UserIdHeader()] = None):
-    return {"username": userid}
+def userinfo(
+    userid: Annotated[str | None, UserIdHeader()] = None,
+    username: Annotated[str | None, UsernameHeader()] = None,
+    email: Annotated[str | None, EmailHeader()] = None,
+) -> UserProfile:
+    return UserProfile(
+        userid=userid,
+        username=username,
+        email=email,
+    )
 
 
 @app.exception_handler(NotFoundError)

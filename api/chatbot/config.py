@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     redis_om_url: RedisDsn = "redis://localhost:6379"
     """This env name (REDIS_OM_URL) is required by redis-om"""
-    user_id_header: str = "kubeflow-userid"
+    user_id_header: str = "X-Forwarded-User"
 
 
 settings = Settings()

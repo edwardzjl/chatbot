@@ -29,6 +29,18 @@ def UserIdHeader(alias: Optional[str] = None, **kwargs):
     return Header(alias=alias, **kwargs)
 
 
+def UsernameHeader(alias: Optional[str] = None, **kwargs):
+    if alias is None:
+        alias = "X-Forwarded-Preferred-Username"
+    return Header(alias=alias, **kwargs)
+
+
+def EmailHeader(alias: Optional[str] = None, **kwargs):
+    if alias is None:
+        alias = "X-Forwarded-Email"
+    return Header(alias=alias, **kwargs)
+
+
 def MessageHistory() -> BaseChatMessageHistory:
     return ContextAwareMessageHistory(
         url=str(settings.redis_om_url),
