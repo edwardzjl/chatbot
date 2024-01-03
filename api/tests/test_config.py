@@ -35,7 +35,7 @@ class TestSettings(unittest.TestCase):
 
     def test_default_user_id_header(self):
         settings = Settings()
-        self.assertEqual(settings.user_id_header, "kubeflow-userid")
+        self.assertEqual(settings.user_id_header, "X-Forwarded-User")
 
     @patch.dict(os.environ, {"USER_ID_HEADER": "some-header"}, clear=True)
     def test_user_id_header(self):

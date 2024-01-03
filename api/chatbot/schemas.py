@@ -94,3 +94,9 @@ class CreateConversation(BaseModel):
 
 class UpdateConversation(BaseModel):
     title: str
+
+
+class UserProfile(BaseModel):
+    userid: str
+    username: Optional[str] = None
+    email: Optional[str] = None
