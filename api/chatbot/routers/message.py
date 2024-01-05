@@ -28,14 +28,10 @@ async def thumbup(
         # should never happen
         return
     session_id.set(f"{userid}:{conversation_id}")
-    # redis pushes from left to right, so the first message is at index llen - 1
-    # I have to get the message reversed.
-    msg_count = history.redis_client.llen(history.key)
-    lidx = msg_count - message_idx - 1
-    _msg: str = history.redis_client.lindex(history.key, lidx)
+    _msg: str = history.redis_client.lindex(history.key, message_idx)
     msg = json.loads(_msg.decode("utf-8"))
     msg["data"]["additional_kwargs"]["feedback"] = "thumbup"
-    history.redis_client.lset(history.key, lidx, json.dumps(msg))
+    history.redis_client.lset(history.key, message_idx, json.dumps(msg))
 
 
 @router.put("/{message_idx}/thumbdown")
@@ -52,12 +48,7 @@ async def thumbdown(
         # should never happen
         return
     session_id.set(f"{userid}:{conversation_id}")
-    msg = history.get_message(message_idx)
-    # redis pushes from left to right, so the first message is at index llen - 1
-    # I have to get the message reversed.
-    msg_count = history.redis_client.llen(history.key)
-    lidx = msg_count - message_idx - 1
-    _msg: str = history.redis_client.lindex(history.key, lidx)
+    _msg: str = history.redis_client.lindex(history.key, message_idx)
     msg = json.loads(_msg.decode("utf-8"))
     msg["data"]["additional_kwargs"]["feedback"] = "thumbdown"
-    history.redis_client.lset(history.key, lidx, json.dumps(msg))
+    history.redis_client.lset(history.key, message_idx, json.dumps(msg))
