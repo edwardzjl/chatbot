@@ -3,6 +3,7 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
+    embedding_url: HttpUrl = "http://localhost:8081"
     inference_server_url: HttpUrl = "http://localhost:8080"
     log_level: str = "INFO"
     redis_om_url: RedisDsn = "redis://localhost:6379"
