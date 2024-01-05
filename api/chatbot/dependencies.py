@@ -2,7 +2,6 @@ from typing import Annotated, Optional
 
 from fastapi import Depends, Header
 from langchain.chains.base import Chain
-from langchain.memory import ConversationBufferWindowMemory
 from langchain_community.llms.huggingface_text_gen_inference import (
     HuggingFaceTextGenInference,
 )
@@ -19,7 +18,8 @@ from langchain_core.prompts import (
 from chatbot.callbacks import TracingLLMCallbackHandler
 from chatbot.chains import LLMConvChain
 from chatbot.config import settings
-from chatbot.history import ContextAwareMessageHistory
+from chatbot.history import ChatbotMessageHistory
+from chatbot.memory import ChatbotMemory
 from chatbot.prompts.chatml import AI_SUFFIX, HUMAN_PREFIX, ChatMLPromptTemplate
 
 
@@ -42,7 +42,7 @@ def EmailHeader(alias: Optional[str] = None, **kwargs):
 
 
 def MessageHistory() -> BaseChatMessageHistory:
-    return ContextAwareMessageHistory(
+    return ChatbotMessageHistory(
         url=str(settings.redis_om_url),
         key_prefix="chatbot:messages:",
         session_id="sid",  # a fake session id as it is required
@@ -52,10 +52,10 @@ def MessageHistory() -> BaseChatMessageHistory:
 def ChatMemory(
     history: Annotated[BaseChatMessageHistory, Depends(MessageHistory)]
 ) -> BaseMemory:
-    return ConversationBufferWindowMemory(
+    return ChatbotMemory(
         memory_key="history",
         input_key="input",
-        chat_memory=history,
+        history=history,
         return_messages=True,
     )
 

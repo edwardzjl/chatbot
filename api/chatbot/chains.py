@@ -3,6 +3,8 @@ from typing import Any
 from langchain.chains import LLMChain
 from langchain.memory.chat_memory import BaseChatMemory
 
+from chatbot.memory import ChatbotMemory
+
 
 class LLMConvChain(LLMChain):
     """Conversation chain that persists message separately on chain start and end."""
@@ -15,6 +17,9 @@ class LLMConvChain(LLMChain):
         """
         inputs = super().prep_inputs(inputs)
         # we need to access the history so we need to ensure it's BaseChatMemory and then we can access it by memory.chat_memory
+        if self.memory is not None and isinstance(self.memory, ChatbotMemory):
+            message = inputs[self.user_input_variable]
+            self.memory.history.add_user_message(message)
         if self.memory is not None and isinstance(self.memory, BaseChatMemory):
             message = inputs[self.user_input_variable]
             self.memory.chat_memory.add_user_message(message)
@@ -31,6 +36,9 @@ class LLMConvChain(LLMChain):
         """
         self._validate_outputs(outputs)
         # we need to access the history so we need to ensure it's BaseChatMemory and then we can access it by memory.chat_memory
+        if self.memory is not None and isinstance(self.memory, ChatbotMemory):
+            text = outputs[self.output_key]
+            self.memory.history.add_ai_message(text)
         if self.memory is not None and isinstance(self.memory, BaseChatMemory):
             text = outputs[self.output_key]
             self.memory.chat_memory.add_ai_message(text)
