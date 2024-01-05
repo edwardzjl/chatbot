@@ -6,7 +6,7 @@ from langchain_core.chat_history import BaseChatMessageHistory
 
 from chatbot.context import session_id
 from chatbot.dependencies import MessageHistory, UserIdHeader
-from chatbot.history import ContextAwareMessageHistory
+from chatbot.history import ChatbotMessageHistory
 
 router = APIRouter(
     prefix="/api/conversations/{conversation_id}/messages",
@@ -24,7 +24,7 @@ async def thumbup(
     """Using message index as the uuid is in the message body which is json dumped into redis,
     and is impossible to filter on.
     Also separate thumbup and thumbdown into two endpoints to make it more RESTful."""
-    if not isinstance(history, ContextAwareMessageHistory):
+    if not isinstance(history, ChatbotMessageHistory):
         # should never happen
         return
     session_id.set(f"{userid}:{conversation_id}")
@@ -44,7 +44,7 @@ async def thumbdown(
     """Using message index as the uuid is in the message body which is json dumped into redis,
     and is impossible to filter on.
     Also separate thumbup and thumbdown into two endpoints to make it more RESTful."""
-    if not isinstance(history, ContextAwareMessageHistory):
+    if not isinstance(history, ChatbotMessageHistory):
         # should never happen
         return
     session_id.set(f"{userid}:{conversation_id}")
