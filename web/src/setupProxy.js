@@ -3,7 +3,9 @@ const { createProxyMiddleware } = require("http-proxy-middleware");
 const options = {
   target: "http://127.0.0.1:8000",
   headers: {
-    "kubeflow-userid": "dev",
+    "X-Forwarded-User": "dev",
+    "X-Forwarded-Preferred-Username": "dev",
+    "X-Forwarded-Email": "dev@jlzhou.me",
   },
   changeOrigin: true,
   ws: true,
