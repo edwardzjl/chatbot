@@ -21,7 +21,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@v5.4.0
+        uses: docker/metadata-action@v5.5.0
         with:
           images: edwardlol/chatbot
           # semver has default priority 900, sha has default priority 100
