@@ -6,6 +6,7 @@ from langchain_core.messages import (
     ChatMessage,
     HumanMessage,
     SystemMessage,
+    ToolMessage,
 )
 from langchain_core.prompt_values import ChatPromptValue
 
@@ -19,6 +20,8 @@ class FlexPromptValue(ChatPromptValue):
     human_suffix: Optional[str] = None
     ai_prefix: Optional[str] = None
     ai_suffix: Optional[str] = None
+    tool_prefix: Optional[str] = None
+    tool_suffix: Optional[str] = None
 
     def to_string(self) -> str:
         """Return prompt as string."""
@@ -48,10 +51,12 @@ class FlexPromptValue(ChatPromptValue):
             return self.ai_prefix or ""
         if isinstance(message, SystemMessage):
             return self.system_prefix or ""
+        if isinstance(message, ToolMessage):
+            return self.tool_prefix or ""
         if isinstance(message, ChatMessage):
             # I can't decide the prefix for ChatMessage
             return message.role
-        # BaseMessage fails here
+        # BaseMessages fall here
         match message.type:
             case "human":
                 return self.human_prefix or ""
@@ -59,6 +64,8 @@ class FlexPromptValue(ChatPromptValue):
                 return self.ai_prefix or ""
             case "system":
                 return self.system_prefix or ""
+            case "tool":
+                return self.tool_prefix or ""
             case "chat":
                 return message.role
             case _:
@@ -74,10 +81,12 @@ class FlexPromptValue(ChatPromptValue):
             return self.ai_suffix or ""
         if isinstance(message, SystemMessage):
             return self.system_suffix or ""
+        if isinstance(message, ToolMessage):
+            return self.tool_suffix or ""
         if isinstance(message, ChatMessage):
             # I can't decide the suffix for ChatMessage
             return ""
-        # BaseMessage fails here
+        # BaseMessages fall here
         match message.type:
             case "human":
                 return self.human_suffix or ""
@@ -85,6 +94,8 @@ class FlexPromptValue(ChatPromptValue):
                 return self.ai_suffix or ""
             case "system":
                 return self.system_suffix or ""
+            case "tool":
+                return self.tool_suffix or ""
             case "chat":
                 return ""
             case _:

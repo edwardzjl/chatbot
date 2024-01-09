@@ -33,3 +33,5 @@ class ChatMLPromptValue(FlexPromptValue):
     human_suffix: Literal["<|im_end|>"] = "<|im_end|>"
     ai_prefix: Literal["<|im_start|>assistant\n"] = "<|im_start|>assistant\n"
     ai_suffix: Literal["<|im_end|>"] = "<|im_end|>"
+    tool_prefix: Literal["<|im_start|>tool\n"] = "<|im_start|>tool\n"
+    tool_suffix: Literal["<|im_end|>"] = "<|im_end|>"
