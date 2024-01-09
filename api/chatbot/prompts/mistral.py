@@ -6,7 +6,7 @@ from langchain_core.prompts import ChatPromptTemplate
 
 from chatbot.prompts.base import FlexPromptValue
 
-# TODO: this section is mainly used for formatting histroy messages.
+# TODO: this section is mainly used for formatting history messages or agent scratchpads.
 # As Literal cannot use variables, this lead to a bit of duplication.
 HUMAN_PREFIX = "[INST] "
 HUMAN_SUFFIX = " [/INST]"
