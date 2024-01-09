@@ -34,3 +34,5 @@ class SolarPromptValue(FlexPromptValue):
     human_suffix: Literal["\n"] = "\n"
     ai_prefix: Literal["### Assistant:\n"] = "### Assistant:\n"
     ai_suffix: Literal["</s>"] = "</s>"
+    tool_prefix: Literal["### Tool:\n"] = "### Tool:\n"
+    tool_suffix: Literal[""] = ""

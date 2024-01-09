@@ -33,3 +33,5 @@ class ZephyrPromptValue(FlexPromptValue):
     human_suffix: Literal["</s>"] = "</s>"
     ai_prefix: Literal["<|assistant|>\n"] = "<|assistant|>\n"
     ai_suffix: Literal["</s>"] = "</s>"
+    tool_prefix: Literal["<|tool|>\n"] = "<|tool|>\n"
+    tool_suffix: Literal["</s>"] = "</s>"
