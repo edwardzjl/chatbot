@@ -17,6 +17,7 @@ import ThumbDownOutlined from "@mui/icons-material/ThumbDownOutlined";
 
 import { ThemeContext } from "contexts/theme";
 import { ConversationContext } from "contexts/conversation";
+import { UserContext } from "contexts/user";
 import { getFirstLetters, stringToColor } from "commons";
 
 /**
@@ -30,6 +31,7 @@ import { getFirstLetters, stringToColor } from "commons";
 const ChatMessage = ({ convId, idx, message }) => {
   const { theme } = useContext(ThemeContext);
   const [markdownTheme, setMarkdownTheme] = useState(darcula);
+  const { username } = useContext(UserContext);
   const { dispatch } = useContext(ConversationContext);
   const [copyTooltipTitle, setCopyTooltipTitle] = useState("copy content");
   const [thumbUpTooltipTitle, setThumbUpTooltipTitle] = useState("good answer");
@@ -88,16 +90,16 @@ const ChatMessage = ({ convId, idx, message }) => {
   };
 
   /**
-   * Checks whether a message is sent by bot.
+   * Checks whether a message is sent by me.
    * @param {*} message
    */
-  const botMessage = (message) => {
+  const myMessage = (message) => {
     const msgFrom = message.from.toLowerCase();
-    return msgFrom === "ai" || msgFrom === "assistant";
+    return msgFrom === username;
   };
 
   return (
-    <div className={`message-container ${botMessage(message) && "AI"}`}>
+    <div className={`message-container ${myMessage(message) && "mine"}`}>
       <div className="message-title">
         <Avatar
           className="message-title-avatar"
@@ -106,9 +108,9 @@ const ChatMessage = ({ convId, idx, message }) => {
             bgcolor: stringToColor(message.from),
           }}
         >
-          {botMessage(message) ? "AI" : getFirstLetters(message.from)}
+          {myMessage(message) ? getFirstLetters(message.from) : "AI"}
         </Avatar>
-        <div className="message-title-name">{botMessage(message) ? "AI" : "You"}</div>
+        <div className="message-title-name">{myMessage(message) ? "You" : "AI"}</div>
       </div>
       <div className="message-body">
         <Markdown
@@ -145,7 +147,7 @@ const ChatMessage = ({ convId, idx, message }) => {
         >
           {message.content}
         </Markdown>
-        {botMessage(message) && (
+        {!myMessage(message) && (
           <div className="message-feedbacks">
             <Tooltip title={copyTooltipTitle}>
               <ContentCopyIcon className="message-feedback" onClick={() => onCopyClick(message.content)} />
