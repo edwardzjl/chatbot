@@ -1,0 +1,27 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/docker-existing-dockerfile
+// Also read <https://mcr.microsoft.com/en-us/product/devcontainers/python/about>
+{
+	"name": "chatbot",
+	"dockerComposeFile": ["./docker-compose.yml"],
+	"service": "chatbot",
+	"workspaceFolder": "/workspace",
+	// uncomment next line will keep the container running after the devcontainer is closed
+	// "shutdownAction": "none",
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// Also forward 6379 for redis
+	"forwardPorts": [3000, 8000, 6379],
+
+	// postCreateCommand cannot access nvm, see <https://github.com/microsoft/vscode-dev-containers/issues/559>
+	// So I have to make a init script.
+	// Also note that the $pwd of this command is $workspaceFolder
+	"postCreateCommand": ".devcontainer/init.sh",
+	"customizations": {
+		"vscode": {
+			"settings": {
+				"python.pythonPath": "/workspace/api/.venv/bin/python"
+			}
+		}
+	}
+}
