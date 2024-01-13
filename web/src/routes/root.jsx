@@ -1,4 +1,4 @@
-import "./App.css";
+import "./root.css";
 import { forwardRef, useContext } from "react";
 
 import Snackbar from "@mui/material/Snackbar";
