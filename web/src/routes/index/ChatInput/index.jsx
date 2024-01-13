@@ -1,20 +1,22 @@
 import "./index.css";
 
 import { useContext, useState, useRef, useEffect } from "react";
+import { Form, useSubmit } from "react-router-dom";
 
-import { ConversationContext } from "contexts/conversation";
 import { UserContext } from "contexts/user";
+import { MessageContext } from "contexts/message";
 import { WebsocketContext } from "contexts/websocket";
 import { DEFAULT_CONV_TITLE } from "commons";
+
 
 /**
  *
  */
 const ChatInput = () => {
   const { username } = useContext(UserContext);
-  const { conversations, currentConv, dispatch } = useContext(ConversationContext);
+  const { dispatch } = useContext(MessageContext);
   const [ready, send] = useContext(WebsocketContext);
-
+  const submit = useSubmit();
   const [input, setInput] = useState("");
   const inputRef = useRef(null);
 
@@ -35,29 +37,28 @@ const ChatInput = () => {
     if (!ready) {
       return;
     }
+    // I need to use the conversation id later so I need to create a conversation here instead of in the 'react router action'
+    const conversation = await fetch("/api/conversations", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ title: DEFAULT_CONV_TITLE }),
+    }).then((res) => res.json());
+    submit(conversation, { method: "post", action: "/", encType: "application/json" });
     const message = { id: crypto.randomUUID(), from: username, content: input, type: "text" };
     const payload = {
-      conversation: currentConv.id,
+      conversation: conversation.id,
+      additional_kwargs: { require_summarization: true },
       ...message,
     };
-    if (currentConv.title === DEFAULT_CONV_TITLE && currentConv.messages.length === 0) {
-      payload.additional_kwargs = { require_summarization: true }
-    }
     send(JSON.stringify(payload));
     setInput("");
     // append user input to chatlog
     dispatch({
-      type: "messageAdded",
-      id: currentConv.id,
+      type: "added",
       message: message,
     });
-    // if current chat is not the first in the list, move it to the first when send message.
-    if (conversations[0].id !== currentConv.id) {
-      dispatch({
-        type: "moveToFirst",
-        id: currentConv.id,
-      });
-    }
   };
 
   const handleKeyDown = async (e) => {
@@ -73,7 +74,7 @@ const ChatInput = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="input-container">
+    <Form className="input-container" method="post">
       <textarea
         className="input-text"
         ref={inputRef}
@@ -84,7 +85,7 @@ const ChatInput = () => {
       <button disabled={!ready} className="input-submit-button" type="submit">
         Send
       </button>
-    </form>
+    </Form>
   );
 };
 

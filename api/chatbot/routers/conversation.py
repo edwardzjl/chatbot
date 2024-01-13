@@ -67,10 +67,11 @@ async def update_conversation(
     conversation_id: str,
     payload: UpdateConversation,
     userid: Annotated[str | None, UserIdHeader()] = None,
-) -> None:
+) -> ConversationDetail:
     conv = await ORMConversation.get(conversation_id)
     conv.title = payload.title
     await conv.save()
+    return ConversationDetail(**conv.dict())
 
 
 @router.delete("/{conversation_id}", status_code=204)

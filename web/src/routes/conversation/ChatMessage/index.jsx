@@ -16,7 +16,7 @@ import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import ThumbDownOutlined from "@mui/icons-material/ThumbDownOutlined";
 
 import { ThemeContext } from "contexts/theme";
-import { ConversationContext } from "contexts/conversation";
+import { MessageContext } from "contexts/message";
 import { UserContext } from "contexts/user";
 import { getFirstLetters, stringToColor } from "commons";
 
@@ -32,7 +32,7 @@ const ChatMessage = ({ convId, idx, message }) => {
   const { theme } = useContext(ThemeContext);
   const [markdownTheme, setMarkdownTheme] = useState(darcula);
   const { username } = useContext(UserContext);
-  const { dispatch } = useContext(ConversationContext);
+  const { dispatch } = useContext(MessageContext);
   const [copyTooltipTitle, setCopyTooltipTitle] = useState("copy content");
   const [thumbUpTooltipTitle, setThumbUpTooltipTitle] = useState("good answer");
   const [thumbDownTooltipTitle, setThumbDownTooltipTitle] = useState("bad answer");
@@ -69,7 +69,6 @@ const ChatMessage = ({ convId, idx, message }) => {
       setThumbUpTooltipTitle("thanks!");
       dispatch({
         type: "feedback",
-        id: convId,
         idx: idx,
         feedback: "thumbup",
       });
@@ -82,7 +81,6 @@ const ChatMessage = ({ convId, idx, message }) => {
       setThumbDownTooltipTitle("thanks!");
       dispatch({
         type: "feedback",
-        id: convId,
         idx: idx,
         feedback: "thumbdown",
       });

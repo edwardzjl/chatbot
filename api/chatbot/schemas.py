@@ -85,11 +85,6 @@ class ConversationDetail(Conversation):
 
 class CreateConversation(BaseModel):
     title: str
-    messages: Optional[list[ChatMessage]] = None
-
-
-class CreateConversation(BaseModel):
-    title: str
 
 
 class UpdateConversation(BaseModel):
