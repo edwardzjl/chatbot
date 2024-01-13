@@ -13,8 +13,7 @@ from chatbot.callbacks import (
 )
 from chatbot.context import session_id
 from chatbot.dependencies import ChatMemory, ConvChain, Llm, UserIdHeader
-from chatbot.models import Conversation as ORMConversation
-from chatbot.schemas import ChatMessage, Conversation, InfoMessage
+from chatbot.schemas import ChatMessage, InfoMessage
 from chatbot.summarization import summarize
 
 router = APIRouter(
@@ -57,15 +56,12 @@ async def chat(
                 and message.additional_kwargs["require_summarization"]
             ):
                 title = await summarize(llm, memory)
-                conv = await ORMConversation.get(message.conversation)
-                conv.title = title
-                await conv.save()
                 info_message = InfoMessage(
                     conversation=message.conversation,
                     from_="ai",
                     content={
-                        "type": "update_conv",
-                        "payload": Conversation(**conv.dict()).model_dump(),
+                        "type": "title-generated",
+                        "payload": title,
                     },
                 )
                 await websocket.send_text(info_message.model_dump_json())

@@ -90,6 +90,76 @@
   color: #61dafb;
 }
 
+.sidemenu {
+  width: 260px;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, .2);
+  background-color: var(--bg-primary);
+  display: flex;
+  flex-direction: column;
+}
+
+.sidemenu ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sidemenu li {
+  list-style: none;
+  width: 100%;
+}
+
+.sidemenu a {
+  color: unset;
+  text-decoration: none;
+}
+
+.sidemenu-date-group {
+  color: var(--text-3);
+  text-align: start;
+  margin: 10px;
+  margin-top: 20px;
+}
+
+.sidemenu-button {
+  height: 2rem;
+  width: 100%;
+  margin: 2px;
+  padding: 3px;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  border: none;
+  border-radius: 5px;
+  transition: ease 0.25s all;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.sidemenu-button:hover {
+  background-color: var(--bg-secondary);
+}
+
+.sidemenu-button.active {
+  background-color: var(--bg-secondary);
+}
+
+.sidemenu-bottom {
+  margin-top: auto;
+  width: 90%;
+  border: 1px solid var(--border-color);
+}
+
+.sidemenu-bottom-group {
+  margin: 1rem;
+  display: flex;
+}
+
+.sidemenu-bottom-group-items {
+  margin: 0.5rem;
+}
+
 .chatbox {
   display: flex;
   flex-direction: column;
@@ -100,22 +170,13 @@
   position: relative;
 }
 
-.chat-log {
-  text-align: left;
-  scroll-behavior: smooth;
-}
-
-.input-bottom {
-  position: sticky;
-  bottom: 0;
-  margin-top: auto;
-  background-color: var(--bg-secondary);
-  display: flex;
-  flex-direction: column;
-}
-
-.footer {
-  color: var(--text-secondary);
-  font-size: 0.75em;
-  margin: 5px;
-}
+/*
+ * Add loading will break the dialog now
+ * Need to investigate more
+ * See <https://developer.mozilla.org/en-US/docs/Web/HTML/Element/dialog>
+ */
+/* .chatbox.loading {
+  opacity: 0.25;
+  transition: opacity 200ms;
+  transition-delay: 200ms;
+} */

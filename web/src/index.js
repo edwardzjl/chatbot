@@ -8,22 +8,67 @@ import {
   RouterProvider,
 } from "react-router-dom";
 
-import Root from "./routes/root";
-import ErrorPage from "./error-page";
+import Root, { loader as rootLoader, action as rootAction } from "routes/root";
+import Index from "routes/index";
+import Conversation, { loader as conversationLoader, action as conversationAction } from "routes/conversation";
+import ErrorPage from "error-page";
 
 import reportWebVitals from "./reportWebVitals";
 
-import { ConversationProvider } from "contexts/conversation";
-import { SnackbarProvider } from "./contexts/snackbar";
+import { SnackbarProvider } from "contexts/snackbar";
 import { ThemeProvider } from "contexts/theme";
 import { UserProvider } from "contexts/user";
-import { WebsocketProvider } from "contexts/websocket";
+import { MessageProvider } from "contexts/message";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <Root />,
     errorElement: <ErrorPage />,
+    loader: rootLoader,
+    action: rootAction,
+    shouldRevalidate: ({ currentParams, nextParams, formMethod }) => {
+      if (currentParams.convId === undefined && nextParams.convId === undefined) {
+        // from index to index
+        return false;
+      };
+      if (currentParams.convId === undefined) {
+        // from index to conv
+        // we need to validate this so that the newly created conv will show up.
+        return true;
+      };
+      if (currentParams.convId === nextParams.convId) {
+        // from conv to same conv
+        if (formMethod === "put") {
+          // revalidate on update
+          // This is a bit hacky, but we need to revalidate on update so that the
+          // generated conversation title will be updated.
+          return true;
+        }
+        return false;
+      };
+      return false;
+    },
+    children: [
+      {
+        errorElement: <ErrorPage />,
+        children: [
+          {
+            index: true,
+            element: <Index />,
+          },
+          {
+            path: "conversations/:convId",
+            element: <Conversation />,
+            loader: conversationLoader,
+            action: conversationAction,
+            shouldRevalidate: ({ currentParams, nextParams }) => {
+              return currentParams.convId !== nextParams.convId;
+            },
+          },
+        ],
+      }
+    ],
   },
 ]);
 
@@ -33,12 +78,9 @@ root.render(
     <ThemeProvider>
       <SnackbarProvider>
         <UserProvider>
-          <ConversationProvider>
-            <WebsocketProvider>
-              {/* <App /> */}
-              <RouterProvider router={router} />
-            </WebsocketProvider>
-          </ConversationProvider>
+          <MessageProvider>
+            <RouterProvider router={router} />
+          </MessageProvider>
         </UserProvider>
       </SnackbarProvider>
     </ThemeProvider>

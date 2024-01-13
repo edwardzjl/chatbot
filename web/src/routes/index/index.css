@@ -1,0 +1,19 @@
+.chat-log {
+    text-align: left;
+    scroll-behavior: smooth;
+}
+
+.input-bottom {
+    position: sticky;
+    bottom: 0;
+    margin-top: auto;
+    background-color: var(--bg-secondary);
+    display: flex;
+    flex-direction: column;
+}
+
+.footer {
+    color: var(--text-secondary);
+    font-size: 0.75em;
+    margin: 5px;
+}
