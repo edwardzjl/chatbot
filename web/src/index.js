@@ -1,8 +1,16 @@
 import "normalize.css";
 import "./index.css";
+
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App";
+import {
+  createBrowserRouter,
+  RouterProvider,
+} from "react-router-dom";
+
+import Root from "./routes/root";
+import ErrorPage from "./error-page";
+
 import reportWebVitals from "./reportWebVitals";
 
 import { ConversationProvider } from "contexts/conversation";
@@ -10,6 +18,14 @@ import { SnackbarProvider } from "./contexts/snackbar";
 import { ThemeProvider } from "contexts/theme";
 import { UserProvider } from "contexts/user";
 import { WebsocketProvider } from "contexts/websocket";
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Root />,
+    errorElement: <ErrorPage />,
+  },
+]);
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
@@ -19,7 +35,8 @@ root.render(
         <UserProvider>
           <ConversationProvider>
             <WebsocketProvider>
-              <App />
+              {/* <App /> */}
+              <RouterProvider router={router} />
             </WebsocketProvider>
           </ConversationProvider>
         </UserProvider>
