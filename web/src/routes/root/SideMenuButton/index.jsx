@@ -1,7 +1,7 @@
 import "./index.css";
 
-import { useState, useRef, useContext } from "react";
-import { useNavigate, useSubmit } from "react-router-dom";
+import { useState, useRef } from "react";
+import { useSubmit } from "react-router-dom";
 import Tooltip from "@mui/material/Tooltip";
 
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
@@ -10,11 +10,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 
 import { DropdownMenu, DropdownHeader, DropdownList } from "components/DropdownMenu";
-import { SnackbarContext } from "contexts/snackbar";
-import {
-  deleteConversation,
-  summarizeConversation,
-} from "requests";
+import { summarizeConversation } from "requests";
 
 /**
  *
@@ -24,37 +20,11 @@ import {
  * @param {boolean} isActive whether this chat is active
  * @returns
  */
-const ChatTab = ({ chat, isActive }) => {
-  const { setSnackbar } = useContext(SnackbarContext);
+const ChatTab = ({ chat, isActive, onDeleteClick }) => {
   const submit = useSubmit();
-  const navigate = useNavigate();
 
   const titleRef = useRef(null);
   const [titleEditable, setTitleEditable] = useState("false");
-
-  const delDialogRef = useRef();
-
-  const deleteChat = async () => {
-    // If I submit here and redirect in action, it just doesn't work
-    deleteConversation(chat.id)
-      .then(() => {
-        setSnackbar({
-          open: true,
-          severity: "success",
-          message: "Chat deleted",
-        });
-        navigate("/");
-      })
-      .catch((err) => {
-        console.error("error deleting chat", err);
-        setSnackbar({
-          open: true,
-          severity: "error",
-          message: "Delete chat failed",
-        });
-      });
-    delDialogRef.current?.close();
-  };
 
   const handleKeyDown = async (e) => {
     // TODO: this will trigger in Chinese IME on OSX
@@ -127,7 +97,7 @@ const ChatTab = ({ chat, isActive }) => {
               </button>
             </li>
             <li>
-              <button className="chat-op-menu-item" onClick={() => delDialogRef.current?.showModal()}>
+              <button className="chat-op-menu-item" onClick={() => onDeleteClick(chat.id, titleRef.current?.innerText)}>
                 <DeleteOutlineIcon />
                 <span className="chat-op-menu-item-text">Delete</span>
               </button>
@@ -135,17 +105,6 @@ const ChatTab = ({ chat, isActive }) => {
           </DropdownList>
         </DropdownMenu>
       )}
-      <dialog
-        className="del-dialog"
-        ref={delDialogRef}
-      >
-        <h2>Delete conversation?</h2>
-        <p>This will delete '{titleRef.current?.innerText}'</p>
-        <div className="del-dialog-actions">
-          <button autoFocus onClick={deleteChat}>Delete</button>
-          <button onClick={() => delDialogRef.current?.close()}>Cancel</button>
-        </div>
-      </dialog>
     </>
   );
 };
