@@ -53,6 +53,7 @@ const ChatTab = ({ chat, isActive }) => {
           message: "Delete chat failed",
         });
       });
+    delDialogRef.current?.close();
   };
 
   const handleKeyDown = async (e) => {
