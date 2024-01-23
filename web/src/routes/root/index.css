@@ -97,6 +97,7 @@
   background-color: var(--bg-primary);
   display: flex;
   flex-direction: column;
+  overflow: auto;
 }
 
 .sidemenu ul {
