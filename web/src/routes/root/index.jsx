@@ -48,20 +48,26 @@ export async function loader() {
 }
 
 export async function action({ request }) {
-  const conversation = await request.json();
-  return redirect(`/conversations/${conversation.id}`);
+  if (request.method === "POST") {
+    const conversation = await request.json();
+    return redirect(`/conversations/${conversation.id}`);
+  }
 }
 
 const Root = () => {
   const { groupedConvs } = useLoaderData();
+
   const { theme } = useContext(ThemeContext);
   const { snackbar, setSnackbar } = useContext(SnackbarContext);
-  const navigation = useNavigation();
-
   const { dispatch } = useContext(MessageContext);
-  const submit = useSubmit();
   const [isReady, setIsReady] = useState(false);
   const ws = useRef(null);
+
+  const delDialogRef = useRef();
+  const [toDelete, setToDelete] = useState({});
+
+  const navigation = useNavigation();
+  const submit = useSubmit();
 
 
   useEffect(() => {
@@ -149,6 +155,20 @@ const Root = () => {
     };
   }, []);
 
+  const onDeleteClick = (id, title) => {
+    setToDelete({ id, title });
+    delDialogRef.current?.showModal();
+  };
+
+  const deleteChat = async (id) => {
+    submit(
+      id,
+      { method: "delete", action: `/conversations/${id}` }
+    );
+    delDialogRef.current?.close();
+    setToDelete({});
+  };
+
   const closeSnackbar = (event, reason) => {
     if (reason === "clickaway") {
       return;
@@ -177,7 +197,7 @@ const Root = () => {
                           className={`sidemenu-button ${({ isActive, isPending }) => isActive ? "active" : isPending ? "pending" : ""}`}
                         >
                           {({ isActive, isPending, isTransitioning }) => (
-                            <ChatTab chat={conv} isActive={isActive} />
+                            <ChatTab chat={conv} isActive={isActive} onDeleteClick={onDeleteClick} />
                           )}
                         </NavLink>
                       </li>
@@ -202,6 +222,17 @@ const Root = () => {
             </div>
           </div>
         </aside>
+        <dialog
+          className="del-dialog"
+          ref={delDialogRef}
+        >
+          <h2>Delete conversation?</h2>
+          <p>This will delete '{toDelete.title}'</p>
+          <div className="del-dialog-actions">
+            <button autoFocus onClick={() => deleteChat(toDelete.id)}>Delete</button>
+            <button onClick={() => delDialogRef.current?.close()}>Cancel</button>
+          </div>
+        </dialog>
         {/* TODO: this loading state will render the delete dialog */}
         <section className={`chatbox ${navigation.state === "loading" ? "loading" : ""}`}>
           <Outlet />

@@ -34,9 +34,20 @@ const router = createBrowserRouter([
       };
       if (currentParams.convId === undefined) {
         // from index to conv
-        // we need to validate this so that the newly created conv will show up.
-        return true;
+        if (formMethod === "post") {
+          // we need to validate this so that the newly created conv will show up.
+          return true;
+        }
+        return false;
       };
+      if (nextParams.convId === undefined) {
+        // from conv to index
+        if (formMethod === "delete") {
+          // we need to validate this so that the deleted conv will be removed.
+          return true;
+        }
+        return false;
+      }
       if (currentParams.convId === nextParams.convId) {
         // from conv to same conv
         if (formMethod === "put") {

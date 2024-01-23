@@ -12,23 +12,30 @@ import ChatMessage from "./ChatMessage";
 import ChatInput from "./ChatInput";
 
 export async function action({ params, request }) {
-    // TODO: maybe check request.method
-    const conversation = await request.json();
-    const resp = await fetch(`/api/conversations/${params.convId}`, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            title: conversation.title,
-        }),
-    })
-    if (!resp.ok) {
-        console.error("error updating conversation", resp);
-        // TODO: handle error
+    if (request.method === "PUT") {
+        const conversation = await request.json();
+        const resp = await fetch(`/api/conversations/${params.convId}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                title: conversation.title,
+            }),
+        })
+        if (!resp.ok) {
+            console.error("error updating conversation", resp);
+            // TODO: handle error
+        }
+        const _conv = await resp.json();
+        return { _conv };
     }
-    const _conv = await resp.json();
-    return { _conv };
+    if (request.method === "DELETE") {
+        await fetch(`/api/conversations/${params.convId}`, {
+            method: "DELETE",
+        })
+        return redirect("/");
+    }
 }
 
 export async function loader({ params }) {
