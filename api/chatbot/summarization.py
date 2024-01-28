@@ -42,6 +42,6 @@ async def summarize(
         memory=memory,
         verbose=False,
     )
-    res = await chain.acall(inputs=external_context)
+    res = await chain.ainvoke(input=external_context)
     # sometimes LLM wrap summarization in quotes
     return res["text"].strip('"')

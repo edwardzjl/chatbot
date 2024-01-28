@@ -43,11 +43,15 @@ async def chat(
             update_conversation_callback = UpdateConversationCallbackHandler(
                 message.conversation
             )
-            # create a new date on every message to solve message across days.
-            await conv_chain.arun(
-                date=date.today(),
-                input=message.content,
-                callbacks=[streaming_callback, update_conversation_callback],
+            await conv_chain.ainvoke(
+                input={
+                    "input": message.content,
+                    # create a new date on every message to solve message across days.
+                    "date": date.today(),
+                },
+                config={
+                    "callbacks": [streaming_callback, update_conversation_callback]
+                },
             )
             # summarize if required
             if (
