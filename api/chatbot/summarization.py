@@ -1,7 +1,13 @@
 from langchain.chains import LLMChain
 from langchain_core.language_models import BaseLLM
 from langchain_core.memory import BaseMemory
-from langchain_core.prompts import PromptTemplate
+from langchain_core.prompts import (
+    MessagesPlaceholder,
+    PromptTemplate,
+    SystemMessagePromptTemplate,
+)
+
+from chatbot.prompts.chatml import ChatMLPromptTemplate
 
 _prompt = """<|im_start|>system
 You are Rei, the ideal assistant dedicated to assisting users effectively.<|im_end|>
@@ -35,13 +41,22 @@ async def summarize(
     llm: BaseLLM,
     memory: BaseMemory,
 ) -> str:
-    external_context = memory.load_memory_variables({})
+    system_prompt = """You are Rei, the ideal assistant dedicated to assisting users effectively.
+Always assist with care, respect, and truth. Respond with utmost utility yet securely. Avoid harmful, unethical, prejudiced, or negative content. Ensure replies promote fairness and positivity."""
+    messages = [
+        SystemMessagePromptTemplate.from_template(system_prompt),
+        MessagesPlaceholder(variable_name="history"),
+        SystemMessagePromptTemplate.from_template("{input}"),
+    ]
+    tmpl = ChatMLPromptTemplate(input_variables=["input"], messages=messages)
     chain = SummarizationChain(
         llm=llm,
-        prompt=prompt,
+        prompt=tmpl,
         memory=memory,
         verbose=False,
     )
-    res = await chain.ainvoke(input=external_context)
+    res = await chain.ainvoke(
+        input="Now Provide a short title of the conversation in less than 10 words."
+    )
     # sometimes LLM wrap summarization in quotes
     return res["text"].strip('"')
