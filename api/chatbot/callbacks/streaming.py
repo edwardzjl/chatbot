@@ -27,6 +27,7 @@ class StreamingLLMCallbackHandler(AsyncCallbackHandler):
         **kwargs: Any,
     ) -> None:
         message = ChatMessage(
+            parent_id=parent_run_id,
             id=run_id,
             conversation=self.conversation_id,
             from_="ai",
@@ -45,6 +46,7 @@ class StreamingLLMCallbackHandler(AsyncCallbackHandler):
         **kwargs: Any,
     ) -> None:
         message = ChatMessage(
+            parent_id=parent_run_id,
             id=run_id,
             conversation=self.conversation_id,
             from_="ai",
@@ -63,6 +65,7 @@ class StreamingLLMCallbackHandler(AsyncCallbackHandler):
         **kwargs: Any,
     ) -> None:
         message = ChatMessage(
+            parent_id=parent_run_id,
             id=run_id,
             conversation=self.conversation_id,
             from_="ai",
@@ -73,6 +76,7 @@ class StreamingLLMCallbackHandler(AsyncCallbackHandler):
         # send the full message again in case user switched to another tab
         # so that the frontend can update the message
         full_message = ChatMessage(
+            parent_id=parent_run_id,
             id=run_id,
             conversation=self.conversation_id,
             from_="ai",
@@ -92,6 +96,7 @@ class StreamingLLMCallbackHandler(AsyncCallbackHandler):
     ) -> None:
         """Run when LLM errors."""
         message = ChatMessage(
+            parent_id=parent_run_id,
             id=run_id,
             conversation=self.conversation_id,
             from_="ai",

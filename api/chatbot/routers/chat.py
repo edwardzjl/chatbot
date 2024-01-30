@@ -52,6 +52,7 @@ async def chat(
                 config={
                     "callbacks": [streaming_callback, update_conversation_callback]
                 },
+                include_run_info=True,
             )
             # summarize if required
             if (
