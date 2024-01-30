@@ -8,6 +8,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.requests import Request
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from loguru import logger
 
 from chatbot.dependencies import EmailHeader, UserIdHeader, UsernameHeader
@@ -61,3 +62,10 @@ async def notfound_exception_handler(request: Request, exc: NotFoundError):
 app.mount(
     "/", StaticFiles(directory="static", html=True, check_dir=False), name="static"
 )
+
+templates = Jinja2Templates(directory="static")
+
+# return all unregistered url to web app
+@app.exception_handler(404)
+async def custom_404_handler(request: Request, _):
+    return templates.TemplateResponse("index.html", {"request": request})
