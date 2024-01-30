@@ -1,4 +1,5 @@
 """Main entrypoint for the app."""
+
 from contextlib import asynccontextmanager
 from typing import Annotated
 
@@ -64,6 +65,7 @@ app.mount(
 )
 
 templates = Jinja2Templates(directory="static")
+
 
 # return all unregistered url to web app
 @app.exception_handler(404)
