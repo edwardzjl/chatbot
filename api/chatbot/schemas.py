@@ -11,6 +11,7 @@ from chatbot.utils import utcnow
 class ChatMessage(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
+    parent_id: Optional[UUID] = None
     id: UUID = Field(default_factory=uuid4)
     """Message id, used to chain stream responses into message."""
     conversation: Optional[str] = None
@@ -31,9 +32,12 @@ class ChatMessage(BaseModel):
     def from_lc(
         lc_message: BaseMessage, conv_id: str, from_: str = None
     ) -> "ChatMessage":
+        msg_parent_id_str = lc_message.additional_kwargs.get("parent_id", None)
+        msg_parent_id = UUID(msg_parent_id_str) if msg_parent_id_str else None
         msg_id_str = lc_message.additional_kwargs.get("id", None)
         msg_id = UUID(msg_id_str) if msg_id_str else uuid4()
         return ChatMessage(
+            parent_id=msg_parent_id,
             id=msg_id,
             conversation=conv_id,
             from_=from_ if from_ else lc_message.type,
