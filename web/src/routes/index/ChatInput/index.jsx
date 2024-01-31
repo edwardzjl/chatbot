@@ -1,7 +1,7 @@
 import "./index.css";
 
 import { useContext, useState, useRef, useEffect } from "react";
-import { Form, useSubmit } from "react-router-dom";
+import { useSubmit } from "react-router-dom";
 
 import { UserContext } from "contexts/user";
 import { MessageContext } from "contexts/message";
@@ -74,7 +74,7 @@ const ChatInput = () => {
   };
 
   return (
-    <Form className="input-container" method="post">
+    <form onSubmit={handleSubmit} className="input-container">
       <textarea
         className="input-text"
         ref={inputRef}
@@ -85,7 +85,7 @@ const ChatInput = () => {
       <button disabled={!ready} className="input-submit-button" type="submit">
         Send
       </button>
-    </Form>
+    </form>
   );
 };
 
