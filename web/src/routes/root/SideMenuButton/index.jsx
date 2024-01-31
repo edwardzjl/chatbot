@@ -1,13 +1,14 @@
 import "./index.css";
 
 import { useState, useRef } from "react";
-import { useSubmit } from "react-router-dom";
+import { useFetcher } from "react-router-dom";
 import Tooltip from "@mui/material/Tooltip";
 
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutline";
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
 
 import { DropdownMenu, DropdownHeader, DropdownList } from "components/DropdownMenu";
 import { summarizeConversation } from "requests";
@@ -21,7 +22,7 @@ import { summarizeConversation } from "requests";
  * @returns
  */
 const ChatTab = ({ chat, isActive, onDeleteClick }) => {
-  const submit = useSubmit();
+  const fetcher = useFetcher();
 
   const titleRef = useRef(null);
   const [titleEditable, setTitleEditable] = useState("false");
@@ -36,8 +37,8 @@ const ChatTab = ({ chat, isActive, onDeleteClick }) => {
 
   const renameChat = async (title) => {
     setTitleEditable("false");
-    submit(
-      { title: title },
+    fetcher.submit(
+      { ...chat, title: title },
       { method: "put", action: `/conversations/${chat.id}`, encType: "application/json" }
     );
     // Maybe set snackbar to inform user?
@@ -63,6 +64,13 @@ const ChatTab = ({ chat, isActive, onDeleteClick }) => {
       });
   }
 
+  const flipPin = () => {
+    fetcher.submit(
+      { ...chat, pinned: !chat.pinned },
+      { method: "put", action: `/conversations/${chat.id}`, encType: "application/json" }
+    );
+  };
+
   return (
     <>
       <Tooltip title={titleRef.current?.innerText}>
@@ -84,6 +92,14 @@ const ChatTab = ({ chat, isActive, onDeleteClick }) => {
             <MoreVertIcon />
           </DropdownHeader>
           <DropdownList className="chat-op-menu-list">
+          <li>
+              <button className="chat-op-menu-item" onClick={flipPin}>
+                {/* TODO: there's no 'unpin' icon in material icons for now. */}
+                {/* Please see <https://github.com/google/material-design-icons/issues/1595> */}
+                {chat.pinned ? <PushPinOutlinedIcon /> : <PushPinOutlinedIcon />}
+                <span className="chat-op-menu-item-text">{chat.pinned ? "Unpin" : "Pin"}</span>
+              </button>
+            </li>
             <li>
               <button className="chat-op-menu-item" onClick={onSummarizeClick}>
                 <AutoAwesomeIcon />

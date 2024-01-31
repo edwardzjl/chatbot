@@ -21,6 +21,7 @@ export async function action({ params, request }) {
             },
             body: JSON.stringify({
                 title: conversation.title,
+                pinned: conversation.pinned,
             }),
         })
         if (!resp.ok) {
