@@ -33,6 +33,9 @@ export async function loader() {
   lastSevenDays.setDate(lastSevenDays.getDate() - 7);
 
   const groupedConvs = Object.groupBy(conversations, (item) => {
+    if (item.pinned) {
+      return "pinned";
+    }
     const itemDate = new Date(item.updated_at);
     if (itemDate.toDateString() === today.toDateString()) {
       return "Today";

@@ -28,7 +28,7 @@ async def get_conversations(
     userid: Annotated[str | None, UserIdHeader()] = None
 ) -> list[Conversation]:
     convs = await ORMConversation.find(ORMConversation.owner == userid).all()
-    convs.sort(key=lambda x: x.updated_at, reverse=True)
+    convs.sort(key=lambda x: (x.pinned, x.updated_at), reverse=True)
     return [Conversation(**conv.dict()) for conv in convs]
 
 
@@ -72,9 +72,16 @@ async def update_conversation(
     payload: UpdateConversation,
     userid: Annotated[str | None, UserIdHeader()] = None,
 ) -> ConversationDetail:
+    modified = False
     conv = await ORMConversation.get(conversation_id)
-    conv.title = payload.title
-    await conv.save()
+    if payload.title is not None:
+        conv.title = payload.title
+        modified = True
+    if payload.pinned is not None:
+        conv.pinned = payload.pinned
+        modified = True
+    if modified:
+        await conv.save()
     return ConversationDetail(**conv.dict())
 
 
