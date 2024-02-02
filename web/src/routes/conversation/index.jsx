@@ -23,7 +23,7 @@ export async function action({ params, request }) {
                 title: conversation.title,
                 pinned: conversation.pinned,
             }),
-        })
+        });
         if (!resp.ok) {
             console.error("error updating conversation", resp);
             // TODO: handle error

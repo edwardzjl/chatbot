@@ -40,13 +40,13 @@ const ChatInput = ({ conversation }) => {
       conversation: conversation.id,
       ...message,
     };
-    send(JSON.stringify(payload));
     setInput("");
     // append user input to chatlog
     dispatch({
       type: "added",
       message: message,
     });
+    send(JSON.stringify(payload));
     // TODO: add this back
     // Usually it can be done by calling `revalidator.revalidate()` (<https://reactrouter.com/en/main/hooks/use-revalidator>)
     // either here or on `stream/end` message received.
