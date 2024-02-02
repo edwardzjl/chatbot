@@ -122,6 +122,12 @@ const Root = () => {
               });
               break;
             case "stream/end":
+              // Not like "PUT", I stopped revalidation on "GET".
+              // Also it's weird to perform a "GET" on message received.
+              // submit(
+              //   null,
+              //   { method: "get", action: `/conversations/${conversation}` }
+              // );
               break;
             case "info":
               if (content.type === "title-generated") {

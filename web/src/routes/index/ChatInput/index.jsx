@@ -52,13 +52,13 @@ const ChatInput = () => {
       additional_kwargs: { require_summarization: true },
       ...message,
     };
-    send(JSON.stringify(payload));
     setInput("");
     // append user input to chatlog
     dispatch({
       type: "added",
       message: message,
     });
+    send(JSON.stringify(payload));
   };
 
   const handleKeyDown = async (e) => {
