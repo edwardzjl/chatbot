@@ -7,14 +7,12 @@ from langchain_core.language_models import BaseLLM
 from langchain_core.memory import BaseMemory
 from loguru import logger
 
-from chatbot.callbacks import (
-    StreamingLLMCallbackHandler,
-    UpdateConversationCallbackHandler,
-)
 from chatbot.context import session_id
 from chatbot.dependencies import ChatMemory, ConvChain, Llm, UserIdHeader
+from chatbot.models import Conversation
 from chatbot.schemas import ChatMessage, InfoMessage
 from chatbot.summarization import summarize
+from chatbot.utils import utcnow
 
 router = APIRouter(
     prefix="/api/chat",
@@ -36,24 +34,67 @@ async def chat(
         try:
             payload: str = await websocket.receive_text()
             message = ChatMessage.model_validate_json(payload)
+            # set session_id early to ensure history is loaded correctly.
             session_id.set(f"{userid}:{message.conversation}")
-            streaming_callback = StreamingLLMCallbackHandler(
-                websocket, message.conversation
-            )
-            update_conversation_callback = UpdateConversationCallbackHandler(
-                message.conversation
-            )
-            await conv_chain.ainvoke(
+            async for event in conv_chain.astream_events(
                 input={
                     "input": message.content,
                     # create a new date on every message to solve message across days.
                     "date": date.today(),
                 },
-                config={
-                    "callbacks": [streaming_callback, update_conversation_callback]
-                },
                 include_run_info=True,
-            )
+                version="v1",
+            ):
+                logger.trace(f"event: {event}")
+                kind = event["event"]
+                parent_run_id = None
+                match kind:
+                    case "on_chain_start":
+                        # TODO: maybe it's a little hacky
+                        parent_run_id = event["run_id"]
+                    case "on_llm_start":
+                        msg = ChatMessage(
+                            parent_id=parent_run_id,
+                            id=event["run_id"],
+                            conversation=message.conversation,
+                            from_="ai",
+                            content=None,
+                            type="stream/start",
+                        )
+                        await websocket.send_text(msg.model_dump_json())
+                    case "on_llm_stream":
+                        msg = ChatMessage(
+                            parent_id=parent_run_id,
+                            id=event["run_id"],
+                            conversation=message.conversation,
+                            from_="ai",
+                            content=event["data"]["chunk"],
+                            type="stream/text",
+                        )
+                        await websocket.send_text(msg.model_dump_json())
+                    case "on_llm_end":
+                        msg = ChatMessage(
+                            parent_id=parent_run_id,
+                            id=event["run_id"],
+                            conversation=message.conversation,
+                            from_="ai",
+                            content=None,
+                            type="stream/end",
+                        )
+                        await websocket.send_text(msg.model_dump_json())
+                    case "on_llm_error":
+                        msg = ChatMessage(
+                            parent_id=parent_run_id,
+                            id=event["run_id"],
+                            conversation=message.conversation,
+                            from_="ai",
+                            content=f"llm error: {event['data']}",
+                            type="error",
+                        )
+                        await websocket.send_text(msg.model_dump_json())
+            conv = await Conversation.get(message.conversation)
+            conv.updated_at = utcnow()
+            await conv.save()
             # summarize if required
             if (
                 message.additional_kwargs
