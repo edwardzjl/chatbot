@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.language_models import BaseLLM
 from langchain_core.memory import BaseMemory
@@ -39,6 +39,8 @@ async def get_conversation(
     userid: Annotated[str | None, UserIdHeader()] = None,
 ) -> ConversationDetail:
     conv = await ORMConversation.get(conversation_id)
+    if conv.owner != userid:
+        raise HTTPException(status_code=403, detail="authorization error")
     session_id.set(f"{userid}:{conversation_id}")
     return ConversationDetail(
         messages=[
@@ -72,8 +74,10 @@ async def update_conversation(
     payload: UpdateConversation,
     userid: Annotated[str | None, UserIdHeader()] = None,
 ) -> ConversationDetail:
-    modified = False
     conv = await ORMConversation.get(conversation_id)
+    if conv.owner != userid:
+        raise HTTPException(status_code=403, detail="authorization error")
+    modified = False
     if payload.title is not None:
         conv.title = payload.title
         modified = True
@@ -90,6 +94,9 @@ async def delete_conversation(
     conversation_id: str,
     userid: Annotated[str | None, UserIdHeader()] = None,
 ) -> None:
+    conv = await ORMConversation.get(conversation_id)
+    if conv.owner != userid:
+        raise HTTPException(status_code=403, detail="authorization error")
     await ORMConversation.delete(conversation_id)
 
 
@@ -100,9 +107,11 @@ async def summarize(
     memory: Annotated[BaseMemory, Depends(ChatMemory)],
     userid: Annotated[str | None, UserIdHeader()] = None,
 ) -> dict[str, str]:
+    conv = await ORMConversation.get(conversation_id)
+    if conv.owner != userid:
+        raise HTTPException(status_code=403, detail="authorization error")
     session_id.set(f"{userid}:{conversation_id}")
     title = await summarize_conv(llm, memory)
-    conv = await ORMConversation.get(conversation_id)
     conv.title = title
     await conv.save()
     return {"title": title}

@@ -1,7 +1,13 @@
 from datetime import date
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
+from fastapi import (
+    APIRouter,
+    Depends,
+    WebSocket,
+    WebSocketDisconnect,
+    WebSocketException,
+)
 from langchain.chains.base import Chain
 from langchain_core.language_models import BaseLLM
 from langchain_core.memory import BaseMemory
@@ -34,6 +40,11 @@ async def chat(
         try:
             payload: str = await websocket.receive_text()
             message = ChatMessage.model_validate_json(payload)
+            conv = await Conversation.get(message.conversation)
+            if conv.owner != userid:
+                # TODO: I'm not sure whether this is the correct way to handle this.
+                # See websocket code definitions here: <https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code>
+                raise WebSocketException(code=3403, reason="authorization error")
             # set session_id early to ensure history is loaded correctly.
             session_id.set(f"{userid}:{message.conversation}")
             async for event in conv_chain.astream_events(
@@ -92,7 +103,6 @@ async def chat(
                             type="error",
                         )
                         await websocket.send_text(msg.model_dump_json())
-            conv = await Conversation.get(message.conversation)
             conv.updated_at = utcnow()
             await conv.save()
             # summarize if required
