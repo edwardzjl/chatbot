@@ -4,7 +4,6 @@ import { useContext, useState, useRef, useEffect } from "react";
 import { useSubmit } from "react-router-dom";
 
 import { UserContext } from "contexts/user";
-import { MessageContext } from "contexts/message";
 import { WebsocketContext } from "contexts/websocket";
 import { DEFAULT_CONV_TITLE } from "commons";
 
@@ -14,8 +13,7 @@ import { DEFAULT_CONV_TITLE } from "commons";
  */
 const ChatInput = () => {
   const { username } = useContext(UserContext);
-  const { dispatch } = useContext(MessageContext);
-  const [ready, send] = useContext(WebsocketContext);
+  const [ready,] = useContext(WebsocketContext);
   const submit = useSubmit();
   const [input, setInput] = useState("");
   const inputRef = useRef(null);
@@ -34,9 +32,6 @@ const ChatInput = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!ready) {
-      return;
-    }
     // I need to use the conversation id later so I need to create a conversation here instead of in the 'react router action'
     const conversation = await fetch("/api/conversations", {
       method: "POST",
@@ -45,20 +40,16 @@ const ChatInput = () => {
       },
       body: JSON.stringify({ title: DEFAULT_CONV_TITLE }),
     }).then((res) => res.json());
-    submit(conversation, { method: "post", action: "/", encType: "application/json" });
-    const message = { id: crypto.randomUUID(), from: username, content: input, type: "text" };
-    const payload = {
+    const message = {
+      id: crypto.randomUUID(),
       conversation: conversation.id,
-      additional_kwargs: { require_summarization: true },
-      ...message,
+      from: username,
+      content: input,
+      type: "text",
     };
+    sessionStorage.setItem(`init-msg:${conversation.id}`, JSON.stringify(message));
     setInput("");
-    // append user input to chatlog
-    dispatch({
-      type: "added",
-      message: message,
-    });
-    send(JSON.stringify(payload));
+    submit(conversation, { method: "post", action: "/", encType: "application/json" });
   };
 
   const handleKeyDown = async (e) => {
