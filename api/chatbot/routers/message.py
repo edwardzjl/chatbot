@@ -1,12 +1,13 @@
 import json
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from langchain_core.chat_history import BaseChatMessageHistory
 
 from chatbot.context import session_id
 from chatbot.dependencies import MessageHistory, UserIdHeader
 from chatbot.history import ChatbotMessageHistory
+from chatbot.models import Conversation as ORMConversation
 
 router = APIRouter(
     prefix="/api/conversations/{conversation_id}/messages",
@@ -24,6 +25,9 @@ async def thumbup(
     """Using message index as the uuid is in the message body which is json dumped into redis,
     and is impossible to filter on.
     Also separate thumbup and thumbdown into two endpoints to make it more RESTful."""
+    conv = await ORMConversation.get(conversation_id)
+    if conv.owner != userid:
+        raise HTTPException(status_code=403, detail="authorization error")
     if not isinstance(history, ChatbotMessageHistory):
         # should never happen
         return
@@ -44,6 +48,9 @@ async def thumbdown(
     """Using message index as the uuid is in the message body which is json dumped into redis,
     and is impossible to filter on.
     Also separate thumbup and thumbdown into two endpoints to make it more RESTful."""
+    conv = await ORMConversation.get(conversation_id)
+    if conv.owner != userid:
+        raise HTTPException(status_code=403, detail="authorization error")
     if not isinstance(history, ChatbotMessageHistory):
         # should never happen
         return
