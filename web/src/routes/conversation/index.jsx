@@ -35,7 +35,7 @@ export async function action({ params, request }) {
     if (request.method === "DELETE") {
         await fetch(`/api/conversations/${params.convId}`, {
             method: "DELETE",
-        })
+        });
         return redirect("/");
     }
 }
