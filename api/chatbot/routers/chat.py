@@ -9,15 +9,12 @@ from fastapi import (
     WebSocketException,
 )
 from langchain.chains.base import Chain
-from langchain_core.language_models import BaseLLM
-from langchain_core.memory import BaseMemory
 from loguru import logger
 
 from chatbot.context import session_id
-from chatbot.dependencies import ChatMemory, ConvChain, Llm, UserIdHeader
+from chatbot.dependencies import ConvChain, SmryChain, UserIdHeader
 from chatbot.models import Conversation
 from chatbot.schemas import ChatMessage, InfoMessage
-from chatbot.summarization import summarize
 from chatbot.utils import utcnow
 
 router = APIRouter(
@@ -30,8 +27,7 @@ router = APIRouter(
 async def chat(
     websocket: WebSocket,
     conv_chain: Annotated[Chain, Depends(ConvChain)],
-    llm: Annotated[BaseLLM, Depends(Llm)],
-    memory: Annotated[BaseMemory, Depends(ChatMemory)],
+    smry_chain: Annotated[Chain, Depends(SmryChain)],
     userid: Annotated[str | None, UserIdHeader()] = None,
 ):
     await websocket.accept()
@@ -111,13 +107,13 @@ async def chat(
                 and "require_summarization" in message.additional_kwargs
                 and message.additional_kwargs["require_summarization"]
             ):
-                title = await summarize(llm, memory)
+                res = await smry_chain.ainvoke(input={})
                 info_message = InfoMessage(
                     conversation=message.conversation,
                     from_="ai",
                     content={
                         "type": "title-generated",
-                        "payload": title,
+                        "payload": res[smry_chain.output_key],
                     },
                 )
                 await websocket.send_text(info_message.model_dump_json())

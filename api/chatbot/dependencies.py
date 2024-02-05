@@ -8,19 +8,13 @@ from langchain_community.llms.huggingface_text_gen_inference import (
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.language_models import BaseLLM
 from langchain_core.memory import BaseMemory
-from langchain_core.prompts import (
-    HumanMessagePromptTemplate,
-    MessagesPlaceholder,
-    PromptTemplate,
-    SystemMessagePromptTemplate,
-)
 
 from chatbot.callbacks import TracingLLMCallbackHandler
-from chatbot.chains import LLMConvChain
+from chatbot.chains import ConversationChain, SummarizationChain
 from chatbot.config import settings
 from chatbot.history import ChatbotMessageHistory
 from chatbot.memory import ChatbotMemory
-from chatbot.prompts.chatml import AI_SUFFIX, HUMAN_PREFIX, ChatMLPromptTemplate
+from chatbot.prompts.chatml import AI_SUFFIX, HUMAN_PREFIX
 
 
 def UserIdHeader(alias: Optional[str] = None, **kwargs):
@@ -74,23 +68,18 @@ def ConvChain(
     llm: Annotated[BaseLLM, Depends(Llm)],
     memory: Annotated[BaseMemory, Depends(ChatMemory)],
 ) -> Chain:
-    system_prompt = PromptTemplate(
-        template="""You are Rei, the ideal assistant dedicated to assisting users effectively.
-Knowledge cutoff: 2023-10-01
-Current date: {date}
-Always assist with care, respect, and truth. Respond with utmost utility yet securely. Avoid harmful, unethical, prejudiced, or negative content. Ensure replies promote fairness and positivity.""",
-        input_variables=["date"],
-    )
-    messages = [
-        SystemMessagePromptTemplate(prompt=system_prompt),
-        MessagesPlaceholder(variable_name="history"),
-        HumanMessagePromptTemplate.from_template("{input}"),
-    ]
-    tmpl = ChatMLPromptTemplate(input_variables=["date", "input"], messages=messages)
-    return LLMConvChain(
+    return ConversationChain(
         user_input_variable="input",
         llm=llm,
-        prompt=tmpl,
-        verbose=False,
+        memory=memory,
+    )
+
+
+def SmryChain(
+    llm: Annotated[BaseLLM, Depends(Llm)],
+    memory: Annotated[BaseMemory, Depends(ChatMemory)],
+) -> Chain:
+    return SummarizationChain(
+        llm=llm,
         memory=memory,
     )
