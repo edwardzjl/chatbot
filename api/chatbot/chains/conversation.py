@@ -2,13 +2,36 @@ from typing import Any
 
 from langchain.chains import LLMChain
 from langchain.memory.chat_memory import BaseChatMemory
+from langchain_core.prompts import (
+    BasePromptTemplate,
+    HumanMessagePromptTemplate,
+    MessagesPlaceholder,
+    PromptTemplate,
+    SystemMessagePromptTemplate,
+)
 
 from chatbot.memory import ChatbotMemory
+from chatbot.prompts.chatml import ChatMLPromptTemplate
+
+system_prompt = PromptTemplate(
+    template="""You are Rei, the ideal assistant dedicated to assisting users effectively.
+Knowledge cutoff: 2023-10-01
+Current date: {date}
+Always assist with care, respect, and truth. Respond with utmost utility yet securely. Avoid harmful, unethical, prejudiced, or negative content. Ensure replies promote fairness and positivity.""",
+    input_variables=["date"],
+)
+messages = [
+    SystemMessagePromptTemplate(prompt=system_prompt),
+    MessagesPlaceholder(variable_name="history"),
+    HumanMessagePromptTemplate.from_template("{input}"),
+]
+tmpl = ChatMLPromptTemplate(input_variables=["date", "input"], messages=messages)
 
 
-class LLMConvChain(LLMChain):
+class ConversationChain(LLMChain):
     """Conversation chain that persists message separately on chain start and end."""
 
+    prompt: BasePromptTemplate = tmpl
     user_input_variable: str
 
     def prep_inputs(self, inputs: dict[str, Any] | Any) -> dict[str, str]:

@@ -1,12 +1,11 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
+from langchain.chains.base import Chain
 from langchain_core.chat_history import BaseChatMessageHistory
-from langchain_core.language_models import BaseLLM
-from langchain_core.memory import BaseMemory
 
 from chatbot.context import session_id
-from chatbot.dependencies import ChatMemory, Llm, MessageHistory, UserIdHeader
+from chatbot.dependencies import MessageHistory, SmryChain, UserIdHeader
 from chatbot.models import Conversation as ORMConversation
 from chatbot.schemas import (
     ChatMessage,
@@ -15,7 +14,6 @@ from chatbot.schemas import (
     CreateConversation,
     UpdateConversation,
 )
-from chatbot.summarization import summarize as summarize_conv
 
 router = APIRouter(
     prefix="/api/conversations",
@@ -103,15 +101,15 @@ async def delete_conversation(
 @router.post("/{conversation_id}/summarization", status_code=201)
 async def summarize(
     conversation_id: str,
-    llm: Annotated[BaseLLM, Depends(Llm)],
-    memory: Annotated[BaseMemory, Depends(ChatMemory)],
+    smry_chain: Annotated[Chain, Depends(SmryChain)],
     userid: Annotated[str | None, UserIdHeader()] = None,
 ) -> dict[str, str]:
     conv = await ORMConversation.get(conversation_id)
     if conv.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
     session_id.set(f"{userid}:{conversation_id}")
-    title = await summarize_conv(llm, memory)
+    res = await smry_chain.ainvoke(input={})
+    title = res[smry_chain.output_key]
     conv.title = title
     await conv.save()
     return {"title": title}
