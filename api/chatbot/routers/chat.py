@@ -120,5 +120,5 @@ async def chat(
         except WebSocketDisconnect:
             logger.info("websocket disconnected")
             return
-        except Exception as e:
-            logger.error(f"Something goes wrong, err: {e}")
+        except Exception:
+            logger.exception("Something goes wrong")
