@@ -36,7 +36,7 @@ export async function loader() {
     if (item.pinned) {
       return "pinned";
     }
-    const itemDate = new Date(item.updated_at);
+    const itemDate = new Date(item.last_message_at);
     if (itemDate.toDateString() === today.toDateString()) {
       return "Today";
     } else if (itemDate.toDateString() === yesterday.toDateString()) {
