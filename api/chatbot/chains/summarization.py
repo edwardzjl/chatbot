@@ -1,6 +1,4 @@
 from langchain.chains import LLMChain
-from langchain_core.language_models import BaseLLM
-from langchain_core.memory import BaseMemory
 from langchain_core.prompts import (
     BasePromptTemplate,
     MessagesPlaceholder,
