@@ -72,6 +72,7 @@ async def chat(
                         )
                         history.add_message(msg.to_lc())
                     case "on_llm_start":
+                        logger.debug(f"event: {event}")
                         msg = ChatMessage(
                             parent_id=parent_run_id,
                             id=event["run_id"],
@@ -92,6 +93,7 @@ async def chat(
                         )
                         await websocket.send_text(msg.model_dump_json())
                     case "on_llm_end":
+                        logger.debug(f"event: {event}")
                         msg = ChatMessage(
                             parent_id=parent_run_id,
                             id=event["run_id"],
@@ -102,6 +104,7 @@ async def chat(
                         )
                         await websocket.send_text(msg.model_dump_json())
                     case "on_llm_error":
+                        logger.error(f"event: {event}")
                         msg = ChatMessage(
                             parent_id=parent_run_id,
                             id=event["run_id"],

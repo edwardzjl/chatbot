@@ -9,7 +9,6 @@ from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.language_models import BaseLLM
 from langchain_core.memory import BaseMemory
 
-from chatbot.callbacks import TracingLLMCallbackHandler
 from chatbot.chains import ConversationChain, SummarizationChain
 from chatbot.config import settings
 from chatbot.history import ChatbotMessageHistory
@@ -60,7 +59,6 @@ def Llm() -> BaseLLM:
         max_new_tokens=1024,
         stop_sequences=[AI_SUFFIX, HUMAN_PREFIX],
         streaming=True,
-        callbacks=[TracingLLMCallbackHandler()],
     )
 
 
