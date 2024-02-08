@@ -69,7 +69,6 @@ def ConvChain(
     memory: Annotated[BaseMemory, Depends(ChatMemory)],
 ) -> Chain:
     return ConversationChain(
-        user_input_variable="input",
         llm=llm,
         memory=memory,
     )

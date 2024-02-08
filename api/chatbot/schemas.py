@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Any, Literal, Optional
 from uuid import UUID, uuid4
 
-from langchain_core.messages import BaseMessage
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from chatbot.utils import utcnow
@@ -32,19 +32,44 @@ class ChatMessage(BaseModel):
     def from_lc(
         lc_message: BaseMessage, conv_id: str, from_: str = None
     ) -> "ChatMessage":
-        msg_parent_id_str = lc_message.additional_kwargs.get("parent_id", None)
-        msg_parent_id = UUID(msg_parent_id_str) if msg_parent_id_str else None
-        msg_id_str = lc_message.additional_kwargs.get("id", None)
-        msg_id = UUID(msg_id_str) if msg_id_str else uuid4()
+        msg_parent_id = lc_message.additional_kwargs.get("parent_id", None)
+        msg_id = lc_message.additional_kwargs.get("id", None)
         return ChatMessage(
-            parent_id=msg_parent_id,
-            id=msg_id,
+            parent_id=UUID(msg_parent_id) if msg_parent_id else None,
+            id=UUID(msg_id) if msg_id else uuid4(),
             conversation=conv_id,
             from_=from_ if from_ else lc_message.type,
             content=lc_message.content,
             type="text",
             feedback=lc_message.additional_kwargs.get("feedback", None),
         )
+
+    def to_lc(self) -> BaseMessage:
+        """Convert to langchain message.
+        Note: for file messages, the content is used for LLM, and other fields are used for displaying to frontend.
+        """
+        additional_kwargs = {
+            "id": str(self.id),
+            "type": self.type,
+        }
+        if self.parent_id:
+            additional_kwargs["parent_id"] = str(self.parent_id)
+        match self.from_:
+            case "system":
+                return SystemMessage(
+                    content=self.content,
+                    additional_kwargs=additional_kwargs,
+                )
+            case "ai":
+                return AIMessage(
+                    content=self.content,
+                    additional_kwargs=additional_kwargs,
+                )
+            case _:  # username
+                return HumanMessage(
+                    content=self.content,
+                    additional_kwargs=additional_kwargs,
+                )
 
     def model_dump(
         self, by_alias: bool = True, exclude_none: bool = True, **kwargs

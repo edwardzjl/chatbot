@@ -9,10 +9,11 @@ from fastapi import (
     WebSocketException,
 )
 from langchain.chains.base import Chain
+from langchain_core.chat_history import BaseChatMessageHistory
 from loguru import logger
 
 from chatbot.context import session_id
-from chatbot.dependencies import ConvChain, SmryChain, UserIdHeader
+from chatbot.dependencies import ConvChain, MessageHistory, SmryChain, UserIdHeader
 from chatbot.models import Conversation
 from chatbot.schemas import ChatMessage, InfoMessage
 from chatbot.utils import utcnow
@@ -28,6 +29,7 @@ async def chat(
     websocket: WebSocket,
     conv_chain: Annotated[Chain, Depends(ConvChain)],
     smry_chain: Annotated[Chain, Depends(SmryChain)],
+    history: Annotated[BaseChatMessageHistory, Depends(MessageHistory)],
     userid: Annotated[str | None, UserIdHeader()] = None,
 ):
     await websocket.accept()
@@ -43,6 +45,7 @@ async def chat(
                 raise WebSocketException(code=3403, reason="authorization error")
             # set session_id early to ensure history is loaded correctly.
             session_id.set(f"{userid}:{message.conversation}")
+            parent_run_id = None
             async for event in conv_chain.astream_events(
                 input={
                     "input": message.content,
@@ -54,11 +57,20 @@ async def chat(
             ):
                 logger.trace(f"event: {event}")
                 kind = event["event"]
-                parent_run_id = None
                 match kind:
                     case "on_chain_start":
-                        # TODO: maybe it's a little hacky
                         parent_run_id = event["run_id"]
+                        history.add_message(message.to_lc())
+                    case "on_chain_end":
+                        msg = ChatMessage(
+                            parent_id=parent_run_id,
+                            id=event["run_id"],
+                            conversation=message.conversation,
+                            from_="ai",
+                            content=event["data"]["output"]["text"],
+                            type="text",
+                        )
+                        history.add_message(msg.to_lc())
                     case "on_llm_start":
                         msg = ChatMessage(
                             parent_id=parent_run_id,
