@@ -26,7 +26,7 @@ async def get_conversations(
     userid: Annotated[str | None, UserIdHeader()] = None
 ) -> list[Conversation]:
     convs = await ORMConversation.find(ORMConversation.owner == userid).all()
-    convs.sort(key=lambda x: (x.pinned, x.updated_at), reverse=True)
+    convs.sort(key=lambda x: (x.pinned, x.last_message_at), reverse=True)
     return [Conversation(**conv.dict()) for conv in convs]
 
 

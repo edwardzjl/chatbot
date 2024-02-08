@@ -10,8 +10,7 @@ class Conversation(JsonModel):
     owner: str = Field(index=True)
     pinned: bool = False
     created_at: datetime = Field(default_factory=utcnow)
-    updated_at: datetime = created_at
-    """TODO: maybe rename to `last_message_at`?"""
+    last_message_at: datetime = created_at
 
     class Meta:
         global_key_prefix = "chatbot"

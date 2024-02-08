@@ -97,7 +97,7 @@ class Conversation(BaseModel):
     owner: str
     pinned: bool = False
     created_at: datetime = Field(default_factory=utcnow)
-    updated_at: datetime = created_at
+    last_message_at: datetime = created_at
 
     @model_validator(mode="before")
     @classmethod
