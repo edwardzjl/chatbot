@@ -81,12 +81,12 @@ const Conversation = () => {
         <>
             <ChatboxHeader />
             <ChatLog className="chat-log">
-                {conversation && messages && messages.map((message, index) => (
+                {conversation && messages?.map((message, index) => (
                     <ChatMessage key={index} convId={conversation.id} idx={index} message={message} />
                 ))}
             </ChatLog>
             <div className="input-bottom">
-                <ChatInput conversation={{ ...conversation, messages: messages }} />
+                <ChatInput convId={conversation.id} />
                 <div className="footer">Chatbot can make mistakes. Consider checking important information.</div>
             </div>
         </>

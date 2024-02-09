@@ -11,7 +11,6 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
 
 import { DropdownMenu, DropdownHeader, DropdownList } from "components/DropdownMenu";
-import { summarizeConversation } from "requests";
 
 /**
  *
@@ -58,10 +57,11 @@ const ChatTab = ({ chat, isActive, onDeleteClick }) => {
   };
 
   const onSummarizeClick = async () => {
-    summarizeConversation(chat.id)
-      .then(data => {
-        titleRef.current.innerText = data.title;
-      });
+    fetch(`/api/conversations/${chat.id}/summarization`, {
+      method: "POST",
+    })
+      .then(res => res.json())
+      .then(data => titleRef.current.innerText = data.title);
   }
 
   const flipPin = () => {
@@ -92,7 +92,7 @@ const ChatTab = ({ chat, isActive, onDeleteClick }) => {
             <MoreVertIcon />
           </DropdownHeader>
           <DropdownList className="chat-op-menu-list">
-          <li>
+            <li>
               <button className="chat-op-menu-item" onClick={flipPin}>
                 {/* TODO: there's no 'unpin' icon in material icons for now. */}
                 {/* Please see <https://github.com/google/material-design-icons/issues/1595> */}

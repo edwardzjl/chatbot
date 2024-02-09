@@ -10,7 +10,7 @@ import { WebsocketContext } from "contexts/websocket";
 /**
  *
  */
-const ChatInput = ({ conversation }) => {
+const ChatInput = ({ convId }) => {
   const { username } = useContext(UserContext);
   const { dispatch } = useContext(MessageContext);
   const [ready, send] = useContext(WebsocketContext);
@@ -37,7 +37,7 @@ const ChatInput = ({ conversation }) => {
     }
     const message = { id: crypto.randomUUID(), from: username, content: input, type: "text" };
     const payload = {
-      conversation: conversation.id,
+      conversation: convId,
       ...message,
     };
     setInput("");
