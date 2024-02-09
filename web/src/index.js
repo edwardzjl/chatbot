@@ -23,41 +23,53 @@ import { MessageProvider } from "contexts/message";
 const router = createBrowserRouter([
   {
     path: "/",
+    id: "root",
     element: <Root />,
     errorElement: <ErrorPage />,
     loader: rootLoader,
     action: rootAction,
     shouldRevalidate: ({ currentParams, nextParams, formMethod }) => {
+      // Root revalidation logic, revalidates (fetches) conversation list.
+      // from index to index
       if (currentParams.convId === undefined && nextParams.convId === undefined) {
-        // from index to index
         return false;
       }
+      // from index to conv
       if (currentParams.convId === undefined) {
-        // from index to conv
+        // Revalidate post method so that the newly created conv will show up.
         if (formMethod === "post") {
-          // we need to validate this so that the newly created conv will show up.
           return true;
         }
+        // ignore others to prevent fetch when clicking on a conversation from index.
         return false;
       }
+      // from conv to index
       if (nextParams.convId === undefined) {
-        // from conv to index
+        // Revalidate delete method so that the deleted conv will be removed.
         if (formMethod === "delete") {
-          // we need to validate this so that the deleted conv will be removed.
           return true;
         }
+        // ignore others to prevent fetch when clicking on index from any conversation.
         return false;
       }
+      // from conv to same conv
       if (currentParams.convId === nextParams.convId) {
-        // from conv to same conv
+        // revalidate on post
+        // this is a bit hacky, I trigger a 'post' action on message send for 2 reasons:
+        // 1. I need to revalidate the conversations to get the 'last_message_at' updated.
+        // 2. The 'get' method doesn't trigger actions.
+        if (formMethod === "post") {
+          return true;
+        }
+        // revalidate on put
+        // This is a bit hacky, but we need to revalidate on update so that the
+        // generated conversation title will be updated.
         if (formMethod === "put") {
-          // revalidate on update
-          // This is a bit hacky, but we need to revalidate on update so that the
-          // generated conversation title will be updated.
           return true;
         }
         return false;
       }
+      // Ignore revalidation on conv to another conv.
       return false;
     },
     children: [

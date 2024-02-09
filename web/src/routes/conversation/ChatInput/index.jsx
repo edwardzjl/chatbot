@@ -10,7 +10,7 @@ import { WebsocketContext } from "contexts/websocket";
 /**
  *
  */
-const ChatInput = ({ convId }) => {
+const ChatInput = ({ convId, onSend }) => {
   const { username } = useContext(UserContext);
   const { dispatch } = useContext(MessageContext);
   const [ready, send] = useContext(WebsocketContext);
@@ -47,18 +47,7 @@ const ChatInput = ({ convId }) => {
       message: message,
     });
     send(JSON.stringify(payload));
-    // TODO: add this back
-    // Usually it can be done by calling `revalidator.revalidate()` (<https://reactrouter.com/en/main/hooks/use-revalidator>)
-    // either here or on `stream/end` message received.
-    // However, as I skipped the revalidation on `currentParams.convId === nextParams.convId`
-    // The `revalidator.revalidate()` will also be skipped.
-    // if current chat is not the first in the list, move it to the first when send message.
-    // if (conversations[0].id !== conversation.id) {
-    //   dispatch({
-    //     type: "moveToFirst",
-    //     id: conversation.id,
-    //   });
-    // }
+    onSend();
   };
 
   const handleKeyDown = async (e) => {

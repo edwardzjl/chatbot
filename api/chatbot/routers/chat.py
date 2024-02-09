@@ -61,6 +61,8 @@ async def chat(
                     case "on_chain_start":
                         parent_run_id = event["run_id"]
                         history.add_message(message.to_lc())
+                        conv.last_message_at = utcnow()
+                        await conv.save()
                     case "on_chain_end":
                         msg = ChatMessage(
                             parent_id=parent_run_id,
