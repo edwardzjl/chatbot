@@ -31,7 +31,7 @@ const router = createBrowserRouter([
       if (currentParams.convId === undefined && nextParams.convId === undefined) {
         // from index to index
         return false;
-      };
+      }
       if (currentParams.convId === undefined) {
         // from index to conv
         if (formMethod === "post") {
@@ -39,7 +39,7 @@ const router = createBrowserRouter([
           return true;
         }
         return false;
-      };
+      }
       if (nextParams.convId === undefined) {
         // from conv to index
         if (formMethod === "delete") {
@@ -57,7 +57,7 @@ const router = createBrowserRouter([
           return true;
         }
         return false;
-      };
+      }
       return false;
     },
     children: [
@@ -75,12 +75,12 @@ const router = createBrowserRouter([
             action: conversationAction,
             shouldRevalidate: ({ currentParams, nextParams }) => {
               return currentParams.convId !== nextParams.convId;
-            },
-          },
-        ],
+            }
+          }
+        ]
       }
-    ],
-  },
+    ]
+  }
 ]);
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
