@@ -57,14 +57,9 @@ const router = createBrowserRouter([
         // revalidate on post
         // this is a bit hacky, I trigger a 'post' action on message send for 2 reasons:
         // 1. I need to revalidate the conversations to get the 'last_message_at' updated.
-        // 2. The 'get' method doesn't trigger actions.
+        // 2. I need to revalidate the conversations when title generated.
+        // 3. The 'get' method doesn't trigger actions.
         if (formMethod === "post") {
-          return true;
-        }
-        // revalidate on put
-        // This is a bit hacky, but we need to revalidate on update so that the
-        // generated conversation title will be updated.
-        if (formMethod === "put") {
           return true;
         }
         return false;

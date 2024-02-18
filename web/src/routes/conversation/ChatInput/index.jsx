@@ -10,7 +10,7 @@ import { WebsocketContext } from "contexts/websocket";
 /**
  *
  */
-const ChatInput = ({ convId, onSend }) => {
+const ChatInput = ({ convId }) => {
   const { username } = useContext(UserContext);
   const { dispatch } = useContext(MessageContext);
   const [ready, send] = useContext(WebsocketContext);
@@ -47,7 +47,6 @@ const ChatInput = ({ convId, onSend }) => {
       message: message,
     });
     send(JSON.stringify(payload));
-    onSend();
   };
 
   const handleKeyDown = async (e) => {

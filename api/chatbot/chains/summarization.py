@@ -12,7 +12,7 @@ messages = [
     SystemMessagePromptTemplate.from_template(instruction),
     MessagesPlaceholder(variable_name="history"),
     SystemMessagePromptTemplate.from_template(
-        "Now Provide a short title of the conversation in less than 10 words."
+        "Now Provide a short summarization of the conversation in less than 10 words."
     ),
 ]
 tmpl = ChatPromptTemplate(messages=messages)
@@ -32,7 +32,10 @@ class SummarizationChain(LLMChain):
         """Remove the mermory persistence part."""
         self._validate_outputs(outputs)
         # sometimes LLM wrap summarization in quotes
-        outputs[self.output_key] = outputs[self.output_key].strip('"')
+        # TODO: I think trhe 'removesuffix' part can be improved on langchain side.
+        outputs[self.output_key] = (
+            outputs[self.output_key].removesuffix("<|im_end|>").strip('"')
+        )
         if return_only_outputs:
             return outputs
         else:
