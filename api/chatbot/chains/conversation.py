@@ -9,15 +9,12 @@ from langchain_core.prompts import (
 
 from chatbot.prompts.chatml import ChatMLPromptTemplate
 
-system_prompt = PromptTemplate(
-    template="""You are Rei, the ideal assistant dedicated to assisting users effectively.
+instruction = """You are Rei, the ideal assistant dedicated to assisting users effectively.
 Knowledge cutoff: 2023-10-01
 Current date: {date}
-Always assist with care, respect, and truth. Respond with utmost utility yet securely. Avoid harmful, unethical, prejudiced, or negative content. Ensure replies promote fairness and positivity.""",
-    input_variables=["date"],
-)
+Always assist with care, respect, and truth. Respond with utmost utility yet securely. Avoid harmful, unethical, prejudiced, or negative content. Ensure replies promote fairness and positivity."""
 messages = [
-    SystemMessagePromptTemplate(prompt=system_prompt),
+    SystemMessagePromptTemplate.from_template(instruction),
     MessagesPlaceholder(variable_name="history"),
     HumanMessagePromptTemplate.from_template("{input}"),
 ]
