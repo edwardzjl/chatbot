@@ -22,6 +22,7 @@ websockets = "~=12.0"
 [dev-packages]
 black = "*"
 isort = "*"
+pre-commit = "*"
 
 [requires]
 python_version = "3.11"
