@@ -2,18 +2,15 @@ from typing import Annotated, Optional
 
 from fastapi import Depends, Header
 from langchain.chains.base import Chain
-from langchain_community.llms.huggingface_text_gen_inference import (
-    HuggingFaceTextGenInference,
-)
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.language_models import BaseLLM
 from langchain_core.memory import BaseMemory
+from langchain_openai import ChatOpenAI
 
 from chatbot.chains import ConversationChain, SummarizationChain
 from chatbot.config import settings
 from chatbot.history import ChatbotMessageHistory
 from chatbot.memory import ChatbotMemory
-from chatbot.prompts.chatml import AI_SUFFIX, HUMAN_PREFIX
 
 
 def UserIdHeader(alias: Optional[str] = None, **kwargs):
@@ -54,10 +51,11 @@ def ChatMemory(
 
 
 def Llm() -> BaseLLM:
-    return HuggingFaceTextGenInference(
-        inference_server_url=str(settings.inference_server_url),
-        max_new_tokens=1024,
-        stop_sequences=[AI_SUFFIX, HUMAN_PREFIX],
+    return ChatOpenAI(
+        model="cognitivecomputations/dolphin-2.6-mistral-7b-dpo-laser",  # this does not matter
+        openai_api_key="EMPTY",
+        openai_api_base=str(settings.inference_server_url),
+        max_tokens=1024,
         streaming=True,
     )
 

@@ -69,11 +69,14 @@ async def chat(
                             id=event["run_id"],
                             conversation=message.conversation,
                             from_="ai",
-                            content=event["data"]["output"]["text"],
+                            # TODO: I think this can be improved on langchain side.
+                            content=event["data"]["output"]["text"].removesuffix(
+                                "<|im_end|>"
+                            ),
                             type="text",
                         )
                         history.add_message(msg.to_lc())
-                    case "on_llm_start":
+                    case "on_chat_model_start":
                         logger.debug(f"event: {event}")
                         msg = ChatMessage(
                             parent_id=parent_run_id,
@@ -84,17 +87,20 @@ async def chat(
                             type="stream/start",
                         )
                         await websocket.send_text(msg.model_dump_json())
-                    case "on_llm_stream":
-                        msg = ChatMessage(
-                            parent_id=parent_run_id,
-                            id=event["run_id"],
-                            conversation=message.conversation,
-                            from_="ai",
-                            content=event["data"]["chunk"],
-                            type="stream/text",
-                        )
-                        await websocket.send_text(msg.model_dump_json())
-                    case "on_llm_end":
+                    case "on_chat_model_stream":
+                        # openai streaming provides eos token as last chunk, but langchain does not provide stop reason.
+                        # It will be better if langchain could provide sth like event["data"]["chunk"].finish_reason == "eos_token"
+                        if (content := event["data"]["chunk"].content) != "<|im_end|>":
+                            msg = ChatMessage(
+                                parent_id=parent_run_id,
+                                id=event["run_id"],
+                                conversation=message.conversation,
+                                from_="ai",
+                                content=content,
+                                type="stream/text",
+                            )
+                            await websocket.send_text(msg.model_dump_json())
+                    case "on_chat_model_end":
                         logger.debug(f"event: {event}")
                         msg = ChatMessage(
                             parent_id=parent_run_id,
@@ -105,7 +111,9 @@ async def chat(
                             type="stream/end",
                         )
                         await websocket.send_text(msg.model_dump_json())
-                    case "on_llm_error":
+                    case (
+                        "on_llm_error"
+                    ):  # TODO: verify if this event should be on_chat_model_error
                         logger.error(f"event: {event}")
                         msg = ChatMessage(
                             parent_id=parent_run_id,
@@ -130,7 +138,10 @@ async def chat(
                     from_="ai",
                     content={
                         "type": "title-generated",
-                        "payload": res[smry_chain.output_key],
+                        # TODO: I think this can be improved on langchain side.
+                        "payload": res[smry_chain.output_key].removesuffix(
+                            "<|im_end|>"
+                        ),
                     },
                 )
                 await websocket.send_text(info_message.model_dump_json())
