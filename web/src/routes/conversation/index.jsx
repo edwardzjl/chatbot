@@ -18,6 +18,25 @@ export async function action({ params, request }) {
         // It doesn't return anything, it is just used to revalidate the conversations.
         return null;
     }
+    if (request.method === "PUT") {
+        const conversation = await request.json();
+        const resp = await fetch(`/api/conversations/${params.convId}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                title: conversation.title,
+                pinned: conversation.pinned,
+            }),
+        });
+        if (!resp.ok) {
+            console.error("error updating conversation", resp);
+            // TODO: handle error
+        }
+        const _conv = await resp.json();
+        return { _conv };
+    }
     if (request.method === "DELETE") {
         await fetch(`/api/conversations/${params.convId}`, {
             method: "DELETE",

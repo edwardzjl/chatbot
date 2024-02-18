@@ -62,6 +62,11 @@ const router = createBrowserRouter([
         if (formMethod === "post") {
           return true;
         }
+        // revalidate on put
+        // I need to revalidate the conversations when conversation pinned.
+        if (formMethod === "put") {
+          return true;
+        }
         return false;
       }
       // Ignore revalidation on conv to another conv.
