@@ -30,4 +30,4 @@ generatorOptions:
 images:
   - name: quay.io/oauth2-proxy/oauth2-proxy
     newName: zjuici/mirror.oauth2-proxy.oauth2-proxy
-    newTag: v7.5.1
+    newTag: v7.6.0
