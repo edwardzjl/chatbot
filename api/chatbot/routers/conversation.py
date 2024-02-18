@@ -109,8 +109,7 @@ async def summarize(
         raise HTTPException(status_code=403, detail="authorization error")
     session_id.set(f"{userid}:{conversation_id}")
     res = await smry_chain.ainvoke(input={})
-    # TODO: I think this can be improved on langchain side.
-    title = res[smry_chain.output_key].removesuffix("<|im_end|>")
+    title = res[smry_chain.output_key]
     conv.title = title
     await conv.save()
     return {"title": title}

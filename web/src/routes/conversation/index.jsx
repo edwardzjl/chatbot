@@ -1,7 +1,7 @@
 import "./index.css";
 
 import { useContext, useEffect } from "react";
-import { useLoaderData, useRouteLoaderData, useSubmit, redirect } from "react-router-dom";
+import { useLoaderData, redirect } from "react-router-dom";
 
 import ChatboxHeader from "components/ChatboxHeader";
 
@@ -17,25 +17,6 @@ export async function action({ params, request }) {
         // TODO: this is hacky, I trigger a 'post' action on message send.
         // It doesn't return anything, it is just used to revalidate the conversations.
         return null;
-    }
-    if (request.method === "PUT") {
-        const conversation = await request.json();
-        const resp = await fetch(`/api/conversations/${params.convId}`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                title: conversation.title,
-                pinned: conversation.pinned,
-            }),
-        });
-        if (!resp.ok) {
-            console.error("error updating conversation", resp);
-            // TODO: handle error
-        }
-        const _conv = await resp.json();
-        return { _conv };
     }
     if (request.method === "DELETE") {
         await fetch(`/api/conversations/${params.convId}`, {
@@ -55,9 +36,7 @@ export async function loader({ params }) {
 }
 
 const Conversation = () => {
-    const conversations = useRouteLoaderData("root");
     const { conversation } = useLoaderData();
-    const submit = useSubmit();
     const [ready, send] = useContext(WebsocketContext);
     const { messages, dispatch } = useContext(MessageContext);
 
@@ -84,12 +63,6 @@ const Conversation = () => {
         }
     }, [conversation]);
 
-    const moveToFirst = () => {
-        if (conversations.groupedConvs.Today[0].id !== conversation.id) {
-            submit(null, { method: "post", action: `/conversations/${conversation.id}` });
-        }
-    };
-
     return (
         <>
             <ChatboxHeader />
@@ -99,7 +72,7 @@ const Conversation = () => {
                 ))}
             </ChatLog>
             <div className="input-bottom">
-                <ChatInput convId={conversation.id} onSend={moveToFirst} />
+                <ChatInput convId={conversation.id} />
                 <div className="footer">Chatbot can make mistakes. Consider checking important information.</div>
             </div>
         </>

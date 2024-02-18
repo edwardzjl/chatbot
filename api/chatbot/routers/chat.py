@@ -63,6 +63,16 @@ async def chat(
                         history.add_message(message.to_lc())
                         conv.last_message_at = utcnow()
                         await conv.save()
+                        # Inform the client that the message has been added to conversation history.
+                        # This is useful for the client to update the UI.
+                        info_message = InfoMessage(
+                            conversation=message.conversation,
+                            from_="ai",
+                            content={
+                                "type": "msg-added",
+                            },
+                        )
+                        await websocket.send_text(info_message.model_dump_json())
                     case "on_chain_end":
                         msg = ChatMessage(
                             parent_id=parent_run_id,
@@ -127,21 +137,19 @@ async def chat(
             conv.last_message_at = utcnow()
             await conv.save()
             # summarize if required
-            if (
-                message.additional_kwargs
-                and "require_summarization" in message.additional_kwargs
-                and message.additional_kwargs["require_summarization"]
+            if message.additional_kwargs and message.additional_kwargs.get(
+                "require_summarization", False
             ):
                 res = await smry_chain.ainvoke(input={})
+                title = res[smry_chain.output_key]
+                conv.title = title
+                await conv.save()
                 info_message = InfoMessage(
                     conversation=message.conversation,
                     from_="ai",
                     content={
                         "type": "title-generated",
-                        # TODO: I think this can be improved on langchain side.
-                        "payload": res[smry_chain.output_key].removesuffix(
-                            "<|im_end|>"
-                        ),
+                        "payload": title,
                     },
                 )
                 await websocket.send_text(info_message.model_dump_json())
