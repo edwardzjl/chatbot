@@ -1,11 +1,10 @@
 from langchain.chains import LLMChain
 from langchain_core.prompts import (
     BasePromptTemplate,
+    ChatPromptTemplate,
     MessagesPlaceholder,
     SystemMessagePromptTemplate,
 )
-
-from chatbot.prompts.chatml import ChatMLPromptTemplate
 
 instruction = """You are Rei, the ideal assistant dedicated to assisting users effectively.
 Always assist with care, respect, and truth. Respond with utmost utility yet securely. Avoid harmful, unethical, prejudiced, or negative content. Ensure replies promote fairness and positivity."""
@@ -16,7 +15,7 @@ messages = [
         "Now Provide a short title of the conversation in less than 10 words."
     ),
 ]
-tmpl = ChatMLPromptTemplate(input_variables=[], messages=messages)
+tmpl = ChatPromptTemplate(messages=messages)
 
 
 class SummarizationChain(LLMChain):

@@ -1,13 +1,11 @@
 from langchain.chains import LLMChain
 from langchain_core.prompts import (
     BasePromptTemplate,
+    ChatPromptTemplate,
     HumanMessagePromptTemplate,
     MessagesPlaceholder,
-    PromptTemplate,
     SystemMessagePromptTemplate,
 )
-
-from chatbot.prompts.chatml import ChatMLPromptTemplate
 
 instruction = """You are Rei, the ideal assistant dedicated to assisting users effectively.
 Knowledge cutoff: 2023-10-01
@@ -18,7 +16,7 @@ messages = [
     MessagesPlaceholder(variable_name="history"),
     HumanMessagePromptTemplate.from_template("{input}"),
 ]
-tmpl = ChatMLPromptTemplate(input_variables=["date", "input"], messages=messages)
+tmpl = ChatPromptTemplate(messages=messages)
 
 
 class ConversationChain(LLMChain):
