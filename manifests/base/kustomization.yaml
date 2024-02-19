@@ -5,7 +5,7 @@ labels:
   - pairs:
       app: chatbot
       app.kubernetes.io/name: chatbot
-      app.kubernetes.io/version: 0.7.1
+      app.kubernetes.io/version: 0.7.11
       app.kubernetes.io/managed-by: kubectl
     includeSelectors: false
 
@@ -24,4 +24,4 @@ generatorOptions:
 
 images:
   - name: edwardlol/chatbot
-    newTag: 0.7.10
+    newTag: 0.7.11
