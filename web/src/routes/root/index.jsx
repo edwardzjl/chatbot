@@ -128,9 +128,11 @@ const Root = () => {
               // Because going from convId to the same convId is skipped in shoudRevalidate.
               // So I need to perform an action here.
               if (content.type === "msg-added") {
-                if (groupedConvs.Today[0].id !== conversation) {
+                // TODO: sometimes the groupedConvs here is not the latest, maybe it's fixed when the websocket connects.
+                // Disable the check for now.
+                // if (groupedConvs.Today[0].id !== conversation) {
                   submit(null, { method: "post", action: `/conversations/${conversation}` });
-                }
+                // }
               } else if (content.type === "title-generated") {
                 submit(null, { method: "post", action: `/conversations/${conversation}` });
               } else {
