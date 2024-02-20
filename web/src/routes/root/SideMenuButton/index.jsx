@@ -1,7 +1,6 @@
 import "./index.css";
 
-import { useState, useRef } from "react";
-import { useFetcher } from "react-router-dom";
+import { useContext, useState, useRef } from "react";
 import Tooltip from "@mui/material/Tooltip";
 
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
@@ -11,6 +10,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
 
 import { DropdownMenu, DropdownHeader, DropdownList } from "components/DropdownMenu";
+import { ConversationContext } from "contexts/conversation";
 
 /**
  *
@@ -21,8 +21,7 @@ import { DropdownMenu, DropdownHeader, DropdownList } from "components/DropdownM
  * @returns
  */
 const ChatTab = ({ chat, isActive, onDeleteClick }) => {
-  const fetcher = useFetcher();
-
+  const { dispatch } = useContext(ConversationContext);
   const titleRef = useRef(null);
   const [titleEditable, setTitleEditable] = useState("false");
 
@@ -36,11 +35,20 @@ const ChatTab = ({ chat, isActive, onDeleteClick }) => {
 
   const renameChat = async (title) => {
     setTitleEditable("false");
-    fetcher.submit(
-      { ...chat, title: title },
-      { method: "put", action: `/conversations/${chat.id}`, encType: "application/json" }
-    );
-    // Maybe set snackbar to inform user?
+    const resp = await fetch(`/api/conversations/${chat.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title: title,
+      }),
+    });
+    if (!resp.ok) {
+      console.error("error updating conversation", resp);
+      // TODO: handle error
+      // Maybe set snackbar to inform user?
+    }
   };
 
   const onUpdateClick = async (e) => {
@@ -64,11 +72,25 @@ const ChatTab = ({ chat, isActive, onDeleteClick }) => {
       .then(data => titleRef.current.innerText = data.title);
   }
 
-  const flipPin = () => {
-    fetcher.submit(
-      { ...chat, pinned: !chat.pinned },
-      { method: "put", action: `/conversations/${chat.id}`, encType: "application/json" }
-    );
+  const flipPin = async () => {
+    const resp = await fetch(`/api/conversations/${chat.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        pinned: !chat.pinned,
+      }),
+    });
+    if (!resp.ok) {
+      console.error("error updating conversation", resp);
+      // TODO: handle error
+      // Maybe set snackbar to inform user?
+    }
+    dispatch({
+      type: "reordered",
+      conv: { ...chat, pinned: !chat.pinned },
+    })
   };
 
   return (

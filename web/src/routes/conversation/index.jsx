@@ -12,38 +12,6 @@ import ChatLog from "./ChatLog";
 import ChatMessage from "./ChatMessage";
 import ChatInput from "./ChatInput";
 
-export async function action({ params, request }) {
-    if (request.method === "POST") {
-        // TODO: this is hacky, I trigger a 'post' action on message send.
-        // It doesn't return anything, it is just used to revalidate the conversations.
-        return null;
-    }
-    if (request.method === "PUT") {
-        const conversation = await request.json();
-        const resp = await fetch(`/api/conversations/${params.convId}`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                title: conversation.title,
-                pinned: conversation.pinned,
-            }),
-        });
-        if (!resp.ok) {
-            console.error("error updating conversation", resp);
-            // TODO: handle error
-        }
-        const _conv = await resp.json();
-        return { _conv };
-    }
-    if (request.method === "DELETE") {
-        await fetch(`/api/conversations/${params.convId}`, {
-            method: "DELETE",
-        });
-        return redirect("/");
-    }
-}
 
 export async function loader({ params }) {
     const resp = await fetch(`/api/conversations/${params.convId}`, {});
@@ -91,7 +59,7 @@ const Conversation = () => {
                 ))}
             </ChatLog>
             <div className="input-bottom">
-                <ChatInput convId={conversation.id} />
+                <ChatInput conv={conversation} />
                 <div className="footer">Chatbot can make mistakes. Consider checking important information.</div>
             </div>
         </>

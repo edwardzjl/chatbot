@@ -1,9 +1,10 @@
 import "./index.css";
 
 import { useContext, useState, useRef, useEffect } from "react";
-import { useSubmit } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { UserContext } from "contexts/user";
+import { ConversationContext } from "contexts/conversation";
 import { WebsocketContext } from "contexts/websocket";
 import { DEFAULT_CONV_TITLE } from "commons";
 
@@ -14,7 +15,8 @@ import { DEFAULT_CONV_TITLE } from "commons";
 const ChatInput = () => {
   const { username } = useContext(UserContext);
   const [ready,] = useContext(WebsocketContext);
-  const submit = useSubmit();
+  const { dispatch } = useContext(ConversationContext);
+  const navigate = useNavigate();
   const [input, setInput] = useState("");
   const inputRef = useRef(null);
 
@@ -32,7 +34,6 @@ const ChatInput = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // I need to use the conversation id later so I need to create a conversation here instead of in the 'react router action'
     const conversation = await fetch("/api/conversations", {
       method: "POST",
       headers: {
@@ -49,7 +50,8 @@ const ChatInput = () => {
     };
     sessionStorage.setItem(`init-msg:${conversation.id}`, JSON.stringify(message));
     setInput("");
-    submit(conversation, { method: "post", action: "/", encType: "application/json" });
+    dispatch({ type: "added", conv: conversation });
+    navigate(`/conversations/${conversation.id}`);
   };
 
   const handleKeyDown = async (e) => {

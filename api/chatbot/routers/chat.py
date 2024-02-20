@@ -61,18 +61,6 @@ async def chat(
                     case "on_chain_start":
                         parent_run_id = event["run_id"]
                         history.add_message(message.to_lc())
-                        conv.last_message_at = utcnow()
-                        await conv.save()
-                        # Inform the client that the message has been added to conversation history.
-                        # This is useful for the client to update the UI.
-                        info_message = InfoMessage(
-                            conversation=message.conversation,
-                            from_="ai",
-                            content={
-                                "type": "msg-added",
-                            },
-                        )
-                        await websocket.send_text(info_message.model_dump_json())
                     case "on_chain_end":
                         msg = ChatMessage(
                             parent_id=parent_run_id,
