@@ -19,6 +19,15 @@ const ChatInput = ({ convId }) => {
   const inputRef = useRef(null);
 
   /**
+   * Focus on input when convId changes.
+   */
+  useEffect(() => {
+    if (convId) {
+      inputRef.current.focus();
+    }
+  }, [convId]);
+
+  /**
    * Adjusting height of textarea.
    * Ref: <https://blog.muvon.io/frontend/creating-textarea-with-dynamic-height-react>
    */
