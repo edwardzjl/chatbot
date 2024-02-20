@@ -1,7 +1,7 @@
 import "./index.css";
 
 import { forwardRef, useContext, useEffect, useRef, useState } from "react";
-import { Link, NavLink, Outlet, redirect, useLoaderData, useNavigation, useSubmit } from "react-router-dom";
+import { Link, NavLink, Outlet, redirect, useNavigate, useNavigation } from "react-router-dom";
 
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
@@ -13,6 +13,7 @@ import MailOutlineIcon from '@mui/icons-material/MailOutline';
 
 import { SnackbarContext } from "contexts/snackbar";
 import { ThemeContext } from "contexts/theme";
+import { ConversationContext } from "contexts/conversation";
 import { MessageContext } from "contexts/message";
 import { WebsocketContext } from "contexts/websocket";
 
@@ -23,32 +24,6 @@ const Alert = forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
-export async function loader() {
-  const conversations = await fetch("/api/conversations", {
-  }).then((res) => res.json());
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-  const lastSevenDays = new Date(today);
-  lastSevenDays.setDate(lastSevenDays.getDate() - 7);
-
-  const groupedConvs = Object.groupBy(conversations, (item) => {
-    if (item.pinned) {
-      return "pinned";
-    }
-    const itemDate = new Date(item.last_message_at);
-    if (itemDate.toDateString() === today.toDateString()) {
-      return "Today";
-    } else if (itemDate.toDateString() === yesterday.toDateString()) {
-      return "Yesterday";
-    } else if (itemDate > lastSevenDays) {
-      return "Last seven days";
-    } else {
-      return `${itemDate.toLocaleString("default", { month: "long" })} ${itemDate.getFullYear()}`;
-    }
-  });
-  return { groupedConvs };
-}
 
 export async function action({ request }) {
   if (request.method === "POST") {
@@ -58,7 +33,7 @@ export async function action({ request }) {
 }
 
 const Root = () => {
-  const { groupedConvs } = useLoaderData();
+  const { groupedConvs, dispatch: dispatchConv } = useContext(ConversationContext);
 
   const { theme } = useContext(ThemeContext);
   const { snackbar, setSnackbar } = useContext(SnackbarContext);
@@ -69,8 +44,8 @@ const Root = () => {
   const delDialogRef = useRef();
   const [toDelete, setToDelete] = useState({});
 
+  const navigate = useNavigate();
   const navigation = useNavigation();
-  const submit = useSubmit();
 
 
   useEffect(() => {
@@ -124,17 +99,8 @@ const Root = () => {
             case "stream/end":
               break;
             case "info":
-              // Using revalidator.revalidate() (<https://reactrouter.com/en/main/hooks/use-revalidator>) does not work here.
-              // Because going from convId to the same convId is skipped in shoudRevalidate.
-              // So I need to perform an action here.
-              if (content.type === "msg-added") {
-                // TODO: sometimes the groupedConvs here is not the latest, maybe it's fixed when the websocket connects.
-                // Disable the check for now.
-                // if (groupedConvs.Today[0].id !== conversation) {
-                  submit(null, { method: "post", action: `/conversations/${conversation}` });
-                // }
-              } else if (content.type === "title-generated") {
-                submit(null, { method: "post", action: `/conversations/${conversation}` });
+              if (content.type === "title-generated") {
+                dispatchConv({ type: "renamed", convId: conversation, title: content.payload });
               } else {
                 console.log("unhandled info message", content);
               }
@@ -166,13 +132,14 @@ const Root = () => {
     delDialogRef.current?.showModal();
   };
 
-  const deleteChat = async (id) => {
-    submit(
-      id,
-      { method: "delete", action: `/conversations/${id}` }
-    );
+  const deleteConv = async (id) => {
     delDialogRef.current?.close();
     setToDelete({});
+    await fetch(`/api/conversations/${id}`, {
+      method: "DELETE",
+    });
+    dispatchConv({ type: "deleted", convId: id });
+    navigate("/");
   };
 
   const closeSnackbar = (event, reason) => {
@@ -235,7 +202,7 @@ const Root = () => {
           <h2>Delete conversation?</h2>
           <p>This will delete '{toDelete.title}'</p>
           <div className="del-dialog-actions">
-            <button autoFocus onClick={() => deleteChat(toDelete.id)}>Delete</button>
+            <button autoFocus onClick={() => deleteConv(toDelete.id)}>Delete</button>
             <button onClick={() => delDialogRef.current?.close()}>Cancel</button>
           </div>
         </dialog>
@@ -258,7 +225,6 @@ const Root = () => {
         </Snackbar>
       </div>
     </WebsocketContext.Provider>
-
   );
 }
 

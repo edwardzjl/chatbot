@@ -4,15 +4,17 @@ import { useContext, useState, useRef, useEffect } from "react";
 
 import { UserContext } from "contexts/user";
 import { MessageContext } from "contexts/message";
+import { ConversationContext } from "contexts/conversation";
 import { WebsocketContext } from "contexts/websocket";
 
 
 /**
  *
  */
-const ChatInput = ({ convId }) => {
+const ChatInput = ({ conv }) => {
   const { username } = useContext(UserContext);
   const { dispatch } = useContext(MessageContext);
+  const { groupedConvs, dispatch: dispatchConv } = useContext(ConversationContext);
   const [ready, send] = useContext(WebsocketContext);
 
   const [input, setInput] = useState("");
@@ -22,10 +24,10 @@ const ChatInput = ({ convId }) => {
    * Focus on input when convId changes.
    */
   useEffect(() => {
-    if (convId) {
+    if (conv.id) {
       inputRef.current.focus();
     }
-  }, [convId]);
+  }, [conv.id]);
 
   /**
    * Adjusting height of textarea.
@@ -46,7 +48,7 @@ const ChatInput = ({ convId }) => {
     }
     const message = { id: crypto.randomUUID(), from: username, content: input, type: "text" };
     const payload = {
-      conversation: convId,
+      conversation: conv.id,
       ...message,
     };
     setInput("");
@@ -55,6 +57,19 @@ const ChatInput = ({ convId }) => {
       type: "added",
       message: message,
     });
+    // update last_message_at of the conversation to re-order conversations
+    if (conv.pinned && groupedConvs.pinned && groupedConvs.pinned[0]?.id !== conv.id) {
+      dispatchConv({
+        type: "reordered",
+        conv: { id: conv.id, last_message_at: new Date().toISOString() },
+      });
+    }
+    if (groupedConvs.Today && groupedConvs.Today[0]?.id !== conv.id) {
+      dispatchConv({
+        type: "reordered",
+        conv: { id: conv.id, last_message_at: new Date().toISOString() },
+      });
+    }
     send(JSON.stringify(payload));
   };
 
