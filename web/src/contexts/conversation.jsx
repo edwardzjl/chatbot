@@ -116,16 +116,13 @@ export const conversationReducer = (groupedConvs, action) => {
         }
         case "reordered": {
             const convs = flatConvs(groupedConvs);
-            console.log("convs", convs);
             const updatedConvs = convs.map((conv) => {
                 if (conv.id === action.conv.id) {
                     return { ...conv, ...action.conv };
                 }
                 return conv;
             });
-            console.log("updatedConvs", updatedConvs);
             const sortedConvs = sortConvs(updatedConvs);
-            console.log("sortedConvs", sortedConvs);
             return groupConvs(sortedConvs);
         }
         case "replaceAll": {
