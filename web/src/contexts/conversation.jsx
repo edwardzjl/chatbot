@@ -99,7 +99,7 @@ export const conversationReducer = (groupedConvs, action) => {
     switch (action.type) {
         case "added": {
             // action.conv: { id, title, created_at, last_message_at, owner, pinned }
-            return { ...groupedConvs, Today: [action.conv, ...groupedConvs.Today] };
+            return { ...groupedConvs, Today: [action.conv, ...groupedConvs.Today || []] };
         }
         case "deleted": {
             const convs = flatConvs(groupedConvs);
