@@ -63,8 +63,7 @@ const ChatInput = ({ conv }) => {
         type: "reordered",
         conv: { id: conv.id, last_message_at: new Date().toISOString() },
       });
-    }
-    if (groupedConvs.Today && groupedConvs.Today[0]?.id !== conv.id) {
+    } else if (groupedConvs.Today && groupedConvs.Today[0]?.id !== conv.id) {
       dispatchConv({
         type: "reordered",
         conv: { id: conv.id, last_message_at: new Date().toISOString() },
