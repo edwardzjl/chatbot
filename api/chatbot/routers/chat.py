@@ -109,19 +109,6 @@ async def chat(
                             type="stream/end",
                         )
                         await websocket.send_text(msg.model_dump_json())
-                    case (
-                        "on_llm_error"
-                    ):  # TODO: verify if this event should be on_chat_model_error
-                        logger.error(f"event: {event}")
-                        msg = ChatMessage(
-                            parent_id=parent_run_id,
-                            id=event["run_id"],
-                            conversation=message.conversation,
-                            from_="ai",
-                            content=f"llm error: {event['data']}",
-                            type="error",
-                        )
-                        await websocket.send_text(msg.model_dump_json())
             conv.last_message_at = utcnow()
             await conv.save()
             # summarize if required
