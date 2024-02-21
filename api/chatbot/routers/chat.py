@@ -56,8 +56,7 @@ async def chat(
                 version="v1",
             ):
                 logger.trace(f"event: {event}")
-                kind = event["event"]
-                match kind:
+                match event["event"]:
                     case "on_chain_start":
                         parent_run_id = event["run_id"]
                         history.add_message(message.to_lc())
