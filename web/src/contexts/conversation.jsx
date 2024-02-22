@@ -99,7 +99,14 @@ export const conversationReducer = (groupedConvs, action) => {
     switch (action.type) {
         case "added": {
             // action.conv: { id, title, created_at, last_message_at, owner, pinned }
-            return { ...groupedConvs, Today: [action.conv, ...groupedConvs.Today || []] };
+            // I'm not sorting convs here, so the order matters.
+            if (groupedConvs.Today) {
+                return { ...groupedConvs, Today: [action.conv, ...groupedConvs.Today || []] };
+            }
+            if (groupedConvs.pinned) {
+                return {pinned: groupedConvs.pinned, Today: [action.conv], ...groupedConvs};
+            }
+            return {Today: [action.conv], ...groupedConvs};
         }
         case "deleted": {
             const convs = flatConvs(groupedConvs);
