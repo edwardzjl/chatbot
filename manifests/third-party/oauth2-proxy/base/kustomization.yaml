@@ -4,7 +4,7 @@ kind: Kustomization
 labels:
   - pairs:
       app.kubernetes.io/name: oauth2-proxy
-      app.kubernetes.io/version: v7.5.1
+      app.kubernetes.io/version: v7.6.0
       app.kubernetes.io/managed-by: kubectl
     includeSelectors: false
 
