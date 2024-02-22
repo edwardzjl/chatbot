@@ -54,6 +54,7 @@ async def chat(
                 },
                 include_run_info=True,
                 version="v1",
+                config={"metadata": {"conversation_id": message.conversation}},
             ):
                 logger.trace(f"event: {event}")
                 match event["event"]:
@@ -114,7 +115,10 @@ async def chat(
             if message.additional_kwargs and message.additional_kwargs.get(
                 "require_summarization", False
             ):
-                res = await smry_chain.ainvoke(input={})
+                res = await smry_chain.ainvoke(
+                    input={},
+                    config={"metadata": {"conversation_id": message.conversation}},
+                )
                 title = res[smry_chain.output_key]
                 conv.title = title
                 await conv.save()
