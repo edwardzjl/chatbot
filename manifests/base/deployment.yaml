@@ -23,6 +23,8 @@ spec:
           envFrom:
             - configMapRef:
                 name: chatbot
+            - secretRef:
+                name: chatbot
           ports:
             - containerPort: 8000
           resources:

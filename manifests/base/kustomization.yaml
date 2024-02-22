@@ -5,7 +5,7 @@ labels:
   - pairs:
       app: chatbot
       app.kubernetes.io/name: chatbot
-      app.kubernetes.io/version: 0.7.11
+      app.kubernetes.io/version: 0.7.17
       app.kubernetes.io/managed-by: kubectl
     includeSelectors: false
 
@@ -18,10 +18,15 @@ configMapGenerator:
     envs:
       - params.env
 
+secretGenerator:
+  - name: chatbot
+    envs:
+      - secret-params.env
+
 # currently knative does not recognize configmaps with suffix hash
 generatorOptions:
   disableNameSuffixHash: true
 
 images:
   - name: edwardlol/chatbot
-    newTag: 0.7.11
+    newTag: 0.7.17
