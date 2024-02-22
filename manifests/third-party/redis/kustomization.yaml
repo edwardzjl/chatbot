@@ -4,7 +4,7 @@ kind: Kustomization
 labels:
   - pairs:
       app.kubernetes.io/name: redis
-      app.kubernetes.io/version: 7.2.0-v6
+      app.kubernetes.io/version: 7.2.0-v8
       app.kubernetes.io/managed-by: kubectl
     includeSelectors: false
 
@@ -15,4 +15,4 @@ resources:
 
 images:
   - name: redis/redis-stack
-    newTag: 7.2.0-v6
+    newTag: 7.2.0-v8
