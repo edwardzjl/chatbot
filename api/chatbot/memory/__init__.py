@@ -7,7 +7,7 @@ from langchain_core.memory import BaseMemory
 from langchain_core.messages import BaseMessage
 from pydantic.v1 import Field, validator
 
-from chatbot.history import ChatbotMessageHistory
+from chatbot.memory.history import ChatbotMessageHistory
 
 
 class ChatbotMemory(BaseMemory):
