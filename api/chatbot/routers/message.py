@@ -6,7 +6,7 @@ from langchain_core.chat_history import BaseChatMessageHistory
 
 from chatbot.context import session_id
 from chatbot.dependencies import MessageHistory, UserIdHeader
-from chatbot.history import ChatbotMessageHistory
+from chatbot.memory.history import ChatbotMessageHistory
 from chatbot.models import Conversation as ORMConversation
 
 router = APIRouter(

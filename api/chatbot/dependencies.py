@@ -9,8 +9,8 @@ from langchain_openai import ChatOpenAI
 
 from chatbot.chains import ConversationChain, SummarizationChain
 from chatbot.config import settings
-from chatbot.history import ChatbotMessageHistory
 from chatbot.memory import ChatbotMemory
+from chatbot.memory.history import ChatbotMessageHistory
 
 
 def UserIdHeader(alias: Optional[str] = None, **kwargs):
