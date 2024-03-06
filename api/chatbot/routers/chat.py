@@ -15,7 +15,7 @@ from loguru import logger
 from chatbot.context import session_id
 from chatbot.dependencies import ConvChain, MessageHistory, SmryChain, UserIdHeader
 from chatbot.models import Conversation
-from chatbot.schemas import ChatMessage, InfoMessage
+from chatbot.schemas import AIChatMessage, ChatMessage, InfoMessage
 from chatbot.utils import utcnow
 
 router = APIRouter(
@@ -62,25 +62,22 @@ async def chat(
                         parent_run_id = event["run_id"]
                         history.add_message(message.to_lc())
                     case "on_chain_end":
-                        msg = ChatMessage(
+                        msg = AIChatMessage(
                             parent_id=parent_run_id,
                             id=event["run_id"],
                             conversation=message.conversation,
-                            from_="ai",
                             # TODO: I think this can be improved on langchain side.
                             content=event["data"]["output"]["text"].removesuffix(
                                 "<|im_end|>"
                             ),
-                            type="text",
                         )
                         history.add_message(msg.to_lc())
                     case "on_chat_model_start":
                         logger.debug(f"event: {event}")
-                        msg = ChatMessage(
+                        msg = AIChatMessage(
                             parent_id=parent_run_id,
                             id=event["run_id"],
                             conversation=message.conversation,
-                            from_="ai",
                             content=None,
                             type="stream/start",
                         )
@@ -100,11 +97,10 @@ async def chat(
                             await websocket.send_text(msg.model_dump_json())
                     case "on_chat_model_end":
                         logger.debug(f"event: {event}")
-                        msg = ChatMessage(
+                        msg = AIChatMessage(
                             parent_id=parent_run_id,
                             id=event["run_id"],
                             conversation=message.conversation,
-                            from_="ai",
                             content=None,
                             type="stream/end",
                         )
