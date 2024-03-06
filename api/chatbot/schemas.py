@@ -86,6 +86,10 @@ class ChatMessage(BaseModel):
         )
 
 
+class AIChatMessage(ChatMessage):
+    from_: Literal["ai"] = Field("ai", alias="from")
+
+
 class InfoMessage(ChatMessage):
     content: dict[str, Any]
     type: Literal["info"] = "info"
