@@ -54,7 +54,12 @@ async def chat(
                 },
                 include_run_info=True,
                 version="v1",
-                config={"metadata": {"conversation_id": message.conversation}},
+                config={
+                    "metadata": {
+                        "conversation_id": message.conversation,
+                        "userid": userid,
+                    }
+                },
             ):
                 logger.trace(f"event: {event}")
                 match event["event"]:
