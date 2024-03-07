@@ -49,7 +49,7 @@ class ChatMessage(BaseModel):
         """Convert to langchain message.
         Note: for file messages, the content is used for LLM, and other fields are used for displaying to frontend.
         """
-        additional_kwargs = self.additional_kwargs or {} | {
+        additional_kwargs = (self.additional_kwargs or {}) | {
             "id": str(self.id),
             "type": self.type,
         }
