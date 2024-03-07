@@ -45,6 +45,10 @@ async def chat(
                 raise WebSocketException(code=3403, reason="authorization error")
             # set session_id early to ensure history is loaded correctly.
             session_id.set(f"{userid}:{message.conversation}")
+            chain_metadata = {
+                "conversation_id": message.conversation,
+                "userid": userid,
+            }
             parent_run_id = None
             async for event in conv_chain.astream_events(
                 input={
@@ -54,12 +58,7 @@ async def chat(
                 },
                 include_run_info=True,
                 version="v1",
-                config={
-                    "metadata": {
-                        "conversation_id": message.conversation,
-                        "userid": userid,
-                    }
-                },
+                config={"metadata": chain_metadata},
             ):
                 logger.trace(f"event: {event}")
                 match event["event"]:
@@ -118,7 +117,7 @@ async def chat(
             ):
                 res = await smry_chain.ainvoke(
                     input={},
-                    config={"metadata": {"conversation_id": message.conversation}},
+                    config={"metadata": chain_metadata},
                 )
                 title = res[smry_chain.output_key]
                 conv.title = title
