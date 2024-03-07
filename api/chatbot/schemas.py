@@ -32,8 +32,8 @@ class ChatMessage(BaseModel):
     def from_lc(
         lc_message: BaseMessage, conv_id: str, from_: str = None
     ) -> "ChatMessage":
-        msg_parent_id = lc_message.additional_kwargs.get("parent_id", None)
-        msg_id = lc_message.additional_kwargs.get("id", None)
+        msg_parent_id = lc_message.additional_kwargs.pop("parent_id", None)
+        msg_id = lc_message.additional_kwargs.pop("id", None)
         return ChatMessage(
             parent_id=UUID(msg_parent_id) if msg_parent_id else None,
             id=UUID(msg_id) if msg_id else uuid4(),
@@ -41,14 +41,15 @@ class ChatMessage(BaseModel):
             from_=from_ if from_ else lc_message.type,
             content=lc_message.content,
             type="text",
-            feedback=lc_message.additional_kwargs.get("feedback", None),
+            feedback=lc_message.additional_kwargs.pop("feedback", None),
+            additional_kwargs=lc_message.additional_kwargs,
         )
 
     def to_lc(self) -> BaseMessage:
         """Convert to langchain message.
         Note: for file messages, the content is used for LLM, and other fields are used for displaying to frontend.
         """
-        additional_kwargs = {
+        additional_kwargs = self.additional_kwargs or {} | {
             "id": str(self.id),
             "type": self.type,
         }
