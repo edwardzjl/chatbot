@@ -73,36 +73,34 @@ const Root = () => {
         // <https://react.dev/learn/queueing-a-series-of-state-updates>
         // <https://react.dev/learn/updating-arrays-in-state>
         try {
-          const { id, type, conversation, from, content } = JSON.parse(event.data);
-          switch (type) {
+          const message = JSON.parse(event.data);
+          switch (message.type) {
             case "text":
               dispatch({
                 type: "added",
-                id: conversation,
-                message: { id: id, from: from, content: content, type: "text" },
+                message: message,
               });
               break;
             case "stream/start":
               dispatch({
                 type: "added",
-                id: conversation,
-                message: { id: id, from: from, content: content || "", type: "text" },
+                // Initialize an empty content if undefined
+                message: {content: message.content | "", ...message},
               });
               break;
             case "stream/text":
               dispatch({
                 type: "appended",
-                id: conversation,
-                message: { id: id, from: from, content: content, type: "text" },
+                message: message,
               });
               break;
             case "stream/end":
               break;
             case "info":
-              if (content.type === "title-generated") {
-                dispatchConv({ type: "renamed", convId: conversation, title: content.payload });
+              if (message.content.type === "title-generated") {
+                dispatchConv({ type: "renamed", convId: message.conversation, title: message.content.payload });
               } else {
-                console.log("unhandled info message", content);
+                console.log("unhandled info message", message);
               }
               break;
             case "error":
@@ -113,7 +111,7 @@ const Root = () => {
               });
               break;
             default:
-              console.warn("unknown message type", type);
+              console.warn("unknown message type", message.type);
           }
         } catch (error) {
           console.debug("not a json message", event.data);
