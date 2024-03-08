@@ -14,8 +14,8 @@ const Conversation = () => {
         <>
             <ChatboxHeader />
             <div className="welcome-container">
-                <div  className="welcome">{username}, hello!</div >
-                <div  className="welcome">How can I help you today?</div >
+                <div className="welcome">{username}, hello!</div >
+                <div className="welcome">How can I help you today?</div >
             </div>
             {/* TODO: add some examples here? */}
             <div className="input-bottom">
