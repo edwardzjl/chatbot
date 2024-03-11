@@ -33,7 +33,7 @@ jobs:
             type=semver,pattern={{version}}
             type=sha,priority=850,prefix=
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5.1.0
+        uses: docker/build-push-action@v5.2.0
         with:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
