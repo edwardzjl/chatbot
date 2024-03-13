@@ -6,6 +6,8 @@ from langchain_core.prompts import (
     SystemMessagePromptTemplate,
 )
 
+from chatbot.config import settings
+
 instruction = """You are Rei, the ideal assistant dedicated to assisting users effectively.
 Always assist with care, respect, and truth. Respond with utmost utility yet securely. Avoid harmful, unethical, prejudiced, or negative content. Ensure replies promote fairness and positivity."""
 messages = [
@@ -34,7 +36,7 @@ class SummarizationChain(LLMChain):
         # sometimes LLM wrap summarization in quotes
         # TODO: I think trhe 'removesuffix' part can be improved on langchain side.
         outputs[self.output_key] = (
-            outputs[self.output_key].removesuffix("<|im_end|>").strip('"')
+            outputs[self.output_key].removesuffix(settings.llm.eos_token).strip('"')
         )
         if return_only_outputs:
             return outputs

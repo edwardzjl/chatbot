@@ -12,6 +12,7 @@ from langchain.chains.base import Chain
 from langchain_core.chat_history import BaseChatMessageHistory
 from loguru import logger
 
+from chatbot.config import settings
 from chatbot.context import session_id
 from chatbot.dependencies import ConvChain, MessageHistory, SmryChain, UserIdHeader
 from chatbot.models import Conversation
@@ -72,7 +73,7 @@ async def chat(
                             conversation=message.conversation,
                             # TODO: I think this can be improved on langchain side.
                             content=event["data"]["output"]["text"].removesuffix(
-                                "<|im_end|>"
+                                settings.llm.eos_token
                             ),
                         )
                         history.add_message(msg.to_lc())
@@ -89,7 +90,9 @@ async def chat(
                     case "on_chat_model_stream":
                         # openai streaming provides eos token as last chunk, but langchain does not provide stop reason.
                         # It will be better if langchain could provide sth like event["data"]["chunk"].finish_reason == "eos_token"
-                        if (content := event["data"]["chunk"].content) != "<|im_end|>":
+                        if (
+                            content := event["data"]["chunk"].content
+                        ) != settings.llm.eos_token:
                             msg = ChatMessage(
                                 parent_id=parent_run_id,
                                 id=event["run_id"],
