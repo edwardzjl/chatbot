@@ -85,7 +85,7 @@ const Root = () => {
               dispatch({
                 type: "added",
                 // Initialize an empty content if undefined
-                message: {content: message.content | "", ...message},
+                message: {content: message.content || "", ...message},
               });
               break;
             case "stream/text":
