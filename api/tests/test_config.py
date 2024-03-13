@@ -10,12 +10,12 @@ from chatbot.config import Settings
 class TestSettings(unittest.TestCase):
     def test_default_inferece_url(self):
         settings = Settings()
-        self.assertEqual(str(settings.inference_server_url), "http://localhost:8080/")
+        self.assertEqual(str(settings.llm.url), "http://localhost:8080")
 
-    @patch.dict(os.environ, {"INFERENCE_SERVER_URL": "http://foo.bar.com"}, clear=True)
+    @patch.dict(os.environ, {"LLM__URL": "http://foo.bar.com"}, clear=True)
     def test_inference_server_url(self):
         settings = Settings()
-        self.assertEqual(str(settings.inference_server_url), "http://foo.bar.com/")
+        self.assertEqual(str(settings.llm.url), "http://foo.bar.com/")
 
     def test_default_redis_om_url(self):
         settings = Settings()
