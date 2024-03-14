@@ -4,9 +4,9 @@ import { useContext } from "react";
 
 import Avatar from "@mui/material/Avatar";
 
-import Brightness4OutlinedIcon from '@mui/icons-material/Brightness4Outlined';
-import LightModeIcon from '@mui/icons-material/LightMode';
-import DarkModeIcon from '@mui/icons-material/DarkMode';
+import Brightness4OutlinedIcon from "@mui/icons-material/Brightness4Outlined";
+import LightModeIcon from "@mui/icons-material/LightMode";
+import DarkModeIcon from "@mui/icons-material/DarkMode";
 
 import { DropdownMenu, DropdownHeader, DropdownList } from "components/DropdownMenu";
 import { ThemeContext } from "contexts/theme";
