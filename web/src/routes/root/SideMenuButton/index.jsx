@@ -3,11 +3,11 @@ import "./index.css";
 import { useContext, useState, useRef } from "react";
 import Tooltip from "@mui/material/Tooltip";
 
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutline";
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import PushPinOutlinedIcon from "@mui/icons-material/PushPinOutlined";
 
 import { DropdownMenu, DropdownHeader, DropdownList } from "components/DropdownMenu";
 import { ConversationContext } from "contexts/conversation";

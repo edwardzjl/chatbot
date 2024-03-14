@@ -26,7 +26,7 @@ const ChatInput = () => {
    */
   useEffect(() => {
     if (inputRef.current) {
-      inputRef.current.style.height = '0px';
+      inputRef.current.style.height = "0px";
       const { scrollHeight } = inputRef.current;
       inputRef.current.style.height = `${scrollHeight}px`
     }
