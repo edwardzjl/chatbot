@@ -16,7 +16,7 @@ pydantic-settings = "~=2.0"
 redis = {extras = ["hiredis"], version = "<5.0.0"}
 redis-om = "~=0.2.1"
 requests = "~=2.31"
-text-generation = "~=0.6.1"
+text-generation = "~=0.7.0"
 uvicorn = {extras = ["standard"], version = ">=0.23.0"}
 websockets = "~=12.0"
 
