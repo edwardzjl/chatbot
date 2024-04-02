@@ -1,12 +1,10 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
-from langchain.chains.base import Chain
-from langchain_core.chat_history import BaseChatMessageHistory
+from fastapi import APIRouter, HTTPException
 
 from chatbot.config import settings
 from chatbot.context import session_id
-from chatbot.dependencies import MessageHistory, SmryChain, UserIdHeader
+from chatbot.dependencies import UserIdHeader, history, smry_chain
 from chatbot.models import Conversation as ORMConversation
 from chatbot.schemas import (
     ChatMessage,
@@ -34,7 +32,6 @@ async def get_conversations(
 @router.get("/{conversation_id}")
 async def get_conversation(
     conversation_id: str,
-    history: Annotated[BaseChatMessageHistory, Depends(MessageHistory)],
     userid: Annotated[str | None, UserIdHeader()] = None,
 ) -> ConversationDetail:
     conv = await ORMConversation.get(conversation_id)
@@ -102,7 +99,6 @@ async def delete_conversation(
 @router.post("/{conversation_id}/summarization", status_code=201)
 async def summarize(
     conversation_id: str,
-    smry_chain: Annotated[Chain, Depends(SmryChain)],
     userid: Annotated[str | None, UserIdHeader()] = None,
 ) -> dict[str, str]:
     conv = await ORMConversation.get(conversation_id)

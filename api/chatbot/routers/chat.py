@@ -1,20 +1,12 @@
 from datetime import date
 from typing import Annotated
 
-from fastapi import (
-    APIRouter,
-    Depends,
-    WebSocket,
-    WebSocketDisconnect,
-    WebSocketException,
-)
-from langchain.chains.base import Chain
-from langchain_core.chat_history import BaseChatMessageHistory
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, WebSocketException
 from loguru import logger
 
 from chatbot.config import settings
 from chatbot.context import session_id
-from chatbot.dependencies import ConvChain, MessageHistory, SmryChain, UserIdHeader
+from chatbot.dependencies import UserIdHeader, conv_chain, history, smry_chain
 from chatbot.models import Conversation
 from chatbot.schemas import AIChatMessage, ChatMessage, InfoMessage
 from chatbot.utils import utcnow
@@ -28,9 +20,6 @@ router = APIRouter(
 @router.websocket("")
 async def chat(
     websocket: WebSocket,
-    conv_chain: Annotated[Chain, Depends(ConvChain)],
-    smry_chain: Annotated[Chain, Depends(SmryChain)],
-    history: Annotated[BaseChatMessageHistory, Depends(MessageHistory)],
     userid: Annotated[str | None, UserIdHeader()] = None,
 ):
     await websocket.accept()

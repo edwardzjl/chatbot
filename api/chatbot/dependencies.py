@@ -1,11 +1,7 @@
 from operator import itemgetter
-from typing import Annotated, Optional
+from typing import Optional
 
-from fastapi import Depends, Header
-from langchain.chains.base import Chain
-from langchain_core.chat_history import BaseChatMessageHistory
-from langchain_core.language_models import BaseLLM
-from langchain_core.memory import BaseMemory
+from fastapi import Header
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnableLambda
 from langchain_openai import ChatOpenAI
@@ -35,55 +31,35 @@ def EmailHeader(alias: Optional[str] = None, **kwargs):
     return Header(alias=alias, **kwargs)
 
 
-def MessageHistory() -> BaseChatMessageHistory:
-    return ChatbotMessageHistory(
-        url=str(settings.redis_om_url),
-        key_prefix="chatbot:messages:",
-        session_id="sid",  # a fake session id as it is required
-    )
+llm = ChatOpenAI(
+    openai_api_base=str(settings.llm.url),
+    model=settings.llm.model,
+    openai_api_key=settings.llm.creds,
+    max_tokens=1024,
+    streaming=True,
+)
 
+history = ChatbotMessageHistory(
+    url=str(settings.redis_om_url),
+    key_prefix="chatbot:messages:",
+    session_id="sid",  # a fake session id as it is required
+)
 
-def ChatMemory(
-    history: Annotated[BaseChatMessageHistory, Depends(MessageHistory)]
-) -> BaseMemory:
-    return ChatbotMemory(
-        memory_key="history",
-        input_key="input",
-        history=history,
-        return_messages=True,
-    )
+memory = ChatbotMemory(
+    memory_key="history",
+    input_key="input",
+    history=history,
+    return_messages=True,
+)
 
+conv_chain = ConversationChain(
+    llm=llm,
+    memory=memory,
+)
 
-def Llm() -> BaseLLM:
-    return ChatOpenAI(
-        openai_api_base=str(settings.llm.url),
-        model=settings.llm.model,
-        openai_api_key=settings.llm.creds,
-        max_tokens=1024,
-        streaming=True,
-    )
-
-
-def ConvChain(
-    llm: Annotated[BaseLLM, Depends(Llm)],
-    memory: Annotated[BaseMemory, Depends(ChatMemory)],
-) -> Chain:
-    return ConversationChain(
-        llm=llm,
-        memory=memory,
-    )
-
-
-def SmryChain(
-    llm: Annotated[BaseLLM, Depends(Llm)],
-    memory: Annotated[BaseMemory, Depends(ChatMemory)],
-) -> Chain:
-    return (
-        {
-            "history": RunnableLambda(memory.load_memory_variables)
-            | itemgetter("history")
-        }
-        | tmpl
-        | llm
-        | StrOutputParser()
-    )
+smry_chain = (
+    {"history": RunnableLambda(memory.load_memory_variables) | itemgetter("history")}
+    | tmpl
+    | llm
+    | StrOutputParser()
+)
