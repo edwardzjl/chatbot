@@ -118,11 +118,11 @@ async def chat(
             if message.additional_kwargs and message.additional_kwargs.get(
                 "require_summarization", False
             ):
-                res = await smry_chain.ainvoke(
+                title_raw: str = await smry_chain.ainvoke(
                     input={},
                     config={"metadata": chain_metadata},
                 )
-                title = res[smry_chain.output_key]
+                title = title_raw.removesuffix(settings.llm.eos_token).strip('"')
                 conv.title = title
                 await conv.save()
                 info_message = InfoMessage(
