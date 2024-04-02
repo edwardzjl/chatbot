@@ -1,11 +1,10 @@
 import json
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
-from langchain_core.chat_history import BaseChatMessageHistory
+from fastapi import APIRouter, HTTPException
 
 from chatbot.context import session_id
-from chatbot.dependencies import MessageHistory, UserIdHeader
+from chatbot.dependencies import UserIdHeader, history
 from chatbot.memory.history import ChatbotMessageHistory
 from chatbot.models import Conversation as ORMConversation
 
@@ -19,7 +18,6 @@ router = APIRouter(
 async def thumbup(
     conversation_id: str,
     message_idx: int,
-    history: Annotated[BaseChatMessageHistory, Depends(MessageHistory)],
     userid: Annotated[str | None, UserIdHeader()] = None,
 ) -> None:
     """Using message index as the uuid is in the message body which is json dumped into redis,
@@ -42,7 +40,6 @@ async def thumbup(
 async def thumbdown(
     conversation_id: str,
     message_idx: int,
-    history: Annotated[BaseChatMessageHistory, Depends(MessageHistory)],
     userid: Annotated[str | None, UserIdHeader()] = None,
 ) -> None:
     """Using message index as the uuid is in the message body which is json dumped into redis,
