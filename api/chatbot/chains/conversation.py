@@ -2,21 +2,21 @@ from langchain.chains import LLMChain
 from langchain_core.prompts import (
     BasePromptTemplate,
     ChatPromptTemplate,
-    HumanMessagePromptTemplate,
     MessagesPlaceholder,
-    SystemMessagePromptTemplate,
 )
 
 instruction = """You are Rei, the ideal assistant dedicated to assisting users effectively.
 Knowledge cutoff: 2023-10-01
 Current date: {date}
 Always assist with care, respect, and truth. Respond with utmost utility yet securely. Avoid harmful, unethical, prejudiced, or negative content. Ensure replies promote fairness and positivity."""
-messages = [
-    SystemMessagePromptTemplate.from_template(instruction),
-    MessagesPlaceholder(variable_name="history"),
-    HumanMessagePromptTemplate.from_template("{input}"),
-]
-tmpl = ChatPromptTemplate(messages=messages)
+
+tmpl = ChatPromptTemplate.from_messages(
+    [
+        ("system", instruction),
+        MessagesPlaceholder(variable_name="history"),
+        ("user", "{input}"),
+    ]
+)
 
 
 class ConversationChain(LLMChain):

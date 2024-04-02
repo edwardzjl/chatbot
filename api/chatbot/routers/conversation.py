@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from langchain.chains.base import Chain
 from langchain_core.chat_history import BaseChatMessageHistory
 
+from chatbot.config import settings
 from chatbot.context import session_id
 from chatbot.dependencies import MessageHistory, SmryChain, UserIdHeader
 from chatbot.models import Conversation as ORMConversation
@@ -108,8 +109,9 @@ async def summarize(
     if conv.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
     session_id.set(f"{userid}:{conversation_id}")
-    res = await smry_chain.ainvoke(input={})
-    title = res[smry_chain.output_key]
+
+    title_raw: str = await smry_chain.ainvoke(input={})
+    title = title_raw.removesuffix(settings.llm.eos_token).strip('"')
     conv.title = title
     await conv.save()
     return {"title": title}

@@ -1,3 +1,4 @@
+from operator import itemgetter
 from typing import Annotated, Optional
 
 from fastapi import Depends, Header
@@ -5,9 +6,12 @@ from langchain.chains.base import Chain
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.language_models import BaseLLM
 from langchain_core.memory import BaseMemory
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnableLambda
 from langchain_openai import ChatOpenAI
 
-from chatbot.chains import ConversationChain, SummarizationChain
+from chatbot.chains import ConversationChain
+from chatbot.chains.summarization import tmpl
 from chatbot.config import settings
 from chatbot.memory import ChatbotMemory
 from chatbot.memory.history import ChatbotMessageHistory
@@ -74,7 +78,12 @@ def SmryChain(
     llm: Annotated[BaseLLM, Depends(Llm)],
     memory: Annotated[BaseMemory, Depends(ChatMemory)],
 ) -> Chain:
-    return SummarizationChain(
-        llm=llm,
-        memory=memory,
+    return (
+        {
+            "history": RunnableLambda(memory.load_memory_variables)
+            | itemgetter("history")
+        }
+        | tmpl
+        | llm
+        | StrOutputParser()
     )
