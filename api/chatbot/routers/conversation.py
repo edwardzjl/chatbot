@@ -106,7 +106,15 @@ async def summarize(
         raise HTTPException(status_code=403, detail="authorization error")
     session_id.set(f"{userid}:{conversation_id}")
 
-    title_raw: str = await smry_chain.ainvoke(input={})
+    title_raw: str = await smry_chain.ainvoke(
+        input={},
+        config={
+            "metadata": {
+                "conversation_id": conversation_id,
+                "userid": userid,
+            }
+        },
+    )
     title = title_raw.removesuffix(settings.llm.eos_token).strip('"')
     conv.title = title
     await conv.save()
