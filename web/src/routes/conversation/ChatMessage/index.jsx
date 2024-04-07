@@ -148,16 +148,16 @@ const ChatMessage = ({ convId, idx, message }) => {
         {!myMessage(message) && (
           <div className="message-feedbacks">
             <Tooltip title={copyTooltipTitle}>
-              <ContentCopyIcon className="message-feedback" onClick={() => onCopyClick(message.content)} />
+              <ContentCopyIcon onClick={() => onCopyClick(message.content)} />
             </Tooltip>
-            {message.feedback === "thumbdown" ? undefined : message.feedback === "thumbup" ? <ThumbUpIcon className="message-feedback" /> :
+            {message.feedback === "thumbdown" ? undefined : message.feedback === "thumbup" ? <ThumbUpIcon /> :
               <Tooltip title={thumbUpTooltipTitle}>
-                <ThumbUpOutlined className="message-feedback" onClick={onThumbUpClick} />
+                <ThumbUpOutlined onClick={onThumbUpClick} />
               </Tooltip>
             }
-            {message.feedback === "thumbup" ? undefined : message.feedback === "thumbdown" ? <ThumbDownIcon className="message-feedback" /> :
+            {message.feedback === "thumbup" ? undefined : message.feedback === "thumbdown" ? <ThumbDownIcon /> :
               <Tooltip title={thumbDownTooltipTitle}>
-                <ThumbDownOutlined className="message-feedback" onClick={onThumbDownClick} />
+                <ThumbDownOutlined onClick={onThumbDownClick} />
               </Tooltip>
             }
           </div>

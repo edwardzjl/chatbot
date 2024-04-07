@@ -37,7 +37,7 @@
     padding-right: 3vw;
 }
 
-.message-body:hover .message-feedback {
+.message-body:hover .message-feedbacks {
     opacity: 0.9;
     transition: opacity 1s;
 }
@@ -47,7 +47,7 @@
  * Otherwise the button just disappears immediately
  * TODO: I want to hide them completely and only show on mouse enter message.
  */
-.message-body:not(:hover) .message-feedback {
+.message-body:not(:hover) .message-feedbacks {
     opacity: 0;
     transition: opacity 1s;
 }
