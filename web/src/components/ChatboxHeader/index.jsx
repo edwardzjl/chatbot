@@ -4,6 +4,10 @@ import { useContext } from "react";
 
 import Avatar from "@mui/material/Avatar";
 
+import Brightness4OutlinedIcon from "@mui/icons-material/Brightness4Outlined";
+import LightModeIcon from "@mui/icons-material/LightMode";
+import DarkModeIcon from "@mui/icons-material/DarkMode";
+
 import { DropdownMenu, DropdownHeader, DropdownList } from "components/DropdownMenu";
 import { ThemeContext } from "contexts/theme";
 import { UserContext } from "contexts/user";
@@ -13,11 +17,11 @@ import { getFirstLetters, stringToColor } from "commons";
 const ThemeIcon = ({ theme }) => {
     switch (theme) {
         case "light":
-            return <span class="material-symbols-outlined">light_mode</span>;
+            return <LightModeIcon />;
         case "dark":
-            return <span class="material-symbols-outlined">dark_mode</span>;
+            return <DarkModeIcon />;
         default:
-            return <span class="material-symbols-outlined">brightness_medium</span>;
+            return <Brightness4OutlinedIcon />;
     }
 }
 
@@ -35,7 +39,7 @@ const ChatboxHeader = () => {
         // See <https://oauth2-proxy.github.io/oauth2-proxy/docs/features/endpoints/>
         // This is a bit hard-coded?
         window.location.href = "/oauth2/sign_out";
-    };
+      };
 
     return (
         <div className="chatbox-header">
@@ -47,20 +51,17 @@ const ChatboxHeader = () => {
                     <DropdownList className="theme-menu-list">
                         <li>
                             <button className={`theme-menu-item ${theme === "system" && "selected"}`} onClick={() => onThemeClick("system")}>
-                                <span class="material-symbols-outlined">brightness_medium</span>
-                                <span className="theme-menu-text">OS Default</span>
+                                <Brightness4OutlinedIcon /><span className="theme-menu-text">OS Default</span>
                             </button>
                         </li>
                         <li>
                             <button className={`theme-menu-item ${theme === "light" && "selected"}`} onClick={() => onThemeClick("light")}>
-                                <span class="material-symbols-outlined">light_mode</span>
-                                <span className="theme-menu-text">Light</span>
+                                <LightModeIcon /><span className="theme-menu-text">Light</span>
                             </button>
                         </li>
                         <li>
                             <button className={`theme-menu-item ${theme === "dark" && "selected"}`} onClick={() => onThemeClick("dark")}>
-                                <span class="material-symbols-outlined">dark_mode</span>
-                                <span className="theme-menu-text">Dark</span>
+                                <DarkModeIcon /><span className="theme-menu-text">Dark</span>
                             </button>
                         </li>
                     </DropdownList>
