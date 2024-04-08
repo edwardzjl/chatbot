@@ -4,7 +4,7 @@ import { useContext } from "react";
 
 import Avatar from "@mui/material/Avatar";
 
-import Brightness4OutlinedIcon from "@mui/icons-material/Brightness4Outlined";
+import BrightnessMediumIcon from "@mui/icons-material/BrightnessMedium";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 
@@ -21,7 +21,7 @@ const ThemeIcon = ({ theme }) => {
         case "dark":
             return <DarkModeIcon />;
         default:
-            return <Brightness4OutlinedIcon />;
+            return <BrightnessMediumIcon />;
     }
 }
 
@@ -39,7 +39,7 @@ const ChatboxHeader = () => {
         // See <https://oauth2-proxy.github.io/oauth2-proxy/docs/features/endpoints/>
         // This is a bit hard-coded?
         window.location.href = "/oauth2/sign_out";
-      };
+    };
 
     return (
         <div className="chatbox-header">
@@ -51,7 +51,7 @@ const ChatboxHeader = () => {
                     <DropdownList className="theme-menu-list">
                         <li>
                             <button className={`theme-menu-item ${theme === "system" && "selected"}`} onClick={() => onThemeClick("system")}>
-                                <Brightness4OutlinedIcon /><span className="theme-menu-text">OS Default</span>
+                                <BrightnessMediumIcon /><span className="theme-menu-text">OS Default</span>
                             </button>
                         </li>
                         <li>
