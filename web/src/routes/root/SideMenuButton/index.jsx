@@ -4,6 +4,9 @@ import { useContext, useState, useRef } from "react";
 import Tooltip from "@mui/material/Tooltip";
 
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutline";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 
 import { DropdownMenu, DropdownHeader, DropdownList } from "components/DropdownMenu";
 import { ConversationContext } from "contexts/conversation";
@@ -107,7 +110,7 @@ const ChatTab = ({ chat, isActive, onDeleteClick }) => {
       {isActive && (
         <DropdownMenu className="chat-op-menu">
           <DropdownHeader className="chat-op-menu-icon" >
-            <span class="material-symbols-outlined">more_vert</span>
+            <MoreVertIcon />
           </DropdownHeader>
           <DropdownList className="chat-op-menu-list">
             <li>
@@ -131,13 +134,13 @@ const ChatTab = ({ chat, isActive, onDeleteClick }) => {
             </li>
             <li>
               <button className="chat-op-menu-item" onClick={onUpdateClick}>
-                <span class="material-symbols-outlined">edit</span>
+                <DriveFileRenameOutlineIcon />
                 <span className="chat-op-menu-item-text">Change title</span>
               </button>
             </li>
             <li>
               <button className="chat-op-menu-item" onClick={() => onDeleteClick(chat.id, titleRef.current?.innerText)}>
-                <span class="material-symbols-outlined">delete</span>
+                <DeleteOutlineIcon />
                 <span className="chat-op-menu-item-text">Delete</span>
               </button>
             </li>

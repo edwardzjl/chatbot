@@ -6,7 +6,10 @@ import { Link, NavLink, Outlet, redirect, useNavigate, useNavigation } from "rea
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 
+import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import GitHubIcon from "@mui/icons-material/GitHub";
+import MailOutlineIcon from "@mui/icons-material/MailOutline";
 
 import { SnackbarContext } from "contexts/snackbar";
 import { ThemeContext } from "contexts/theme";
@@ -82,7 +85,7 @@ const Root = () => {
               dispatch({
                 type: "added",
                 // Initialize an empty content if undefined
-                message: { content: message.content || "", ...message },
+                message: {content: message.content || "", ...message},
               });
               break;
             case "stream/text":
@@ -149,8 +152,8 @@ const Root = () => {
       <div className={`App theme-${theme}`}>
         <aside className="sidemenu">
           <Link className="sidemenu-button" to="/">
-            <span class="material-symbols-outlined">chat_add_on</span>
-            <span>New Chat</span>
+            <AddOutlinedIcon />
+            New Chat
           </Link>
           <nav>
             {groupedConvs && Object.entries(groupedConvs).flatMap(([grp, convs]) => (
@@ -178,14 +181,14 @@ const Root = () => {
           <hr className="sidemenu-bottom" />
           <div className="sidemenu-bottom-group">
             <div className="sidemenu-bottom-group-items">
-              <span class="material-symbols-outlined">info</span>
+              <InfoOutlinedIcon />
             </div>
             <div className="sidemenu-bottom-group-items">
               <a href="https://github.com/edwardzjl/chatbot" target="_blank" rel="noreferrer"> <GitHubIcon /> </a>
             </div>
             <div className="sidemenu-bottom-group-items">
               <a href="mailto:jameszhou2108@hotmail.com">
-                <span class="material-symbols-outlined">mail</span>
+                <MailOutlineIcon />
               </a>
             </div>
           </div>
