@@ -2,6 +2,7 @@ import "./index.css";
 
 import { useContext, useState, useRef } from "react";
 import Tooltip from "@mui/material/Tooltip";
+import Icon from "@mui/material/Icon";
 
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
@@ -117,10 +118,10 @@ const ChatTab = ({ chat, isActive, onDeleteClick }) => {
               <button className="chat-op-menu-item" onClick={flipPin}>
                 {chat.pinned ?
                   <>
-                    <span class="material-symbols-outlined">keep_off</span>
+                    <Icon baseClassName="material-symbols-outlined">keep_off</Icon>
                     <span className="chat-op-menu-item-text">Unpin</span>
                   </> : <>
-                    <span class="material-symbols-outlined">keep</span>
+                    <Icon baseClassName="material-symbols-outlined">keep</Icon>
                     <span className="chat-op-menu-item-text">Pin</span>
                   </>
                 }
