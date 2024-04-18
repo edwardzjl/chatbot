@@ -8,7 +8,7 @@ tmpl = ChatPromptTemplate.from_messages(
         ("system", instruction),
         MessagesPlaceholder(variable_name="history"),
         (
-            "system",
+            "user",
             "Now Provide a short summarization of the conversation in less than 10 words.",
         ),
     ]
