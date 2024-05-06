@@ -10,7 +10,7 @@ langchain = ">=0.0.300"
 langchain-openai = ">=0.0.6"
 loguru = "~=0.7"
 # redis-om 0.2.2 requires pydantic<2.5.0
-pydantic = ">=1.10.2,<2.5.0"
+pydantic = ">=1.10.2,<2.8.0"
 pydantic-settings = ">=2.0"
 # redis-om 0.2.2 requires redis<6.0.0
 redis = {extras = ["hiredis"], version = "<6.0.0"}
