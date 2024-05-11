@@ -58,7 +58,12 @@ conv_chain = ConversationChain(
 )
 
 smry_chain = (
-    {"history": RunnableLambda(memory.load_memory_variables) | itemgetter("history")}
+    {
+        "history": RunnableLambda(
+            memory.load_memory_variables, afunc=memory.aload_memory_variables
+        )
+        | itemgetter("history")
+    }
     | tmpl
     | llm
     | StrOutputParser()

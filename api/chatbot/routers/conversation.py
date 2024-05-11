@@ -38,6 +38,7 @@ async def get_conversation(
     if conv.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
     session_id.set(f"{userid}:{conversation_id}")
+    msgs = await history.aget_messages()
     return ConversationDetail(
         messages=[
             (
@@ -49,7 +50,7 @@ async def get_conversation(
                     lc_message=message, conv_id=conversation_id, from_=userid
                 )
             )
-            for message in history.messages
+            for message in msgs
         ],
         **conv.model_dump(),
     )
