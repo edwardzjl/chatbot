@@ -37,3 +37,15 @@ class ConversationChain(LLMChain):
             return outputs
         else:
             return {**inputs, **outputs}
+
+    async def aprep_outputs(
+        self,
+        inputs: dict[str, str],
+        outputs: dict[str, str],
+        return_only_outputs: bool = False,
+    ) -> dict[str, str]:
+        self._validate_outputs(outputs)
+        if return_only_outputs:
+            return outputs
+        else:
+            return {**inputs, **outputs}
