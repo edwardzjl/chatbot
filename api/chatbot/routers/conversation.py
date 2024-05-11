@@ -116,7 +116,7 @@ async def summarize(
             }
         },
     )
-    title = title_raw.removesuffix(settings.llm.eos_token).strip('"')
+    title = title_raw.strip('"')
     conv.title = title
     await conv.save()
     return {"title": title}

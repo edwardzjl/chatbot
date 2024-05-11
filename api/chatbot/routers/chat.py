@@ -60,10 +60,7 @@ async def chat(
                             parent_id=parent_run_id,
                             id=event["run_id"],
                             conversation=message.conversation,
-                            # TODO: I think this can be improved on langchain side.
-                            content=event["data"]["output"]["text"].removesuffix(
-                                settings.llm.eos_token
-                            ),
+                            content=event["data"]["output"]["text"],
                         )
                         history.add_message(msg.to_lc())
                     case "on_chat_model_start":
@@ -77,20 +74,15 @@ async def chat(
                         )
                         await websocket.send_text(msg.model_dump_json())
                     case "on_chat_model_stream":
-                        # openai streaming provides eos token as last chunk, but langchain does not provide stop reason.
-                        # It will be better if langchain could provide sth like event["data"]["chunk"].finish_reason == "eos_token"
-                        if (
-                            content := event["data"]["chunk"].content
-                        ) != settings.llm.eos_token:
-                            msg = ChatMessage(
-                                parent_id=parent_run_id,
-                                id=event["run_id"],
-                                conversation=message.conversation,
-                                from_="ai",
-                                content=content,
-                                type="stream/text",
-                            )
-                            await websocket.send_text(msg.model_dump_json())
+                        msg = ChatMessage(
+                            parent_id=parent_run_id,
+                            id=event["run_id"],
+                            conversation=message.conversation,
+                            from_="ai",
+                            content=event["data"]["chunk"].content,
+                            type="stream/text",
+                        )
+                        await websocket.send_text(msg.model_dump_json())
                     case "on_chat_model_end":
                         logger.debug(f"event: {event}")
                         msg = AIChatMessage(
@@ -111,7 +103,7 @@ async def chat(
                     input={},
                     config={"metadata": chain_metadata},
                 )
-                title = title_raw.removesuffix(settings.llm.eos_token).strip('"')
+                title = title_raw.strip('"')
                 conv.title = title
                 await conv.save()
                 info_message = InfoMessage(
