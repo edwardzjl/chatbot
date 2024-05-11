@@ -32,7 +32,6 @@ Key | Default Value | Description
 LLM__URL | `http://localhost:8080` | llm service url
 LLM__MODEL | `cognitivecomputations/dolphin-2.6-mistral-7b-dpo-laser` | llm model
 LLM__CREDS | `EMPTY` | llm service credentials
-LLM__EOS_TOKEN | `<\|im_end\|>` | eos token
 REDIS_OM_URL | `redis://localhost:6379` | Redis url to persist messages and metadata
 LOG_LEVEL | `INFO` | log level
 USER_ID_HEADER | `X-Forwarded-User` | header to extract user id from

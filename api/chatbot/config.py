@@ -7,7 +7,6 @@ class LLMServiceSettings(BaseModel):
     """llm service url"""
     model: str = "cognitivecomputations/dolphin-2.6-mistral-7b-dpo-laser"
     creds: str = "EMPTY"
-    eos_token: str = "<|im_end|>"
 
 
 class Settings(BaseSettings):
