@@ -36,6 +36,7 @@ class ChatbotMemory(BaseMemory):
         """Exposes the buffer as a list of messages in case return_messages is False."""
         if isinstance(self.history, ChatbotMessageHistory):
             return self.history.windowed_messages(self.k)
+
         return self.history.messages[-self.k * 2 :] if self.k > 0 else []
 
     @property
@@ -55,6 +56,15 @@ class ChatbotMemory(BaseMemory):
         """Return history buffer."""
         return {self.memory_key: self.buffer}
 
+    async def aload_memory_variables(self, inputs: dict[str, Any]) -> dict[str, Any]:
+        if isinstance(self.history, ChatbotMessageHistory):
+            buffer = await self.history.awindowed_messages(self.k)
+            return {self.memory_key: buffer}
+
+        msgs = await self.history.aget_messages()
+        buffer = msgs[-self.k * 2 :] if self.k > 0 else []
+        return {self.memory_key: buffer}
+
     def save_context(self, inputs: dict[str, Any], outputs: dict[str, str]) -> None:
         """Save context from this conversation to buffer."""
         input_str, output_str = self._get_input_output(inputs, outputs)
@@ -64,6 +74,10 @@ class ChatbotMemory(BaseMemory):
     def clear(self) -> None:
         """Clear memory contents."""
         self.history.clear()
+
+    async def aclear(self) -> None:
+        """Clear memory contents."""
+        await self.history.aclear()
 
     def _get_input_output(
         self, inputs: dict[str, Any], outputs: dict[str, str]
