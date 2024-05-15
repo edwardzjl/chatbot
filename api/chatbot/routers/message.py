@@ -4,7 +4,8 @@ from typing import Annotated
 from fastapi import APIRouter, HTTPException
 
 from chatbot.context import session_id
-from chatbot.dependencies import UserIdHeader, history
+from chatbot.dependencies import UserIdHeader
+from chatbot.memory import history
 from chatbot.memory.history import ChatbotMessageHistory
 from chatbot.models import Conversation as ORMConversation
 

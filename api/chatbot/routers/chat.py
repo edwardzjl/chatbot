@@ -4,9 +4,11 @@ from typing import Annotated
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, WebSocketException
 from loguru import logger
 
-from chatbot.config import settings
+from chatbot.chains.conversation import conv_chain
+from chatbot.chains.summarization import smry_chain
 from chatbot.context import session_id
-from chatbot.dependencies import UserIdHeader, conv_chain, history, smry_chain
+from chatbot.dependencies import UserIdHeader
+from chatbot.memory import history
 from chatbot.models import Conversation
 from chatbot.schemas import AIChatMessage, ChatMessage, InfoMessage
 from chatbot.utils import utcnow
@@ -39,34 +41,33 @@ async def chat(
                 "conversation_id": message.conversation,
                 "userid": userid,
             }
-            parent_run_id = None
             async for event in conv_chain.astream_events(
                 input={
                     "input": message.content,
                     # create a new date on every message to solve message across days.
                     "date": date.today(),
                 },
-                include_run_info=True,
+                config={
+                    "run_name": "chat",
+                    "metadata": chain_metadata,
+                },
                 version="v1",
-                config={"metadata": chain_metadata},
             ):
                 logger.trace(f"event: {event}")
                 match event["event"]:
-                    case "on_chain_start":
-                        parent_run_id = event["run_id"]
-                        history.add_message(message.to_lc())
                     case "on_chain_end":
-                        msg = AIChatMessage(
-                            parent_id=parent_run_id,
-                            id=event["run_id"],
-                            conversation=message.conversation,
-                            content=event["data"]["output"]["text"],
-                        )
-                        history.add_message(msg.to_lc())
+                        if event["name"] == "chat":
+                            msg = AIChatMessage(
+                                parent_id=message.id,
+                                id=event["run_id"],
+                                conversation=message.conversation,
+                                content=event["data"]["output"],
+                            )
+                            await history.aadd_messages([message.to_lc(), msg.to_lc()])
                     case "on_chat_model_start":
                         logger.debug(f"event: {event}")
                         msg = AIChatMessage(
-                            parent_id=parent_run_id,
+                            parent_id=message.id,
                             id=event["run_id"],
                             conversation=message.conversation,
                             content=None,
@@ -75,7 +76,7 @@ async def chat(
                         await websocket.send_text(msg.model_dump_json())
                     case "on_chat_model_stream":
                         msg = ChatMessage(
-                            parent_id=parent_run_id,
+                            parent_id=message.id,
                             id=event["run_id"],
                             conversation=message.conversation,
                             from_="ai",
@@ -86,7 +87,7 @@ async def chat(
                     case "on_chat_model_end":
                         logger.debug(f"event: {event}")
                         msg = AIChatMessage(
-                            parent_id=parent_run_id,
+                            parent_id=message.id,
                             id=event["run_id"],
                             conversation=message.conversation,
                             content=None,
@@ -118,5 +119,5 @@ async def chat(
         except WebSocketDisconnect:
             logger.info("websocket disconnected")
             return
-        except Exception:
-            logger.exception("Something goes wrong")
+        except Exception as e:
+            logger.exception(f"Something goes wrong: {e}")

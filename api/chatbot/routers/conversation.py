@@ -2,9 +2,10 @@ from typing import Annotated
 
 from fastapi import APIRouter, HTTPException
 
-from chatbot.config import settings
+from chatbot.chains.summarization import smry_chain
 from chatbot.context import session_id
-from chatbot.dependencies import UserIdHeader, history, smry_chain
+from chatbot.dependencies import UserIdHeader
+from chatbot.memory import history
 from chatbot.models import Conversation as ORMConversation
 from chatbot.schemas import (
     ChatMessage,
