@@ -1,9 +1,12 @@
-from langchain.chains.llm import LLMChain
-from langchain_core.prompts import (
-    BasePromptTemplate,
-    ChatPromptTemplate,
-    MessagesPlaceholder,
-)
+from operator import itemgetter
+
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.runnables import RunnableLambda
+from langchain_openai import ChatOpenAI
+
+from chatbot.config import settings
+from chatbot.memory import memory
 
 instruction = """You are Rei, the ideal assistant dedicated to assisting users effectively.
 Knowledge cutoff: 2023-10-01
@@ -19,33 +22,24 @@ tmpl = ChatPromptTemplate.from_messages(
 )
 
 
-class ConversationChain(LLMChain):
-    """Conversation chain that disables persists messages to memory.
-    I handle the memory saving myself."""
+llm = ChatOpenAI(
+    openai_api_base=str(settings.llm.url),
+    model=settings.llm.model,
+    openai_api_key=settings.llm.creds,
+    max_tokens=1024,
+    streaming=True,
+)
 
-    prompt: BasePromptTemplate = tmpl
-
-    def prep_outputs(
-        self,
-        inputs: dict[str, str],
-        outputs: dict[str, str],
-        return_only_outputs: bool = False,
-    ) -> dict[str, str]:
-        """Override this method to disable saving context to memory."""
-        self._validate_outputs(outputs)
-        if return_only_outputs:
-            return outputs
-        else:
-            return {**inputs, **outputs}
-
-    async def aprep_outputs(
-        self,
-        inputs: dict[str, str],
-        outputs: dict[str, str],
-        return_only_outputs: bool = False,
-    ) -> dict[str, str]:
-        self._validate_outputs(outputs)
-        if return_only_outputs:
-            return outputs
-        else:
-            return {**inputs, **outputs}
+conv_chain = (
+    {
+        "input": itemgetter("input"),
+        "date": itemgetter("date"),
+        "history": RunnableLambda(
+            memory.load_memory_variables, afunc=memory.aload_memory_variables
+        )
+        | itemgetter("history"),
+    }
+    | tmpl
+    | llm
+    | StrOutputParser()
+)

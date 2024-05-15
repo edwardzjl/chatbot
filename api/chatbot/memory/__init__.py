@@ -7,6 +7,7 @@ from langchain_core.memory import BaseMemory
 from langchain_core.messages import BaseMessage
 from pydantic.v1 import Field, validator
 
+from chatbot.config import settings
 from chatbot.memory.history import ChatbotMessageHistory
 
 
@@ -78,3 +79,17 @@ class ChatbotMemory(BaseMemory):
         else:
             output_key = self.output_key
         return inputs[prompt_input_key], outputs[output_key]
+
+
+history = ChatbotMessageHistory(
+    url=str(settings.redis_om_url),
+    key_prefix="chatbot:messages:",
+    session_id="sid",  # a fake session id as it is required
+)
+
+memory = ChatbotMemory(
+    memory_key="history",
+    input_key="input",
+    history=history,
+    return_messages=True,
+)
