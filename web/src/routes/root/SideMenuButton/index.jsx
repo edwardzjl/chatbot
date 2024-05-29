@@ -8,6 +8,7 @@ import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutline";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import ShareIcon from '@mui/icons-material/Share';
 
 import { DropdownMenu, DropdownHeader, DropdownList } from "components/DropdownMenu";
 import { ConversationContext } from "contexts/conversation";
@@ -20,7 +21,7 @@ import { ConversationContext } from "contexts/conversation";
  * @param {boolean} isActive whether this chat is active
  * @returns
  */
-const ChatTab = ({ chat, isActive, onDeleteClick }) => {
+const ChatTab = ({ chat, isActive, onShareClick, onDeleteClick }) => {
   const { dispatch } = useContext(ConversationContext);
   const titleRef = useRef(null);
   const [titleEditable, setTitleEditable] = useState("false");
@@ -137,6 +138,12 @@ const ChatTab = ({ chat, isActive, onDeleteClick }) => {
               <button className="chat-op-menu-item" onClick={onUpdateClick}>
                 <DriveFileRenameOutlineIcon />
                 <span className="chat-op-menu-item-text">Change title</span>
+              </button>
+            </li>
+            <li>
+              <button className="chat-op-menu-item" onClick={() => onShareClick(chat.id, chat.title)}>
+                <ShareIcon />
+                <span className="chat-op-menu-item-text">Share</span>
               </button>
             </li>
             <li>

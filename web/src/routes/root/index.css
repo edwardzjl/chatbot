@@ -196,6 +196,26 @@
   border-radius: 5px;
 }
 
+.del-dialog-content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  margin: 2rem;
+}
+
+.del-dialog-content>label {
+  margin: 0.5rem;
+}
+
+.del-dialog-content>input {
+  margin: 0.5rem;
+  outline: 0;
+  border-width: 0 0 2px;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+}
+
 .del-dialog-actions {
   margin-top: auto;
   display: flex;
