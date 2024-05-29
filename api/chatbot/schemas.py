@@ -141,6 +141,27 @@ class UpdateConversation(BaseModel):
     pinned: bool | None = None
 
 
+class Share(BaseModel):
+    id: str | None = None
+    title: str
+    url: str
+    owner: str
+    messages: list[ChatMessage] = []
+    created_at: datetime = Field(default_factory=utcnow)
+
+    @model_validator(mode="before")
+    @classmethod
+    def set_id(cls, values):
+        if "pk" in values and "id" not in values:
+            values["id"] = values["pk"]
+        return values
+
+
+class CreateShare(BaseModel):
+    title: str
+    source_id: str
+
+
 class UserProfile(BaseModel):
     userid: str
     username: str | None = None
