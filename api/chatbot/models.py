@@ -14,3 +14,16 @@ class Conversation(JsonModel):
 
     class Meta:
         global_key_prefix = "chatbot"
+
+
+class Share(JsonModel):
+    title: str
+    """Share title, could be different from the source conversation title."""
+    owner: str = Field(index=True)
+    url: str
+    source_id: str = Field(index=True)
+    """The original conversation id."""
+    created_at: datetime = Field(default_factory=utcnow)
+
+    class Meta:
+        global_key_prefix = "chatbot"
