@@ -3,12 +3,12 @@
 all: help
 
 lint:
-	pipenv run black . --check
-	pipenv run isort . --check
+	pipenv run ruff check
+	pipenv run ruff format --check
 
 format:
-	pipenv run black .
-	pipenv run isort .
+	pipenv run ruff check --fix
+	pipenv run ruff format
 
 test:
 	pipenv run python -m unittest
