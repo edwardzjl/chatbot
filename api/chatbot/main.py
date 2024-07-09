@@ -57,7 +57,7 @@ def userinfo(
 
 @app.exception_handler(NotFoundError)
 async def notfound_exception_handler(request: Request, exc: NotFoundError):
-    logger.error(f"NotFoundError: {exc}")
+    logger.error("NotFoundError: {}", exc)
     # TODO: add some details here
     return JSONResponse(
         status_code=status.HTTP_404_NOT_FOUND,

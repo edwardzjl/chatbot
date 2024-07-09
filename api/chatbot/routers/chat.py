@@ -53,7 +53,7 @@ async def chat(
                 },
                 version="v1",
             ):
-                logger.trace(f"event: {event}")
+                logger.trace("event: {}", event)
                 match event["event"]:
                     case "on_chain_end":
                         if event["name"] == "chat":
@@ -65,7 +65,7 @@ async def chat(
                             )
                             await history.aadd_messages([message.to_lc(), msg.to_lc()])
                     case "on_chat_model_start":
-                        logger.debug(f"event: {event}")
+                        logger.debug("event: {}", event)
                         msg = AIChatMessage(
                             parent_id=message.id,
                             id=event["run_id"],
@@ -85,7 +85,7 @@ async def chat(
                         )
                         await websocket.send_text(msg.model_dump_json())
                     case "on_chat_model_end":
-                        logger.debug(f"event: {event}")
+                        logger.debug("event: {}", event)
                         msg = AIChatMessage(
                             parent_id=message.id,
                             id=event["run_id"],
@@ -120,4 +120,4 @@ async def chat(
             logger.info("websocket disconnected")
             return
         except Exception as e:
-            logger.exception(f"Something goes wrong: {e}")
+            logger.exception("Something goes wrong: {}", e)
