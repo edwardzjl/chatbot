@@ -1,5 +1,5 @@
 import json
-from typing import Optional, Sequence
+from typing import Sequence
 
 import redis
 import redis.asyncio as aioredis
@@ -22,7 +22,7 @@ class RedisMessageHistory(BaseChatMessageHistory):
         session_id: str,
         url: str = "redis://localhost:6379/0",
         key_prefix: str = "message_store:",
-        ttl: Optional[int] = None,
+        ttl: int | None = None,
     ):
         # TODO: I might need to dig deeper into redis pooling.
         # Another thing is whether I want to keep both sync and async clients.

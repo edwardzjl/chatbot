@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 from langchain.memory.chat_message_histories.in_memory import ChatMessageHistory
 from langchain.memory.utils import get_prompt_input_key
@@ -13,8 +13,8 @@ from chatbot.memory.history import ChatbotMessageHistory
 
 class ChatbotMemory(BaseMemory):
     history: BaseChatMessageHistory = Field(default_factory=ChatMessageHistory)
-    output_key: Optional[str] = None
-    input_key: Optional[str] = None
+    output_key: str | None = None
+    input_key: str | None = None
     return_messages: bool = True
     memory_key: str = "history"  #: :meta private:
     k: int = 5
