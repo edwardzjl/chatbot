@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Literal, Optional
+from typing import Any, Literal
 from uuid import UUID, uuid4
 
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
@@ -11,19 +11,19 @@ from chatbot.utils import utcnow
 class ChatMessage(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
-    parent_id: Optional[UUID] = None
+    parent_id: UUID | None = None
     id: UUID = Field(default_factory=uuid4)
     """Message id, used to chain stream responses into message."""
-    conversation: Optional[str] = None
+    conversation: str | None = None
     """Conversation id"""
-    from_: Optional[str] = Field(None, alias="from")
+    from_: str | None = Field(None, alias="from")
     """A transient field to determine conversation id."""
-    content: Optional[str] = None
+    content: str | None = None
     type: Literal[
         "text", "stream/start", "stream/text", "stream/end", "info", "error"
     ] = "text"
     feedback: Literal["thumbup", "thumbdown", None] = None
-    additional_kwargs: Optional[dict[str, Any]] = None
+    additional_kwargs: dict[str, Any] | None = None
     # sent_at is not an important information for the user, as far as I can tell.
     # But it introduces some complexity in the code, so I'm removing it for now.
     # sent_at: datetime = Field(default_factory=datetime.now)
@@ -97,7 +97,7 @@ class InfoMessage(ChatMessage):
 
 
 class Conversation(BaseModel):
-    id: Optional[str] = None
+    id: str | None = None
     title: str
     owner: str
     pinned: bool = False
@@ -123,11 +123,11 @@ class CreateConversation(BaseModel):
 
 
 class UpdateConversation(BaseModel):
-    title: Optional[str] = None
-    pinned: Optional[bool] = None
+    title: str | None = None
+    pinned: bool | None = None
 
 
 class UserProfile(BaseModel):
     userid: str
-    username: Optional[str] = None
-    email: Optional[str] = None
+    username: str | None = None
+    email: str | None = None
