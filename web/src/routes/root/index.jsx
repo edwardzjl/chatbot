@@ -155,7 +155,7 @@ const Root = () => {
             <AddOutlinedIcon />
             New Chat
           </Link>
-          <nav>
+          <nav className="conv-list">
             {groupedConvs && Object.entries(groupedConvs).flatMap(([grp, convs]) => (
               [
                 <div key={grp}>
