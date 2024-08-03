@@ -1,11 +1,9 @@
 from fastapi import Header
 
-from chatbot.config import settings
-
 
 def UserIdHeader(alias: str | None = None, **kwargs):
     if alias is None:
-        alias = settings.user_id_header
+        alias = "X-Forwarded-User"
     return Header(alias=alias, **kwargs)
 
 
