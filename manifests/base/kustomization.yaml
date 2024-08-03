@@ -12,6 +12,7 @@ labels:
 resources:
   - deployment.yaml
   - service.yaml
+  - autoscaler.yaml
 
 configMapGenerator:
   - name: chatbot
