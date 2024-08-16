@@ -11,7 +11,6 @@ import DarkModeIcon from "@mui/icons-material/DarkMode";
 import { DropdownMenu, DropdownHeader, DropdownList } from "components/DropdownMenu";
 import { ThemeContext } from "contexts/theme";
 import { UserContext } from "contexts/user";
-import { getFirstLetters, stringToColor } from "commons";
 
 
 const ThemeIcon = ({ theme }) => {
@@ -28,7 +27,7 @@ const ThemeIcon = ({ theme }) => {
 
 const ChatboxHeader = () => {
     const { theme, setTheme } = useContext(ThemeContext);
-    const { username } = useContext(UserContext);
+    const { username, avatar } = useContext(UserContext);
 
     const onThemeClick = (theme) => {
         setTheme(theme);
@@ -67,17 +66,15 @@ const ChatboxHeader = () => {
                     </DropdownList>
                 </DropdownMenu>
                 <DropdownMenu>
-                    <DropdownHeader className="user-info-menu-avatar">
+                    <DropdownHeader className="user-info-menu">
                         <Avatar
-                            // className not working on Avatar
+                            // NOTE: className not working on Avatar
                             sx={{
                                 width: 24,
                                 height: 24,
-                                bgcolor: stringToColor(username),
                             }}
-                        >
-                            {getFirstLetters(username)}
-                        </Avatar>
+                            src={avatar}
+                        />
                     </DropdownHeader>
                     <DropdownList className="user-info-menu-list">
                         <li><span>{username}</span></li>

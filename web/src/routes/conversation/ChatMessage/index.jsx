@@ -18,7 +18,7 @@ import ThumbDownOutlined from "@mui/icons-material/ThumbDownOutlined";
 import { ThemeContext } from "contexts/theme";
 import { MessageContext } from "contexts/message";
 import { UserContext } from "contexts/user";
-import { getFirstLetters, stringToColor } from "commons";
+import { stringToColor } from "commons";
 
 /**
  * @param {string} convId
@@ -31,7 +31,7 @@ import { getFirstLetters, stringToColor } from "commons";
 const ChatMessage = ({ convId, idx, message }) => {
   const { theme } = useContext(ThemeContext);
   const [markdownTheme, setMarkdownTheme] = useState(darcula);
-  const { username } = useContext(UserContext);
+  const { username, avatar } = useContext(UserContext);
   const { dispatch } = useContext(MessageContext);
   const [copyTooltipTitle, setCopyTooltipTitle] = useState("copy content");
   const [thumbUpTooltipTitle, setThumbUpTooltipTitle] = useState("good answer");
@@ -99,15 +99,14 @@ const ChatMessage = ({ convId, idx, message }) => {
   return (
     <div className={`message-container ${myMessage(message) && "mine"}`}>
       <div className="message-title">
-        <Avatar
-          className="message-title-avatar"
-          // Cannot handle string to color in css
-          sx={{
-            bgcolor: stringToColor(message.from),
-          }}
-        >
-          {myMessage(message) ? getFirstLetters(message.from) : "AI"}
-        </Avatar>
+        {/* NOTE: className not working on Avatar */}
+        {myMessage(message) ?
+          <Avatar src={avatar} /> :
+          // TODO: give AI an avatar
+          <Avatar sx={{ bgcolor: stringToColor(message.from) }}>
+            AI
+          </Avatar>
+        }
         <div className="message-title-name">{myMessage(message) ? "You" : "AI"}</div>
       </div>
       <div className="message-body">
