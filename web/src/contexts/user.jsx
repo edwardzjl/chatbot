@@ -1,17 +1,19 @@
 import { createContext, useEffect, useState } from "react";
 import generateName from "names";
-
+import sha256 from "js-sha256";
 
 export const UserContext = createContext({
     userid: generateName(),
     username: generateName(),
-    email: generateName(),
+    email: "",
+    avatar: "https://www.gravatar.com/avatar/?d=identicon",
 });
 
 export const UserProvider = ({ children }) => {
     const [userid, setUserid] = useState("");
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
+    const [avatar, setAvatar] = useState("https://www.gravatar.com/avatar/?d=identicon");
 
     useEffect(() => {
         const initialization = async () => {
@@ -36,8 +38,25 @@ export const UserProvider = ({ children }) => {
         return () => { };
     }, []);
 
+    useEffect(() => {
+        const getGravatarURL = (email) => {
+            // Trim leading and trailing whitespace from an email address and force all characters to lower case
+            const address = String(email).trim().toLowerCase();
+
+            // Create a SHA256 hash of the final string
+            const hash = sha256(address);
+
+            // Grab the actual image URL
+            return `https://www.gravatar.com/avatar/${hash}/?d=identicon`;
+        };
+
+        if (email !== "") {
+            setAvatar(getGravatarURL(email));
+        }
+    }, [email]);
+
     return (
-        <UserContext.Provider value={{ userid, username, email }}>
+        <UserContext.Provider value={{ userid, username, email, avatar }}>
             {children}
         </UserContext.Provider>
     );
