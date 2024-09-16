@@ -389,12 +389,12 @@
         },
         "fastapi": {
             "hashes": [
-                "sha256:9908f2a5cc733004de6ca5e1412698f35085cefcbfd41d539245b9edf87b73c1",
-                "sha256:fee75aa1b1d3d73f79851c432497e4394e413e1dece6234f68d3ce250d12760a"
+                "sha256:0adb148b62edb09e8c6eeefa3ea934e8f276dabc038c5a82989ea6346050c3da",
+                "sha256:44474a22913057b1acb973ab90f4b671ba5200482e7622816d79105dcece1ac5"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.8'",
-            "version": "==0.114.0"
+            "version": "==0.114.2"
         },
         "frozenlist": {
             "hashes": [
@@ -710,11 +710,11 @@
         },
         "idna": {
             "hashes": [
-                "sha256:050b4e5baadcd44d760cedbd2b8e639f2ff89bbc7a5730fcc662954303377aac",
-                "sha256:d838c2c0ed6fced7693d5e8ab8e734d5f8fda53a039c0164afb0b82e771e3603"
+                "sha256:12f65c9b470abda6dc35cf8e63cc574b1c52b11df2c86030af0ac09b01b13ea9",
+                "sha256:946d195a0d259cbba61165e88e65941f16e9b36ea6ddb97f00452bae8b1287d3"
             ],
             "markers": "python_version >= '3.6'",
-            "version": "==3.8"
+            "version": "==3.10"
         },
         "jinja2": {
             "hashes": [
@@ -1634,7 +1634,7 @@
                 "sha256:04e5ca0351e0f3f85c6853954072df659d0d13fac324d0072316b67d7794700d",
                 "sha256:1a7ead55c7e559dd4dee8856e3a88b41225abfe1ce8df57b7c13915fe121ffb8"
             ],
-            "markers": "python_version < '3.13'",
+            "markers": "python_version >= '3.8'",
             "version": "==4.12.2"
         },
         "urllib3": {
