@@ -51,7 +51,7 @@ async def chat(
                     "run_name": "chat",
                     "metadata": chain_metadata,
                 },
-                version="v1",
+                version="v2",
             ):
                 logger.trace("event: {}", event)
                 match event["event"]:
