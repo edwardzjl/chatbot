@@ -92,6 +92,16 @@ class AIChatMessage(ChatMessage):
     from_: Literal["ai"] = Field("ai", alias="from")
 
 
+class AIChatStartMessage(AIChatMessage):
+    content: Literal[None] = None
+    type: Literal["stream/start"] = "stream/start"
+
+
+class AIChatEndMessage(AIChatMessage):
+    content: Literal[None] = None
+    type: Literal["stream/end"] = "stream/end"
+
+
 class InfoMessage(ChatMessage):
     content: dict[str, Any]
     type: Literal["info"] = "info"
