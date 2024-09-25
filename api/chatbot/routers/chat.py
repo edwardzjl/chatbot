@@ -10,7 +10,13 @@ from chatbot.context import session_id
 from chatbot.dependencies import UserIdHeader
 from chatbot.memory import history
 from chatbot.models import Conversation
-from chatbot.schemas import AIChatMessage, ChatMessage, InfoMessage
+from chatbot.schemas import (
+    AIChatMessage,
+    AIChatStartMessage,
+    AIChatEndMessage,
+    ChatMessage,
+    InfoMessage,
+)
 from chatbot.utils import utcnow
 
 router = APIRouter(
@@ -53,47 +59,46 @@ async def chat(
                 },
                 version="v2",
             ):
+                event_name: str = event["name"]
+                if event_name.startswith("_"):
+                    # events starts with "_" are langchain's internal events, for example '_Exception'
+                    # skip for mainly 2 reasons:
+                    # 1. we don't want to expose internal event to the user (websocket or history)
+                    # 2. we want to keep the conversation history as short as possible
+                    continue
                 logger.trace("event: {}", event)
-                match event["event"]:
-                    case "on_chain_end":
-                        if event["name"] == "chat":
-                            msg = AIChatMessage(
-                                parent_id=message.id,
-                                id=event["run_id"],
-                                conversation=message.conversation,
-                                content=event["data"]["output"],
-                            )
-                            await history.aadd_messages([message.to_lc(), msg.to_lc()])
-                    case "on_chat_model_start":
-                        logger.debug("event: {}", event)
-                        msg = AIChatMessage(
-                            parent_id=message.id,
-                            id=event["run_id"],
-                            conversation=message.conversation,
-                            content=None,
-                            type="stream/start",
-                        )
-                        await websocket.send_text(msg.model_dump_json())
-                    case "on_chat_model_stream":
-                        msg = ChatMessage(
-                            parent_id=message.id,
-                            id=event["run_id"],
-                            conversation=message.conversation,
-                            from_="ai",
-                            content=event["data"]["chunk"].content,
-                            type="stream/text",
-                        )
-                        await websocket.send_text(msg.model_dump_json())
-                    case "on_chat_model_end":
-                        logger.debug("event: {}", event)
-                        msg = AIChatMessage(
-                            parent_id=message.id,
-                            id=event["run_id"],
-                            conversation=message.conversation,
-                            content=None,
-                            type="stream/end",
-                        )
-                        await websocket.send_text(msg.model_dump_json())
+                evt: str = event["event"]
+                if event_name == "chat" and evt == "on_chain_end":
+                    msg = AIChatMessage(
+                        parent_id=message.id,
+                        id=event["run_id"],
+                        conversation=message.conversation,
+                        content=event["data"]["output"],
+                    )
+                    await history.aadd_messages([message.to_lc(), msg.to_lc()])
+                if evt == "on_chat_model_start":
+                    msg = AIChatStartMessage(
+                        parent_id=message.id,
+                        id=event["run_id"],
+                        conversation=message.conversation,
+                    )
+                    await websocket.send_text(msg.model_dump_json())
+                if evt == "on_chat_model_stream":
+                    msg = AIChatMessage(
+                        parent_id=message.id,
+                        id=event["run_id"],
+                        conversation=message.conversation,
+                        content=event["data"]["chunk"].content,
+                        type="stream/text",
+                    )
+                    await websocket.send_text(msg.model_dump_json())
+                if evt == "on_chat_model_end":
+                    msg = AIChatEndMessage(
+                        parent_id=message.id,
+                        id=event["run_id"],
+                        conversation=message.conversation,
+                    )
+                    await websocket.send_text(msg.model_dump_json())
             conv.last_message_at = utcnow()
             await conv.save()
             # summarize if required
