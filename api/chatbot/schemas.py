@@ -1,3 +1,4 @@
+from copy import deepcopy
 from datetime import datetime
 from typing import Any, Literal
 from uuid import UUID, uuid4
@@ -32,7 +33,8 @@ class ChatMessage(BaseModel):
     def from_lc(
         lc_message: BaseMessage, conv_id: str, from_: str = None
     ) -> "ChatMessage":
-        msg_parent_id = lc_message.additional_kwargs.pop("parent_id", None)
+        additional_kwargs = deepcopy(lc_message.additional_kwargs)
+        msg_parent_id = additional_kwargs.pop("parent_id", None)
         return ChatMessage(
             parent_id=UUID(msg_parent_id) if msg_parent_id else None,
             id=UUID(lc_message.id) if lc_message.id else uuid4(),
@@ -40,8 +42,8 @@ class ChatMessage(BaseModel):
             from_=from_ or lc_message.type,
             content=lc_message.content,
             type="text",
-            feedback=lc_message.additional_kwargs.pop("feedback", None),
-            additional_kwargs=lc_message.additional_kwargs,
+            feedback=additional_kwargs.pop("feedback", None),
+            additional_kwargs=additional_kwargs,
         )
 
     def to_lc(self) -> BaseMessage:
