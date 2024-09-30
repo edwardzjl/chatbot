@@ -1,4 +1,3 @@
-from datetime import date
 from typing import Annotated
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, WebSocketException
@@ -48,11 +47,7 @@ async def chat(
                 "userid": userid,
             }
             async for event in conv_chain.astream_events(
-                input={
-                    "input": message.content,
-                    # create a new date on every message to solve message across days.
-                    "date": date.today(),
-                },
+                input={"input": message.content},
                 config={
                     "run_name": "chat",
                     "metadata": chain_metadata,

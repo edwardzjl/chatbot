@@ -1,3 +1,4 @@
+from datetime import date
 from operator import itemgetter
 
 from langchain_core.output_parsers import StrOutputParser
@@ -33,7 +34,7 @@ llm = ChatOpenAI(
 conv_chain = (
     {
         "input": itemgetter("input"),
-        "date": itemgetter("date"),
+        "date": lambda _: date.today(),  # create a new date on every message to solve message across days.
         "history": RunnableLambda(
             memory.load_memory_variables, afunc=memory.aload_memory_variables
         )
