@@ -11,6 +11,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from loguru import logger
+from prometheus_client import make_asgi_app
 
 from chatbot.dependencies import EmailHeader, UserIdHeader, UsernameHeader
 from chatbot.routers.chat import router as chat_router
@@ -31,6 +32,10 @@ app = FastAPI(
     docs_url="/api/docs",
     redoc_url="/api/redoc",
 )
+
+# Add prometheus asgi middleware to route /metrics requests
+metrics_app = make_asgi_app()
+app.mount("/metrics", metrics_app)
 
 app.include_router(chat_router)
 app.include_router(conversation_router)

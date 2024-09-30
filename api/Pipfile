@@ -11,6 +11,7 @@ langchain-openai = ">=0.2.0,<1.0.0"
 loguru = ">=0.7,<1.0"
 colorama = {version = "*", sys_platform = "== 'win32'"}
 win32-setctime = {version = "*", sys_platform = "== 'win32'"}
+prometheus-client = ">=0.20.0,<1.0.0"
 pydantic = ">=2.0.0,<3.0.0"
 pydantic-settings = ">=2.0,<3.0"
 redis = {extras = ["hiredis"], version = ">=5.0.0,<6.0.0"}
