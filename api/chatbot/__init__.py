@@ -1,15 +1,17 @@
 import logging
+import os
 import sys
 
 from loguru import logger
 
-from chatbot.config import settings
 from chatbot.main import app
 
 __all__ = ["app"]
 
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
+
 logger.remove()
-logger.add(sys.stdout, level=settings.log_level)
+logger.add(sys.stdout, level=LOG_LEVEL)
 
 
 class EndpointFilter(logging.Filter):
