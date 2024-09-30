@@ -13,7 +13,6 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_nested_delimiter="__")
 
     llm: LLMServiceSettings = LLMServiceSettings()
-    log_level: str = "INFO"
     redis_om_url: RedisDsn = "redis://localhost:6379"
     """This env name (REDIS_OM_URL) is required by redis-om"""
 
