@@ -105,6 +105,7 @@ class AIChatEndMessage(AIChatMessage):
 
 
 class InfoMessage(ChatMessage):
+    from_: Literal["system"] = Field("system", alias="from")
     content: dict[str, Any]
     type: Literal["info"] = "info"
 
