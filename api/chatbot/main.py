@@ -77,7 +77,12 @@ app.mount(
 templates = Jinja2Templates(directory="static")
 
 
-# return all unregistered url to web app
+# return all unregistered, non-API call to web app
 @app.exception_handler(404)
 async def custom_404_handler(request: Request, _):
+    if request.url.path.startswith("/api"):
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={"detail": "API path not found"},
+        )
     return templates.TemplateResponse("index.html", {"request": request})
