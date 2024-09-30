@@ -130,7 +130,6 @@ async def chat(
                 await conv.save()
                 info_message = InfoMessage(
                     conversation=message.conversation,
-                    from_="ai",
                     content={
                         "type": "title-generated",
                         "payload": title,
