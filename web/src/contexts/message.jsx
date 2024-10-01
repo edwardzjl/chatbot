@@ -44,12 +44,14 @@ export const messagessReducer = (messages, action) => {
             }
             return [...messages.slice(0, match), { ...messages[match], content: messages[match].content + action.message.content }, ...messages.slice(match + 1)];
         }
-        case "feedback": {
-            // action: { idx, feedback }
-            // action.idx: message index
-            // action.feedback: feedback object, thumbup / thumbdown
-            const msg = messages[action.idx];
-            return [...messages.slice(0, action.idx), { ...msg, feedback: action.feedback }, ...messages.slice(action.idx + 1)];
+        case "updated": {
+            // find reversly could potentially be faster as the full message usually is the last one (streamed).
+            const match = messages.findLastIndex(message => message.id === action.message.id);
+            if (match === -1) {
+                // message does not exist, ignore it
+                return messages;
+            }
+            return [...messages.slice(0, match), { ...messages[match], ...action.message }, ...messages.slice(match + 1)];
         }
         case "replaceAll": {
             return [...action.messages]

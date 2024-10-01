@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 
 from aredis_om import Field, JsonModel
 
@@ -23,6 +24,7 @@ class Share(JsonModel):
     url: str
     source_id: str = Field(index=True)
     """The original conversation id."""
+    snapshot_ref: dict[str, Any]
     created_at: datetime = Field(default_factory=utcnow)
 
     class Meta:

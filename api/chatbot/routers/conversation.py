@@ -1,11 +1,10 @@
 from typing import Annotated
 
 from fastapi import APIRouter, HTTPException
+from langchain_core.messages import BaseMessage, trim_messages
 
-from chatbot.chains.summarization import smry_chain
-from chatbot.context import session_id
+from chatbot.chains.summarization import create_smry_chain
 from chatbot.dependencies import UserIdHeader
-from chatbot.memory import history
 from chatbot.models import Conversation as ORMConversation
 from chatbot.schemas import (
     ChatMessage,
@@ -14,6 +13,7 @@ from chatbot.schemas import (
     CreateConversation,
     UpdateConversation,
 )
+from chatbot.state import app_state
 
 router = APIRouter(
     prefix="/api/conversations",
@@ -38,18 +38,19 @@ async def get_conversation(
     conv = await ORMConversation.get(conversation_id)
     if conv.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
-    session_id.set(f"{userid}:{conversation_id}")
-    msgs = await history.aget_messages()
+
+    config = {"configurable": {"thread_id": conversation_id}}
+    state = await app_state.agent.aget_state(config)
+    msgs: list[BaseMessage] = state.values.get("messages", [])
+
     return ConversationDetail(
         messages=[
             (
                 ChatMessage.from_lc(
-                    lc_message=message, conv_id=conversation_id, from_="ai"
-                )
-                if message.type == "ai"
-                else ChatMessage.from_lc(
                     lc_message=message, conv_id=conversation_id, from_=userid
                 )
+                if message.type == "human"
+                else ChatMessage.from_lc(lc_message=message, conv_id=conversation_id)
             )
             for message in msgs
         ],
@@ -106,10 +107,21 @@ async def summarize(
     conv = await ORMConversation.get(conversation_id)
     if conv.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
-    session_id.set(f"{userid}:{conversation_id}")
 
+    config = {"configurable": {"thread_id": conversation_id}}
+    state = await app_state.agent.aget_state(config)
+    msgs: list[BaseMessage] = state.values.get("messages", [])
+
+    windowed_messages = trim_messages(
+        msgs,
+        token_counter=len,
+        max_tokens=20,
+        start_on="human",  # This means that the first message should be from the user after trimming.
+    )
+
+    smry_chain = create_smry_chain(app_state.chat_model)
     title_raw: str = await smry_chain.ainvoke(
-        input={},
+        input={"messages": windowed_messages},
         config={
             "metadata": {
                 "conversation_id": conversation_id,

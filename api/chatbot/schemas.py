@@ -1,7 +1,7 @@
 from copy import deepcopy
 from datetime import datetime
 from typing import Any, Literal
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -12,8 +12,8 @@ from chatbot.utils import utcnow
 class ChatMessage(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
-    parent_id: UUID | None = None
-    id: UUID = Field(default_factory=uuid4)
+    parent_id: str | None = None
+    id: str = Field(default_factory=lambda: str(uuid4()))
     """Message id, used to chain stream responses into message."""
     conversation: str | None = None
     """Conversation id"""
@@ -34,10 +34,9 @@ class ChatMessage(BaseModel):
         lc_message: BaseMessage, conv_id: str, from_: str = None
     ) -> "ChatMessage":
         additional_kwargs = deepcopy(lc_message.additional_kwargs)
-        msg_parent_id = additional_kwargs.pop("parent_id", None)
         return ChatMessage(
-            parent_id=UUID(msg_parent_id) if msg_parent_id else None,
-            id=UUID(lc_message.id) if lc_message.id else uuid4(),
+            parent_id=additional_kwargs.pop("parent_id", None),
+            id=lc_message.id if lc_message.id else str(uuid4()),
             conversation=conv_id,
             from_=from_ or lc_message.type,
             content=lc_message.content,
@@ -54,23 +53,23 @@ class ChatMessage(BaseModel):
             "type": self.type,
         }
         if self.parent_id:
-            additional_kwargs["parent_id"] = str(self.parent_id)
+            additional_kwargs["parent_id"] = self.parent_id
         match self.from_:
             case "system":
                 return SystemMessage(
-                    id=str(self.id),
+                    id=self.id,
                     content=self.content,
                     additional_kwargs=additional_kwargs,
                 )
             case "ai":
                 return AIMessage(
-                    id=str(self.id),
+                    id=self.id,
                     content=self.content,
                     additional_kwargs=additional_kwargs,
                 )
             case _:  # username
                 return HumanMessage(
-                    id=str(self.id),
+                    id=self.id,
                     content=self.content,
                     additional_kwargs=additional_kwargs,
                 )

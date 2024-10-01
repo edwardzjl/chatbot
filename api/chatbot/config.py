@@ -1,4 +1,4 @@
-from pydantic import BaseModel, HttpUrl, RedisDsn
+from pydantic import BaseModel, HttpUrl, PostgresDsn, RedisDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     llm: LLMServiceSettings = LLMServiceSettings()
     redis_om_url: RedisDsn = "redis://localhost:6379"
     """This env name (REDIS_OM_URL) is required by redis-om"""
+    db_url: PostgresDsn = "postgresql+psycopg://postgres:postgres@localhost:5432/"
+    """Database url. Must be a valid postgresql connection string."""
 
 
 settings = Settings()

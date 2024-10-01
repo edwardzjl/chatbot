@@ -10,21 +10,38 @@ from fastapi.requests import Request
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from langchain_openai import ChatOpenAI
+from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from loguru import logger
 from prometheus_client import make_asgi_app
 
+from chatbot.agent import create_agent
+from chatbot.config import settings
 from chatbot.dependencies import EmailHeader, UserIdHeader, UsernameHeader
 from chatbot.routers.chat import router as chat_router
 from chatbot.routers.conversation import router as conversation_router
 from chatbot.routers.message import router as message_router
 from chatbot.routers.share import router as share_router
 from chatbot.schemas import UserProfile
+from chatbot.state import app_state
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await Migrator().run()
-    yield
+    await app_state.ainit()
+    app_state.chat_model = ChatOpenAI(
+        openai_api_base=str(settings.llm.url),
+        model=settings.llm.model,
+        openai_api_key=settings.llm.creds,
+        max_tokens=1024,
+        streaming=True,
+    )
+    async with app_state.conn_pool as pool:
+        app_state.checkpointer = AsyncPostgresSaver(pool)
+        await app_state.checkpointer.setup()
+        app_state.agent = create_agent(app_state.chat_model, app_state.checkpointer)
+        yield
 
 
 app = FastAPI(
