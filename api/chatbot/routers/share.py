@@ -2,13 +2,13 @@ from urllib.parse import urljoin
 from typing import Annotated, Any
 
 from fastapi import APIRouter, HTTPException
+from langchain_core.messages import BaseMessage
 from starlette.requests import Request
 
-from chatbot.context import session_id
 from chatbot.dependencies import UserIdHeader
-from chatbot.memory import history
 from chatbot.models import Conversation as ORMConv, Share as ORMShare
 from chatbot.schemas import ChatMessage, CreateShare, Share
+from chatbot.state import app_state
 
 
 # jlzhou: The resource name ("shares") is recommended by gemini, don't blame me.
@@ -32,16 +32,18 @@ async def get_shares(
 async def get_share(share_id: str) -> Share:
     """Get a share by id"""
     share = await ORMShare.get(share_id)
-    session_id.set(f"{share.owner}:{share.pk}")
-    msgs = await history.aget_messages()
+    config = {"configurable": share.snapshot_ref}
+    state = await app_state.agent.aget_state(config)
+    msgs: list[BaseMessage] = state.values.get("messages", [])
+
     return Share(
         messages=[
             (
-                ChatMessage.from_lc(lc_message=message, conv_id=share_id, from_="ai")
-                if message.type == "ai"
-                else ChatMessage.from_lc(
+                ChatMessage.from_lc(
                     lc_message=message, conv_id=share_id, from_=share.owner
                 )
+                if message.type == "human"
+                else ChatMessage.from_lc(lc_message=message, conv_id=share_id)
             )
             for message in msgs
         ],
@@ -58,19 +60,19 @@ async def create_share(
     conv = await ORMConv.get(payload.source_id)
     if conv.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
+    config = {"configurable": {"thread_id": payload.source_id}}
+    state = await app_state.agent.aget_state(config)
+    snapshot_ref = state.config["configurable"]
     share = ORMShare(
         title=payload.title,
         owner=userid,
         url="",
         source_id=payload.source_id,
+        snapshot_ref=snapshot_ref,
     )
     shared_url = urljoin(str(request.url), f"/share/{share.pk}")
     share.url = shared_url
     await share.save()
-    session_id.set(f"{userid}:{payload.source_id}")
-    msgs = await history.aget_messages()
-    session_id.set(f"{userid}:{share.pk}")
-    await history.aadd_messages(msgs)
     return Share(**share.model_dump())
 
 

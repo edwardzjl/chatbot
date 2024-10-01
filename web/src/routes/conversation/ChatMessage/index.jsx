@@ -22,13 +22,12 @@ import { stringToColor } from "commons";
 
 /**
  * @param {string} convId
- * @param {integer} idx
  * @param {object} message
  * @param {string} message.from
  * @param {string} message.content
  * @returns
  */
-const ChatMessage = ({ convId, idx, message }) => {
+const ChatMessage = ({ convId, message }) => {
   const { theme } = useContext(ThemeContext);
   const [markdownTheme, setMarkdownTheme] = useState(darcula);
   const { username, avatar } = useContext(UserContext);
@@ -63,26 +62,24 @@ const ChatMessage = ({ convId, idx, message }) => {
     }, "3000");
   };
   const onThumbUpClick = () => {
-    fetch(`/api/conversations/${convId}/messages/${idx}/thumbup`, {
+    fetch(`/api/conversations/${convId}/messages/${message.id}/thumbup`, {
       method: "PUT",
     }).then(() => {
       setThumbUpTooltipTitle("thanks!");
       dispatch({
-        type: "feedback",
-        idx: idx,
-        feedback: "thumbup",
+        type: "updated",
+        message: { ...message, feedback: "thumbup" },
       });
     });
   };
   const onThumbDownClick = () => {
-    fetch(`/api/conversations/${convId}/messages/${idx}/thumbdown`, {
+    fetch(`/api/conversations/${convId}/messages/${message.id}/thumbdown`, {
       method: "PUT",
     }).then(() => {
       setThumbDownTooltipTitle("thanks!");
       dispatch({
-        type: "feedback",
-        idx: idx,
-        feedback: "thumbdown",
+        type: "updated",
+        message: { ...message, feedback: "thumbdown" },
       });
     });
   };

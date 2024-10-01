@@ -1,15 +1,12 @@
 from typing import Annotated
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, WebSocketException
-from langchain_core.messages import AIMessage
+from langchain_core.messages import AIMessage, BaseMessage, trim_messages
 from loguru import logger
 from prometheus_client import Counter
 
-from chatbot.chains.conversation import conv_chain
-from chatbot.chains.summarization import smry_chain
-from chatbot.context import session_id
+from chatbot.chains.summarization import create_smry_chain
 from chatbot.dependencies import UserIdHeader
-from chatbot.memory import history
 from chatbot.models import Conversation
 from chatbot.schemas import (
     AIChatMessage,
@@ -18,6 +15,7 @@ from chatbot.schemas import (
     ChatMessage,
     InfoMessage,
 )
+from chatbot.state import app_state
 from chatbot.utils import utcnow
 
 router = APIRouter(
@@ -51,17 +49,16 @@ async def chat(
                 # TODO: I'm not sure whether this is the correct way to handle this.
                 # See websocket code definitions here: <https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code>
                 raise WebSocketException(code=3403, reason="authorization error")
-            # set session_id early to ensure history is loaded correctly.
-            session_id.set(f"{userid}:{message.conversation}")
             chain_metadata = {
                 "conversation_id": message.conversation,
                 "userid": userid,
             }
-            async for event in conv_chain.astream_events(
-                input={"input": message.content},
+            async for event in app_state.agent.astream_events(
+                input={"messages": [("user", message.content)]},
                 config={
                     "run_name": "chat",
                     "metadata": chain_metadata,
+                    "configurable": {"thread_id": message.conversation},
                 },
                 version="v2",
             ):
@@ -74,14 +71,6 @@ async def chat(
                     continue
                 logger.trace("event: {}", event)
                 evt: str = event["event"]
-                if event_name == "chat" and evt == "on_chain_end":
-                    msg = AIChatMessage(
-                        parent_id=message.id,
-                        id=event["run_id"],
-                        conversation=message.conversation,
-                        content=event["data"]["output"],
-                    )
-                    await history.aadd_messages([message.to_lc(), msg.to_lc()])
                 if evt == "on_chat_model_start":
                     msg = AIChatStartMessage(
                         parent_id=message.id,
@@ -121,8 +110,19 @@ async def chat(
             if message.additional_kwargs and message.additional_kwargs.get(
                 "require_summarization", False
             ):
+                config = {"configurable": {"thread_id": message.conversation}}
+                state = await app_state.agent.aget_state(config)
+                msgs: list[BaseMessage] = state.values.get("messages", [])
+
+                windowed_messages = trim_messages(
+                    msgs,
+                    token_counter=len,
+                    max_tokens=20,
+                    start_on="human",  # This means that the first message should be from the user after trimming.
+                )
+                smry_chain = create_smry_chain(app_state.chat_model)
                 title_raw: str = await smry_chain.ainvoke(
-                    input={},
+                    input={"messages": windowed_messages},
                     config={"metadata": chain_metadata},
                 )
                 title = title_raw.strip('"')

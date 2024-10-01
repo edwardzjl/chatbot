@@ -55,7 +55,7 @@ const Conversation = () => {
             <ChatboxHeader />
             <ChatLog className="chat-log">
                 {conversation && messages?.map((message, index) => (
-                    <ChatMessage key={index} convId={conversation.id} idx={index} message={message} />
+                    <ChatMessage key={index} convId={conversation.id} message={message} />
                 ))}
             </ChatLog>
             <div className="input-bottom">
