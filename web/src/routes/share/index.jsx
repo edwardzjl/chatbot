@@ -44,17 +44,19 @@ const Share = () => {
 
 
     return (
-        <div className={`sharebox theme-${theme}`}>
-            <div className="share-header">
-                <h1 className="share-title">{share.title}</h1>
-                <p>Shared @ {formatTimestamp(share.created_at)}</p>
+        <div className={`App theme-${theme}`}>
+            <div className="sharebox">
+                <div className="share-header">
+                    <h1 className="share-title">{share.title}</h1>
+                    <p>Shared @ {formatTimestamp(share.created_at)}</p>
+                </div>
+                <ChatLog className="chat-log">
+                    {share?.messages?.map((message, index) => (
+                        <ChatMessage key={index} convId={share.id} idx={index} message={message} />
+                    ))}
+                </ChatLog>
+                <button className="start-button" onClick={goHome}>Start chatting!</button>
             </div>
-            <ChatLog>
-                {share?.messages?.map((message, index) => (
-                    <ChatMessage key={index} convId={share.id} idx={index} message={message} />
-                ))}
-            </ChatLog>
-            <button className="start-button" onClick={goHome}>Start chatting!</button>
         </div>
     );
 };
