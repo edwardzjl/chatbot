@@ -99,13 +99,6 @@
   flex-direction: column;
 }
 
-.conv-list {
-  display: flex;
-  flex-direction: column;
-  overflow: auto;
-  scrollbar-color: var(--border-color) transparent;
-}
-
 .sidemenu ul {
   list-style-type: none;
   margin: 0;
@@ -120,6 +113,13 @@
 .sidemenu a {
   color: unset;
   text-decoration: none;
+}
+
+.conv-list {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  scrollbar-color: var(--border-color) transparent;
 }
 
 .sidemenu-date-group {
@@ -171,6 +171,7 @@
   flex-direction: column;
   flex-grow: 1;
   overflow: auto;
+  scroll-behavior: smooth;
   scrollbar-color: var(--border-color) transparent;
   border: 1px solid var(--border-color);
   background-color: var(--bg-secondary);
