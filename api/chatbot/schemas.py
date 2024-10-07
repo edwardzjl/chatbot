@@ -1,10 +1,10 @@
 from copy import deepcopy
 from datetime import datetime
 from typing import Any, Literal
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from chatbot.utils import utcnow
 
@@ -110,19 +110,19 @@ class InfoMessage(ChatMessage):
 
 
 class Conversation(BaseModel):
-    id: str | None = None
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str | UUID | None = None
     title: str
     owner: str
     pinned: bool = False
     created_at: datetime = Field(default_factory=utcnow)
     last_message_at: datetime = created_at
 
-    @model_validator(mode="before")
+    @field_validator("id")
     @classmethod
-    def set_id(cls, values):
-        if "pk" in values and "id" not in values:
-            values["id"] = values["pk"]
-        return values
+    def convert_id(cls, v: UUID) -> str:
+        return str(v)
 
 
 class ConversationDetail(Conversation):
@@ -141,19 +141,19 @@ class UpdateConversation(BaseModel):
 
 
 class Share(BaseModel):
-    id: str | None = None
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str | UUID | None = None
     title: str
     url: str
     owner: str
     messages: list[ChatMessage] = []
     created_at: datetime = Field(default_factory=utcnow)
 
-    @model_validator(mode="before")
+    @field_validator("id")
     @classmethod
-    def set_id(cls, values):
-        if "pk" in values and "id" not in values:
-            values["id"] = values["pk"]
-        return values
+    def convert_id(cls, v: UUID) -> str:
+        return str(v)
 
 
 class CreateShare(BaseModel):

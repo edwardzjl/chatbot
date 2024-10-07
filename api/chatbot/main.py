@@ -3,7 +3,6 @@
 from contextlib import asynccontextmanager
 from typing import Annotated
 
-from aredis_om import Migrator, NotFoundError
 from fastapi import FastAPI, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.requests import Request
@@ -12,12 +11,13 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
-from loguru import logger
 from prometheus_client import make_asgi_app
+from sqlalchemy.exc import NoResultFound
 
 from chatbot.agent import create_agent
 from chatbot.config import settings
 from chatbot.dependencies import EmailHeader, UserIdHeader, UsernameHeader
+from chatbot.models import Base
 from chatbot.routers.chat import router as chat_router
 from chatbot.routers.conversation import router as conversation_router
 from chatbot.routers.message import router as message_router
@@ -28,8 +28,11 @@ from chatbot.state import app_state
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await Migrator().run()
     await app_state.ainit()
+    # Create tables for ORM models
+    async with app_state.sqlalchemy_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
     app_state.chat_model = ChatOpenAI(
         openai_api_base=str(settings.llm.url),
         model=settings.llm.model,
@@ -79,10 +82,8 @@ def userinfo(
     )
 
 
-@app.exception_handler(NotFoundError)
-async def notfound_exception_handler(request: Request, exc: NotFoundError):
-    logger.error("NotFoundError: {}", exc)
-    # TODO: add some details here
+@app.exception_handler(NoResultFound)
+async def not_found_error_handler(request: Request, exc: NoResultFound):
     return JSONResponse(
         status_code=status.HTTP_404_NOT_FOUND,
         content=jsonable_encoder({"detail": str(exc)}),

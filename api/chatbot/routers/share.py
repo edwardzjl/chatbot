@@ -1,11 +1,14 @@
 from urllib.parse import urljoin
+from uuid import uuid4
 from typing import Annotated, Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from langchain_core.messages import BaseMessage
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.requests import Request
 
-from chatbot.dependencies import UserIdHeader
+from chatbot.dependencies import UserIdHeader, get_sqlalchemy_session
 from chatbot.models import Conversation as ORMConv, Share as ORMShare
 from chatbot.schemas import ChatMessage, CreateShare, Share
 from chatbot.state import app_state
@@ -20,71 +23,87 @@ router = APIRouter(
 
 @router.get("")
 async def get_shares(
+    session: AsyncSession = Depends(get_sqlalchemy_session),
     userid: Annotated[str | None, UserIdHeader()] = None,
 ) -> list[Share]:
     """Get shares by userid"""
-    shares = await ORMShare.find(ORMShare.owner == userid).all()
-    shares.sort(key=lambda x: (x.created_at), reverse=True)
-    return [Share(**share.model_dump()) for share in shares]
+    # TODO: support pagination
+    stmt = (
+        select(ORMShare)
+        .where(ORMShare.owner == userid)
+        .order_by(ORMShare.created_at.desc())
+    )
+    return (await session.scalars(stmt)).all()
 
 
 @router.get("/{share_id}")
-async def get_share(share_id: str) -> Share:
+async def get_share(
+    share_id: str, session: AsyncSession = Depends(get_sqlalchemy_session)
+) -> Share:
     """Get a share by id"""
-    share = await ORMShare.get(share_id)
+    share: ORMShare = await session.get(ORMShare, share_id)
+
     config = {"configurable": share.snapshot_ref}
     state = await app_state.agent.aget_state(config)
-    msgs: list[BaseMessage] = state.values.get("messages", [])
+    lc_msgs: list[BaseMessage] = state.values.get("messages", [])
+    messages = [
+        (
+            ChatMessage.from_lc(lc_message=message, conv_id=share_id, from_=share.owner)
+            if message.type == "human"
+            else ChatMessage.from_lc(lc_message=message, conv_id=share_id)
+        )
+        for message in lc_msgs
+    ]
 
-    return Share(
-        messages=[
-            (
-                ChatMessage.from_lc(
-                    lc_message=message, conv_id=share_id, from_=share.owner
-                )
-                if message.type == "human"
-                else ChatMessage.from_lc(lc_message=message, conv_id=share_id)
-            )
-            for message in msgs
-        ],
-        **share.model_dump(),
-    )
+    res = Share.model_validate(share)
+    res.messages = messages
+    return res
 
 
 @router.post("", status_code=201)
 async def create_share(
     payload: CreateShare,
     request: Request,
+    session: AsyncSession = Depends(get_sqlalchemy_session),
     userid: Annotated[str | None, UserIdHeader()] = None,
 ) -> Share:
-    conv = await ORMConv.get(payload.source_id)
+    # TODO: maybe only get the conv.owner
+    conv: ORMConv = await session.get(ORMConv, payload.source_id)
     if conv.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
+
     config = {"configurable": {"thread_id": payload.source_id}}
     state = await app_state.agent.aget_state(config)
     snapshot_ref = state.config["configurable"]
+
+    share_id = uuid4()
+    shared_url = urljoin(str(request.url), f"/share/{share_id}")
+
     share = ORMShare(
+        id=share_id,
         title=payload.title,
         owner=userid,
-        url="",
-        source_id=payload.source_id,
+        url=shared_url,
         snapshot_ref=snapshot_ref,
     )
-    shared_url = urljoin(str(request.url), f"/share/{share.pk}")
-    share.url = shared_url
-    await share.save()
-    return Share(**share.model_dump())
+    session.add(share)
+    await session.commit()
+    return share
 
 
 @router.delete("/{share_id}", status_code=204)
 async def delete_share(
     share_id: str,
+    session: AsyncSession = Depends(get_sqlalchemy_session),
     userid: Annotated[str | None, UserIdHeader()] = None,
 ) -> None:
-    share = await ORMConv.get(share_id)
+    # TODO: maybe only get the share.owner
+    share: ORMShare = await session.get(ORMShare, share_id)
     if share.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
-    await ORMConv.delete(share_id)
+
+    await session.delete(share)
+    await session.commit()
 
 
 @router.post("/{share_id}/forks", status_code=201)
