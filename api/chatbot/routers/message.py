@@ -1,9 +1,10 @@
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from langchain_core.messages import BaseMessage
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from chatbot.dependencies import UserIdHeader
+from chatbot.dependencies import UserIdHeader, get_sqlalchemy_session
 from chatbot.models import Conversation as ORMConversation
 from chatbot.state import app_state
 
@@ -18,12 +19,13 @@ router = APIRouter(
 async def thumbup(
     conversation_id: str,
     message_id: str,
+    session: AsyncSession = Depends(get_sqlalchemy_session),
     userid: Annotated[str | None, UserIdHeader()] = None,
 ) -> None:
     """Using message index as the uuid is in the message body which is json dumped into redis,
     and is impossible to filter on.
     Also separate thumbup and thumbdown into two endpoints to make it more RESTful."""
-    conv = await ORMConversation.get(conversation_id)
+    conv: ORMConversation = await session.get(ORMConversation, conversation_id)
     if conv.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
 
@@ -48,12 +50,13 @@ async def thumbup(
 async def thumbdown(
     conversation_id: str,
     message_id: str,
+    session: AsyncSession = Depends(get_sqlalchemy_session),
     userid: Annotated[str | None, UserIdHeader()] = None,
 ) -> None:
     """Using message index as the uuid is in the message body which is json dumped into redis,
     and is impossible to filter on.
     Also separate thumbup and thumbdown into two endpoints to make it more RESTful."""
-    conv = await ORMConversation.get(conversation_id)
+    conv: ORMConversation = await session.get(ORMConversation, conversation_id)
     if conv.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
 

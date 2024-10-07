@@ -1,31 +1,47 @@
 from datetime import datetime
 from typing import Any
+from uuid import UUID, uuid4
 
-from aredis_om import Field, JsonModel
+from sqlalchemy import Boolean, DateTime, JSON, Text, Uuid
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 from chatbot.utils import utcnow
 
 
-class Conversation(JsonModel):
-    title: str
-    owner: str = Field(index=True)
-    pinned: bool = False
-    created_at: datetime = Field(default_factory=utcnow)
-    last_message_at: datetime = created_at
-
-    class Meta:
-        global_key_prefix = "chatbot"
+class Base(DeclarativeBase):
+    pass
 
 
-class Share(JsonModel):
-    title: str
-    """Share title, could be different from the source conversation title."""
-    owner: str = Field(index=True)
-    url: str
-    source_id: str = Field(index=True)
-    """The original conversation id."""
-    snapshot_ref: dict[str, Any]
-    created_at: datetime = Field(default_factory=utcnow)
+class Conversation(Base):
+    __tablename__ = "conversation"
 
-    class Meta:
-        global_key_prefix = "chatbot"
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    title: Mapped[str] = mapped_column(Text)
+    owner: Mapped[str] = mapped_column(Text, index=True)
+    pinned: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=utcnow,
+    )
+    last_message_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+
+class Share(Base):
+    __tablename__ = "share"
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    title: Mapped[str] = mapped_column(Text)
+    owner: Mapped[str] = mapped_column(Text, index=True)
+    url: Mapped[str] = mapped_column(Text)
+    snapshot_ref: Mapped[dict[str, Any]] = mapped_column(JSON)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=utcnow,
+    )

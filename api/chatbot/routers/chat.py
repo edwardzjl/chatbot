@@ -44,7 +44,10 @@ async def chat(
         try:
             payload: str = await websocket.receive_text()
             message = ChatMessage.model_validate_json(payload)
-            conv = await Conversation.get(message.conversation)
+            async with app_state.sqlalchemy_session() as session:
+                conv: Conversation = await session.get(
+                    Conversation, message.conversation
+                )
             if conv.owner != userid:
                 # TODO: I'm not sure whether this is the correct way to handle this.
                 # See websocket code definitions here: <https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code>
@@ -104,8 +107,12 @@ async def chat(
                             user_id=userid,
                             model_name=msg.response_metadata["model_name"],
                         ).inc(msg.usage_metadata["output_tokens"])
+
             conv.last_message_at = utcnow()
-            await conv.save()
+            async with app_state.sqlalchemy_session() as session:
+                conv = await session.merge(conv)
+                await session.commit()
+
             # summarize if required
             if message.additional_kwargs and message.additional_kwargs.get(
                 "require_summarization", False
@@ -127,7 +134,10 @@ async def chat(
                 )
                 title = title_raw.strip('"')
                 conv.title = title
-                await conv.save()
+                async with app_state.sqlalchemy_session() as session:
+                    conv = await session.merge(conv)
+                    await session.commit()
+
                 info_message = InfoMessage(
                     conversation=message.conversation,
                     content={

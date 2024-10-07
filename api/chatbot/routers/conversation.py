@@ -1,10 +1,12 @@
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from langchain_core.messages import BaseMessage, trim_messages
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from chatbot.chains.summarization import create_smry_chain
-from chatbot.dependencies import UserIdHeader
+from chatbot.dependencies import UserIdHeader, get_sqlalchemy_session
 from chatbot.models import Conversation as ORMConversation
 from chatbot.schemas import (
     ChatMessage,
@@ -23,88 +25,98 @@ router = APIRouter(
 
 @router.get("")
 async def get_conversations(
+    session: AsyncSession = Depends(get_sqlalchemy_session),
     userid: Annotated[str | None, UserIdHeader()] = None,
 ) -> list[Conversation]:
-    convs = await ORMConversation.find(ORMConversation.owner == userid).all()
-    convs.sort(key=lambda x: (x.pinned, x.last_message_at), reverse=True)
-    return [Conversation(**conv.model_dump()) for conv in convs]
+    # TODO: support pagination
+    stmt = (
+        select(ORMConversation)
+        .where(ORMConversation.owner == userid)
+        .order_by(ORMConversation.created_at.desc())
+    )
+    return (await session.scalars(stmt)).all()
 
 
 @router.get("/{conversation_id}")
 async def get_conversation(
     conversation_id: str,
+    session: AsyncSession = Depends(get_sqlalchemy_session),
     userid: Annotated[str | None, UserIdHeader()] = None,
 ) -> ConversationDetail:
-    conv = await ORMConversation.get(conversation_id)
+    conv: ORMConversation = await session.get(ORMConversation, conversation_id)
     if conv.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
 
     config = {"configurable": {"thread_id": conversation_id}}
     state = await app_state.agent.aget_state(config)
-    msgs: list[BaseMessage] = state.values.get("messages", [])
-
-    return ConversationDetail(
-        messages=[
-            (
-                ChatMessage.from_lc(
-                    lc_message=message, conv_id=conversation_id, from_=userid
-                )
-                if message.type == "human"
-                else ChatMessage.from_lc(lc_message=message, conv_id=conversation_id)
+    lc_msgs: list[BaseMessage] = state.values.get("messages", [])
+    messages = [
+        (
+            ChatMessage.from_lc(
+                lc_message=message, conv_id=conversation_id, from_=userid
             )
-            for message in msgs
-        ],
-        **conv.model_dump(),
-    )
+            if message.type == "human"
+            else ChatMessage.from_lc(lc_message=message, conv_id=conversation_id)
+        )
+        for message in lc_msgs
+    ]
+
+    res = ConversationDetail.model_validate(conv)
+    res.messages = messages
+    return res
 
 
 @router.post("", status_code=201)
 async def create_conversation(
-    payload: CreateConversation, userid: Annotated[str | None, UserIdHeader()] = None
+    payload: CreateConversation,
+    session: AsyncSession = Depends(get_sqlalchemy_session),
+    userid: Annotated[str | None, UserIdHeader()] = None,
 ) -> ConversationDetail:
     conv = ORMConversation(title=payload.title, owner=userid)
-    await conv.save()
-    return ConversationDetail(**conv.model_dump())
+    session.add(conv)
+    await session.commit()
+    return conv
 
 
 @router.put("/{conversation_id}")
 async def update_conversation(
     conversation_id: str,
     payload: UpdateConversation,
+    session: AsyncSession = Depends(get_sqlalchemy_session),
     userid: Annotated[str | None, UserIdHeader()] = None,
 ) -> ConversationDetail:
-    conv = await ORMConversation.get(conversation_id)
+    conv: ORMConversation = await session.get(ORMConversation, conversation_id)
     if conv.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
-    modified = False
+
     if payload.title is not None:
         conv.title = payload.title
-        modified = True
     if payload.pinned is not None:
         conv.pinned = payload.pinned
-        modified = True
-    if modified:
-        await conv.save()
-    return ConversationDetail(**conv.model_dump())
+    await session.commit()
+    return conv
 
 
 @router.delete("/{conversation_id}", status_code=204)
 async def delete_conversation(
     conversation_id: str,
+    session: AsyncSession = Depends(get_sqlalchemy_session),
     userid: Annotated[str | None, UserIdHeader()] = None,
 ) -> None:
-    conv = await ORMConversation.get(conversation_id)
+    conv: ORMConversation = await session.get(ORMConversation, conversation_id)
     if conv.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
-    await ORMConversation.delete(conversation_id)
+    await session.delete(conv)
+    await session.commit()
 
 
 @router.post("/{conversation_id}/summarization", status_code=201)
 async def summarize(
     conversation_id: str,
+    session: AsyncSession = Depends(get_sqlalchemy_session),
     userid: Annotated[str | None, UserIdHeader()] = None,
 ) -> dict[str, str]:
-    conv = await ORMConversation.get(conversation_id)
+    conv: ORMConversation = await session.get(ORMConversation, conversation_id)
     if conv.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
 
@@ -131,5 +143,5 @@ async def summarize(
     )
     title = title_raw.strip('"')
     conv.title = title
-    await conv.save()
+    await session.commit()
     return {"title": title}
