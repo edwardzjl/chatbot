@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "cedb742db61ef6808c7d8182d07e515408454ef70435f6b1690871c6bf208765"
+            "sha256": "26d9304a69d91ccea168d89cc95da30f938cc661eb886bea8f886e61342f5918"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -761,27 +761,27 @@
         },
         "langgraph-checkpoint": {
             "hashes": [
-                "sha256:44fc464c82ecb643a69b1c394080c54c63969798e0c538b763bbab67911b6e21",
-                "sha256:a8bdcf3a39a45193f009dd2a6ebaf637dbaeb50f1b88a66b151d9ab8c5b41d21"
+                "sha256:31c34952b11a93108d76e5ad05398bfc94d8aafda5b4da7d17c26a121acce8e0",
+                "sha256:760edb722f6c64f2a39f41c7fbd56aaee47524f3399cf7c4bb8f5563b590ee68"
             ],
             "markers": "python_full_version >= '3.9.0' and python_full_version < '4.0.0'",
-            "version": "==1.0.12"
+            "version": "==2.0.1"
         },
         "langgraph-checkpoint-postgres": {
             "hashes": [
-                "sha256:66b4276029b856710b7a7b74caadfd0be9fc1960fa3ba34bfc2319484f008140",
-                "sha256:a957f01ffd2c8dbebec2e207604c2b813f840eb9b4aa718d821b0e45895aee64"
+                "sha256:27a5c0acbdf96ed222e5ea0dcac4fed44cc132c6fe22ac951bab5e6bd30a63e4",
+                "sha256:4655a9e047db9ba0c183f353922df659565bc92b8d4ee912b0bd8f00673c10a2"
             ],
             "index": "pypi",
             "markers": "python_full_version >= '3.9.0' and python_full_version < '4.0.0'",
-            "version": "==1.0.9"
+            "version": "==2.0.0"
         },
         "langsmith": {
             "hashes": [
                 "sha256:626101a3bf3ca481e5110d5155ace8aa066e4e9cc2fa7d96c8290ade0fbff797",
                 "sha256:80c106b1c42307195cc0bb3a596472c41ef91b79d15bcee9938307800336c563"
             ],
-            "markers": "python_full_version >= '3.8.1' and python_version < '4.0'",
+            "markers": "python_version < '4.0' and python_full_version >= '3.8.1'",
             "version": "==0.1.131"
         },
         "loguru": {
