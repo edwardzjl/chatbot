@@ -1,8 +1,11 @@
+from typing_extensions import Self
+
 from langchain_core.language_models import BaseChatModel
+from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from langgraph.graph.graph import CompiledGraph
 from psycopg_pool import AsyncConnectionPool
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, model_validator
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
@@ -21,7 +24,8 @@ class AppState(BaseModel):
     sqlalchemy_engine: AsyncEngine | None = None
     sqlalchemy_session: sessionmaker | None = None
 
-    async def ainit(self):
+    @model_validator(mode="after")
+    def initialize(self) -> Self:
         # TODO: migrate client pooling to pgbouncer
         # Read more about pool sizing: <https://github.com/brettwooldridge/HikariCP/wiki/About-Pool-Sizing>
         self.conn_pool = AsyncConnectionPool(
@@ -31,7 +35,6 @@ class AppState(BaseModel):
             max_size=10,
             check=AsyncConnectionPool.check_connection,
         )
-        await self.conn_pool.open()
         self.sqlalchemy_engine = create_async_engine(
             str(settings.db_url),
             async_creator=self.conn_pool.getconn,
@@ -43,6 +46,13 @@ class AppState(BaseModel):
             expire_on_commit=False,
             autoflush=False,
             class_=AsyncSession,
+        )
+        self.chat_model = ChatOpenAI(
+            openai_api_base=str(settings.llm.url),
+            model=settings.llm.model,
+            openai_api_key=settings.llm.creds,
+            max_tokens=1024,
+            streaming=True,
         )
 
 
