@@ -31,13 +31,18 @@ class AppState(BaseModel):
         self.conn_pool = AsyncConnectionPool(
             remove_driver(str(settings.db_url)),
             open=False,
-            min_size=4,
+            min_size=10,
             max_size=10,
             check=AsyncConnectionPool.check_connection,
         )
+
+        async def connect_with_pool():
+            async with self.conn_pool.connection() as conn:
+                return conn
+
         self.sqlalchemy_engine = create_async_engine(
             str(settings.db_url),
-            async_creator=self.conn_pool.getconn,
+            async_creator=connect_with_pool,
             poolclass=NullPool,
         )
         self.sqlalchemy_session = sessionmaker(
@@ -47,6 +52,7 @@ class AppState(BaseModel):
             autoflush=False,
             class_=AsyncSession,
         )
+
         self.chat_model = ChatOpenAI(
             openai_api_base=str(settings.llm.url),
             model=settings.llm.model,
