@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:latest
+          ports:
+            - containerPort: 6379
+              name: service-port
+              protocol: TCP
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+              readOnly: false
+      volumes:
+        - name: redis-data
+          persistentVolumeClaim:
+            claimName: redis-data
