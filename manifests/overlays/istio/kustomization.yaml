@@ -6,8 +6,12 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - ../../third-party/redis
-  - ../../third-party/oauth2-proxy/base
   - ../../base
   - virtual-service.yaml
   - authorizationpolicy.yaml
+
+components:
+  - ../../components/monitoring
+  - ../../components/auth
+  # I need to tweak the scaling metrics
+  # - ../../components/autoscaler
