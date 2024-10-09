@@ -12,6 +12,7 @@ labels:
 resources:
   - deployment.yaml
   - service.yaml
+  - service-monitor.yaml
   - autoscaler.yaml
 
 configMapGenerator:
