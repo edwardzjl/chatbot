@@ -1,0 +1,31 @@
+name: Chatbot Manifest CI
+
+on:
+    push:
+      branches:
+        - main
+      paths:
+        - '.github/workflows/manifest-ci.yml'
+        - 'manifests/**'
+    pull_request:
+      types:
+        - opened
+        - synchronize
+      paths:
+        - '.github/workflows/manifest-ci.yml'
+        - 'manifests/**'
+    workflow_dispatch:  # Allows to trigger the workflow manually in GitHub UI
+
+jobs:
+  kustomize-istio:
+    name: Kustomize Istio
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Install kubectl. See <https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-kubectl-binary-with-curl-on-linux>
+      - run: curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+      - run: curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
+      - run: echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check
+      - run: chmod +x kubectl
+      - run: ./kubectl kustomize ./manifests/overlays/istio
+      - run: ./kubectl kustomize ./manifests/overlays/knative-serving
