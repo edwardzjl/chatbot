@@ -1,5 +1,6 @@
 """Main entrypoint for the app."""
 
+from asyncio import create_task
 from contextlib import asynccontextmanager
 from typing import Annotated
 
@@ -15,6 +16,7 @@ from sqlalchemy.exc import NoResultFound
 
 from chatbot.agent import create_agent
 from chatbot.dependencies import EmailHeader, UserIdHeader, UsernameHeader
+from chatbot.metrics.db import update_psycopg_metrics
 from chatbot.models import Base
 from chatbot.routers.chat import router as chat_router
 from chatbot.routers.conversation import router as conversation_router
@@ -30,6 +32,9 @@ async def lifespan(app: FastAPI):
     # Create tables for ORM models
     async with app_state.sqlalchemy_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+    create_task(update_psycopg_metrics(app_state.conn_pool))
+
     async with app_state.conn_pool as pool:
         app_state.checkpointer = AsyncPostgresSaver(pool)
         await app_state.checkpointer.setup()
