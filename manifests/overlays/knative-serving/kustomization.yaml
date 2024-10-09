@@ -9,6 +9,10 @@ resources:
   - ../../base
   - ksvc.yaml
 
+components:
+  - ../../components/monitoring
+  - ../../components/auth
+
 patches:
   - path: patches/delete-deployment.yaml
   - path: patches/delete-service.yaml
