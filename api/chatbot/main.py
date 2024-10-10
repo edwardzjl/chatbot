@@ -1,7 +1,6 @@
 """Main entrypoint for the app."""
 
 from contextlib import asynccontextmanager
-from typing import Annotated
 
 from fastapi import FastAPI, status
 from fastapi.encoders import jsonable_encoder
@@ -14,7 +13,7 @@ from prometheus_client import make_asgi_app
 from sqlalchemy.exc import NoResultFound
 
 from chatbot.config import settings
-from chatbot.dependencies import EmailHeader, UserIdHeader, UsernameHeader
+from chatbot.dependencies import EmailHeaderDep, UserIdHeaderDep, UsernameHeaderDep
 from chatbot.models import Base
 from chatbot.routers.chat import router as chat_router
 from chatbot.routers.conversation import router as conversation_router
@@ -64,9 +63,9 @@ def healthz():
 
 @app.get("/api/userinfo")
 def userinfo(
-    userid: Annotated[str | None, UserIdHeader()] = None,
-    username: Annotated[str | None, UsernameHeader()] = None,
-    email: Annotated[str | None, EmailHeader()] = None,
+    userid: UserIdHeaderDep,
+    username: UsernameHeaderDep,
+    email: EmailHeaderDep,
 ) -> UserProfile:
     return UserProfile(
         userid=userid,

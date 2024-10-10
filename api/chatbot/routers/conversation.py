@@ -1,13 +1,9 @@
-from typing import Annotated
-
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException
 from langchain_core.messages import BaseMessage, trim_messages
-from langgraph.graph.graph import CompiledGraph
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from chatbot.chains.summarization import create_smry_chain
-from chatbot.dependencies import UserIdHeader, get_agent, get_sqlalchemy_session
+from chatbot.dependencies import AgentDep, SqlalchemySessionDep, UserIdHeaderDep
 from chatbot.models import Conversation as ORMConversation
 from chatbot.schemas import (
     ChatMessage,
@@ -26,8 +22,8 @@ router = APIRouter(
 
 @router.get("")
 async def get_conversations(
-    session: AsyncSession = Depends(get_sqlalchemy_session),
-    userid: Annotated[str | None, UserIdHeader()] = None,
+    userid: UserIdHeaderDep,
+    session: SqlalchemySessionDep,
 ) -> list[Conversation]:
     # TODO: support pagination
     stmt = (
@@ -41,9 +37,9 @@ async def get_conversations(
 @router.get("/{conversation_id}")
 async def get_conversation(
     conversation_id: str,
-    userid: Annotated[str | None, UserIdHeader()] = None,
-    session: AsyncSession = Depends(get_sqlalchemy_session),
-    agent: CompiledGraph = Depends(get_agent),
+    userid: UserIdHeaderDep,
+    session: SqlalchemySessionDep,
+    agent: AgentDep,
 ) -> ConversationDetail:
     conv: ORMConversation = await session.get(ORMConversation, conversation_id)
     if conv.owner != userid:
@@ -71,8 +67,8 @@ async def get_conversation(
 @router.post("", status_code=201)
 async def create_conversation(
     payload: CreateConversation,
-    session: AsyncSession = Depends(get_sqlalchemy_session),
-    userid: Annotated[str | None, UserIdHeader()] = None,
+    userid: UserIdHeaderDep,
+    session: SqlalchemySessionDep,
 ) -> ConversationDetail:
     conv = ORMConversation(title=payload.title, owner=userid)
     session.add(conv)
@@ -84,8 +80,8 @@ async def create_conversation(
 async def update_conversation(
     conversation_id: str,
     payload: UpdateConversation,
-    session: AsyncSession = Depends(get_sqlalchemy_session),
-    userid: Annotated[str | None, UserIdHeader()] = None,
+    userid: UserIdHeaderDep,
+    session: SqlalchemySessionDep,
 ) -> ConversationDetail:
     conv: ORMConversation = await session.get(ORMConversation, conversation_id)
     if conv.owner != userid:
@@ -102,8 +98,8 @@ async def update_conversation(
 @router.delete("/{conversation_id}", status_code=204)
 async def delete_conversation(
     conversation_id: str,
-    session: AsyncSession = Depends(get_sqlalchemy_session),
-    userid: Annotated[str | None, UserIdHeader()] = None,
+    userid: UserIdHeaderDep,
+    session: SqlalchemySessionDep,
 ) -> None:
     conv: ORMConversation = await session.get(ORMConversation, conversation_id)
     if conv.owner != userid:
@@ -115,9 +111,9 @@ async def delete_conversation(
 @router.post("/{conversation_id}/summarization", status_code=201)
 async def summarize(
     conversation_id: str,
-    userid: Annotated[str | None, UserIdHeader()] = None,
-    session: AsyncSession = Depends(get_sqlalchemy_session),
-    agent: CompiledGraph = Depends(get_agent),
+    userid: UserIdHeaderDep,
+    session: SqlalchemySessionDep,
+    agent: AgentDep,
 ) -> dict[str, str]:
     conv: ORMConversation = await session.get(ORMConversation, conversation_id)
     if conv.owner != userid:

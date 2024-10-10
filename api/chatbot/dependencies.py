@@ -1,6 +1,7 @@
+from typing import Annotated
 from collections.abc import AsyncGenerator
 
-from fastapi import Header
+from fastapi import Depends, Header
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from langgraph.graph.graph import CompiledGraph
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,10 +18,16 @@ def UserIdHeader(alias: str | None = None, **kwargs):
     return Header(alias=alias, **kwargs)
 
 
+UserIdHeaderDep = Annotated[str | None, UserIdHeader()]
+
+
 def UsernameHeader(alias: str | None = None, **kwargs):
     if alias is None:
         alias = "X-Forwarded-Preferred-Username"
     return Header(alias=alias, **kwargs)
+
+
+UsernameHeaderDep = Annotated[str | None, UsernameHeader()]
 
 
 def EmailHeader(alias: str | None = None, **kwargs):
@@ -29,9 +36,15 @@ def EmailHeader(alias: str | None = None, **kwargs):
     return Header(alias=alias, **kwargs)
 
 
+EmailHeaderDep = Annotated[str | None, EmailHeader()]
+
+
 async def get_sqlalchemy_session() -> AsyncGenerator[AsyncSession, None]:
     async with sqlalchemy_session() as session:
         yield session
+
+
+SqlalchemySessionDep = Annotated[AsyncSession, Depends(get_sqlalchemy_session)]
 
 
 async def get_agent() -> AsyncGenerator[CompiledGraph, None]:
@@ -39,3 +52,6 @@ async def get_agent() -> AsyncGenerator[CompiledGraph, None]:
         remove_driver(str(settings.db_url))
     ) as checkpointer:
         yield create_agent(chat_model, checkpointer)
+
+
+AgentDep = Annotated[CompiledGraph, Depends(get_agent)]

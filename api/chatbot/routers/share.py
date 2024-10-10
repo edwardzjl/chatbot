@@ -1,15 +1,13 @@
 from urllib.parse import urljoin
 from uuid import uuid4
-from typing import Annotated, Any
+from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException
 from langchain_core.messages import BaseMessage
-from langgraph.graph.graph import CompiledGraph
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.requests import Request
 
-from chatbot.dependencies import UserIdHeader, get_agent, get_sqlalchemy_session
+from chatbot.dependencies import AgentDep, SqlalchemySessionDep, UserIdHeaderDep
 from chatbot.models import Conversation as ORMConv, Share as ORMShare
 from chatbot.schemas import ChatMessage, CreateShare, Share
 
@@ -23,8 +21,8 @@ router = APIRouter(
 
 @router.get("")
 async def get_shares(
-    session: AsyncSession = Depends(get_sqlalchemy_session),
-    userid: Annotated[str | None, UserIdHeader()] = None,
+    userid: UserIdHeaderDep,
+    session: SqlalchemySessionDep,
 ) -> list[Share]:
     """Get shares by userid"""
     # TODO: support pagination
@@ -39,8 +37,8 @@ async def get_shares(
 @router.get("/{share_id}")
 async def get_share(
     share_id: str,
-    session: AsyncSession = Depends(get_sqlalchemy_session),
-    agent: CompiledGraph = Depends(get_agent),
+    session: SqlalchemySessionDep,
+    agent: AgentDep,
 ) -> Share:
     """Get a share by id"""
     share: ORMShare = await session.get(ORMShare, share_id)
@@ -66,9 +64,9 @@ async def get_share(
 async def create_share(
     payload: CreateShare,
     request: Request,
-    userid: Annotated[str | None, UserIdHeader()] = None,
-    session: AsyncSession = Depends(get_sqlalchemy_session),
-    agent: CompiledGraph = Depends(get_agent),
+    userid: UserIdHeaderDep,
+    session: SqlalchemySessionDep,
+    agent: AgentDep,
 ) -> Share:
     # TODO: maybe only get the conv.owner
     conv: ORMConv = await session.get(ORMConv, payload.source_id)
@@ -97,8 +95,8 @@ async def create_share(
 @router.delete("/{share_id}", status_code=204)
 async def delete_share(
     share_id: str,
-    session: AsyncSession = Depends(get_sqlalchemy_session),
-    userid: Annotated[str | None, UserIdHeader()] = None,
+    userid: UserIdHeaderDep,
+    session: SqlalchemySessionDep,
 ) -> None:
     # TODO: maybe only get the share.owner
     share: ORMShare = await session.get(ORMShare, share_id)
@@ -112,7 +110,7 @@ async def delete_share(
 @router.post("/{share_id}/forks", status_code=201)
 async def fork_share(
     share_id: str,
-    userid: Annotated[str | None, UserIdHeader()] = None,
+    userid: UserIdHeaderDep,
 ) -> Any:
     # TODO: implementation
     ...
