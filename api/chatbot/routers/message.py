@@ -2,11 +2,11 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
 from langchain_core.messages import BaseMessage
+from langgraph.graph.graph import CompiledGraph
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from chatbot.dependencies import UserIdHeader, get_sqlalchemy_session
+from chatbot.dependencies import UserIdHeader, get_agent, get_sqlalchemy_session
 from chatbot.models import Conversation as ORMConversation
-from chatbot.state import app_state
 
 router = APIRouter(
     prefix="/api/conversations/{conversation_id}/messages",
@@ -19,8 +19,9 @@ router = APIRouter(
 async def thumbup(
     conversation_id: str,
     message_id: str,
-    session: AsyncSession = Depends(get_sqlalchemy_session),
     userid: Annotated[str | None, UserIdHeader()] = None,
+    session: AsyncSession = Depends(get_sqlalchemy_session),
+    agent: CompiledGraph = Depends(get_agent),
 ) -> None:
     """Using message index as the uuid is in the message body which is json dumped into redis,
     and is impossible to filter on.
@@ -30,7 +31,7 @@ async def thumbup(
         raise HTTPException(status_code=403, detail="authorization error")
 
     config = {"configurable": {"thread_id": conversation_id}}
-    state = await app_state.agent.aget_state(config)
+    state = await agent.aget_state(config)
 
     # There should be only one message with the given id
     messages: list[BaseMessage] = [
@@ -40,7 +41,7 @@ async def thumbup(
         message.additional_kwargs["feedback"] = "thumbup"
     # TODO: IDK why but partial updating works
     # See <https://langchain-ai.github.io/langgraph/how-tos/human_in_the_loop/time-travel/#branch-off-a-past-state>
-    await app_state.agent.aupdate_state(
+    await agent.aupdate_state(
         config,
         {"messages": messages},
     )
@@ -50,8 +51,9 @@ async def thumbup(
 async def thumbdown(
     conversation_id: str,
     message_id: str,
-    session: AsyncSession = Depends(get_sqlalchemy_session),
     userid: Annotated[str | None, UserIdHeader()] = None,
+    session: AsyncSession = Depends(get_sqlalchemy_session),
+    agent: CompiledGraph = Depends(get_agent),
 ) -> None:
     """Using message index as the uuid is in the message body which is json dumped into redis,
     and is impossible to filter on.
@@ -61,7 +63,7 @@ async def thumbdown(
         raise HTTPException(status_code=403, detail="authorization error")
 
     config = {"configurable": {"thread_id": conversation_id}}
-    state = await app_state.agent.aget_state(config)
+    state = await agent.aget_state(config)
 
     # There should be only one message with the given id
     messages: list[BaseMessage] = [
@@ -71,7 +73,7 @@ async def thumbdown(
         message.additional_kwargs["feedback"] = "thumbdown"
     # TODO: IDK why but partial updating works
     # See <https://langchain-ai.github.io/langgraph/how-tos/human_in_the_loop/time-travel/#branch-off-a-past-state>
-    await app_state.agent.aupdate_state(
+    await agent.aupdate_state(
         config,
         {"messages": messages},
     )

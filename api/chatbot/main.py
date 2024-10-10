@@ -1,6 +1,5 @@
 """Main entrypoint for the app."""
 
-from asyncio import create_task
 from contextlib import asynccontextmanager
 from typing import Annotated
 
@@ -14,9 +13,8 @@ from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from prometheus_client import make_asgi_app
 from sqlalchemy.exc import NoResultFound
 
-from chatbot.agent import create_agent
+from chatbot.config import settings
 from chatbot.dependencies import EmailHeader, UserIdHeader, UsernameHeader
-from chatbot.metrics.db import update_psycopg_metrics
 from chatbot.models import Base
 from chatbot.routers.chat import router as chat_router
 from chatbot.routers.conversation import router as conversation_router
@@ -24,23 +22,22 @@ from chatbot.routers.message import router as message_router
 from chatbot.routers.share import router as share_router
 from chatbot.schemas import UserProfile
 from chatbot.state import app_state
+from chatbot.utils import remove_driver
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await app_state.conn_pool.open()
     # Create tables for ORM models
     async with app_state.sqlalchemy_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-    create_task(update_psycopg_metrics(app_state.conn_pool))
+    # Create checkpointer tables
+    async with AsyncPostgresSaver.from_conn_string(
+        remove_driver(str(settings.db_url))
+    ) as checkpointer:
+        await checkpointer.setup()
 
-    async with app_state.conn_pool as pool:
-        app_state.checkpointer = AsyncPostgresSaver(pool)
-        await app_state.checkpointer.setup()
-        app_state.agent = create_agent(app_state.chat_model, app_state.checkpointer)
-        yield
-    await app_state.conn_pool.close()
+    yield
 
 
 app = FastAPI(

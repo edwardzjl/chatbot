@@ -4,14 +4,14 @@ from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from langchain_core.messages import BaseMessage
+from langgraph.graph.graph import CompiledGraph
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.requests import Request
 
-from chatbot.dependencies import UserIdHeader, get_sqlalchemy_session
+from chatbot.dependencies import UserIdHeader, get_agent, get_sqlalchemy_session
 from chatbot.models import Conversation as ORMConv, Share as ORMShare
 from chatbot.schemas import ChatMessage, CreateShare, Share
-from chatbot.state import app_state
 
 
 # jlzhou: The resource name ("shares") is recommended by gemini, don't blame me.
@@ -38,13 +38,15 @@ async def get_shares(
 
 @router.get("/{share_id}")
 async def get_share(
-    share_id: str, session: AsyncSession = Depends(get_sqlalchemy_session)
+    share_id: str,
+    session: AsyncSession = Depends(get_sqlalchemy_session),
+    agent: CompiledGraph = Depends(get_agent),
 ) -> Share:
     """Get a share by id"""
     share: ORMShare = await session.get(ORMShare, share_id)
 
     config = {"configurable": share.snapshot_ref}
-    state = await app_state.agent.aget_state(config)
+    state = await agent.aget_state(config)
     lc_msgs: list[BaseMessage] = state.values.get("messages", [])
     messages = [
         (
@@ -64,8 +66,9 @@ async def get_share(
 async def create_share(
     payload: CreateShare,
     request: Request,
-    session: AsyncSession = Depends(get_sqlalchemy_session),
     userid: Annotated[str | None, UserIdHeader()] = None,
+    session: AsyncSession = Depends(get_sqlalchemy_session),
+    agent: CompiledGraph = Depends(get_agent),
 ) -> Share:
     # TODO: maybe only get the conv.owner
     conv: ORMConv = await session.get(ORMConv, payload.source_id)
@@ -73,7 +76,7 @@ async def create_share(
         raise HTTPException(status_code=403, detail="authorization error")
 
     config = {"configurable": {"thread_id": payload.source_id}}
-    state = await app_state.agent.aget_state(config)
+    state = await agent.aget_state(config)
     snapshot_ref = state.config["configurable"]
 
     share_id = uuid4()

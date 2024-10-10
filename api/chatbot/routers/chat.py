@@ -1,11 +1,18 @@
 from typing import Annotated
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, WebSocketException
+from fastapi import (
+    APIRouter,
+    Depends,
+    WebSocket,
+    WebSocketDisconnect,
+    WebSocketException,
+)
 from langchain_core.messages import AIMessage, BaseMessage, trim_messages
+from langgraph.graph.graph import CompiledGraph
 from loguru import logger
 
 from chatbot.chains.summarization import create_smry_chain
-from chatbot.dependencies import UserIdHeader
+from chatbot.dependencies import UserIdHeader, get_agent
 from chatbot.metrics.llm import input_tokens, output_tokens
 from chatbot.models import Conversation
 from chatbot.schemas import (
@@ -28,6 +35,7 @@ router = APIRouter(
 async def chat(
     websocket: WebSocket,
     userid: Annotated[str | None, UserIdHeader()] = None,
+    agent: CompiledGraph = Depends(get_agent),
 ):
     await websocket.accept()
     logger.info("websocket connected")
@@ -47,7 +55,7 @@ async def chat(
                 "conversation_id": message.conversation,
                 "userid": userid,
             }
-            async for event in app_state.agent.astream_events(
+            async for event in agent.astream_events(
                 input={"messages": [("user", message.content)]},
                 config={
                     "run_name": "chat",
@@ -109,7 +117,7 @@ async def chat(
                 "require_summarization", False
             ):
                 config = {"configurable": {"thread_id": message.conversation}}
-                state = await app_state.agent.aget_state(config)
+                state = await agent.aget_state(config)
                 msgs: list[BaseMessage] = state.values.get("messages", [])
 
                 windowed_messages = trim_messages(
