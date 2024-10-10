@@ -263,6 +263,9 @@ const Root = () => {
               <ContentCopyIcon onClick={() => onCopyClick(targetConv.url)} />
             </Tooltip>
           </div>
+          <div className="del-dialog-actions">
+            <button onClick={() => sharedDialogRef.current?.close()}>Ok</button>
+          </div>
         </dialog>
         <dialog
           id="del-conv-dialog"
