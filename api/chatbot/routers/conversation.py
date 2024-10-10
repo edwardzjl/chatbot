@@ -29,7 +29,7 @@ async def get_conversations(
     stmt = (
         select(ORMConversation)
         .where(ORMConversation.owner == userid)
-        .order_by(ORMConversation.created_at.desc())
+        .order_by(ORMConversation.pinned.desc(), ORMConversation.created_at.desc())
     )
     return (await session.scalars(stmt)).all()
 
