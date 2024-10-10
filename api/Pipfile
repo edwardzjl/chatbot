@@ -16,7 +16,7 @@ win32-setctime = {version = "*", sys_platform = "== 'win32'"}
 prometheus-client = ">=0.20.0,<1.0.0"
 # psycopg 3.2.0 introduced a bug with extras such as "binary" or "c" which is fixed in 3.2.1
 # See <https://github.com/psycopg/psycopg/issues/853>
-psycopg = {extras = ["pool"], version = ">=3.2.1,<4.0.0"}
+psycopg = ">=3.2.1,<4.0.0"
 pydantic = ">=2.0.0,<3.0.0"
 pydantic-settings = ">=2.0,<3.0"
 redis = {extras = ["hiredis"], version = ">=5.0.0,<6.0.0"}
