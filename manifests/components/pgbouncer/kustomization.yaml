@@ -1,0 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+resources:
+  - deployment.yaml
+  - service.yaml
+
+configMapGenerator:
+  - name: pgbouncer
+    envs:
+      - params.env
+
+secretGenerator:
+  - name: pgbouncer
+    envs:
+      - secret-params.env
+  - name: auth-file
+    files:
+      - auth_file
+
+images:
+  - name: bitnami/pgbouncer
+    newTag: 1.23.1

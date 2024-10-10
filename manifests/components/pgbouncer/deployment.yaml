@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: pgbouncer
+  name: pgbouncer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pgbouncer
+  template:
+    metadata:
+      labels:
+        app: pgbouncer
+    spec:
+      containers:
+        - name: session-ctn
+          image: bitnami/pgbouncer:latest
+          envFrom:
+            - configMapRef:
+                name: pgbouncer
+            - secretRef:
+                name: pgbouncer
+          ports:
+            - containerPort: 5432
+              name: session-prt
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 50m
+              memory: 50Mi
+          volumeMounts:
+            - name: auth-file
+              mountPath: /etc/pgbouncer/auth_file
+              readOnly: true
+      volumes:
+        - name: auth-file
+          secret:
+            secretName: auth-file
+      # assign pods to nodes with the postgres primary
+      affinity:
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - postgres
+                    - key: replicationRole
+                      operator: In
+                      values:
+                        - primary
+                topologyKey: kubernetes.io/hostname
+              weight: 100
+      tolerations:
+        - effect: NoSchedule
+          key: usage
+          operator: Equal
+          value: rdbms

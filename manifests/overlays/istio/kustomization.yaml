@@ -11,6 +11,7 @@ resources:
   - authorizationpolicy.yaml
 
 components:
+  - ../../components/pgbouncer
   - ../../components/monitoring
   - ../../components/auth
   # I need to tweak the scaling metrics
