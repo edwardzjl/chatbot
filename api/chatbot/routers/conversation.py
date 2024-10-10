@@ -2,11 +2,12 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
 from langchain_core.messages import BaseMessage, trim_messages
+from langgraph.graph.graph import CompiledGraph
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from chatbot.chains.summarization import create_smry_chain
-from chatbot.dependencies import UserIdHeader, get_sqlalchemy_session
+from chatbot.dependencies import UserIdHeader, get_agent, get_sqlalchemy_session
 from chatbot.models import Conversation as ORMConversation
 from chatbot.schemas import (
     ChatMessage,
@@ -40,15 +41,16 @@ async def get_conversations(
 @router.get("/{conversation_id}")
 async def get_conversation(
     conversation_id: str,
-    session: AsyncSession = Depends(get_sqlalchemy_session),
     userid: Annotated[str | None, UserIdHeader()] = None,
+    session: AsyncSession = Depends(get_sqlalchemy_session),
+    agent: CompiledGraph = Depends(get_agent),
 ) -> ConversationDetail:
     conv: ORMConversation = await session.get(ORMConversation, conversation_id)
     if conv.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
 
     config = {"configurable": {"thread_id": conversation_id}}
-    state = await app_state.agent.aget_state(config)
+    state = await agent.aget_state(config)
     lc_msgs: list[BaseMessage] = state.values.get("messages", [])
     messages = [
         (
@@ -113,15 +115,16 @@ async def delete_conversation(
 @router.post("/{conversation_id}/summarization", status_code=201)
 async def summarize(
     conversation_id: str,
-    session: AsyncSession = Depends(get_sqlalchemy_session),
     userid: Annotated[str | None, UserIdHeader()] = None,
+    session: AsyncSession = Depends(get_sqlalchemy_session),
+    agent: CompiledGraph = Depends(get_agent),
 ) -> dict[str, str]:
     conv: ORMConversation = await session.get(ORMConversation, conversation_id)
     if conv.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
 
     config = {"configurable": {"thread_id": conversation_id}}
-    state = await app_state.agent.aget_state(config)
+    state = await agent.aget_state(config)
     msgs: list[BaseMessage] = state.values.get("messages", [])
 
     windowed_messages = trim_messages(
