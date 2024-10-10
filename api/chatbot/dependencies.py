@@ -4,6 +4,7 @@ from collections.abc import AsyncGenerator
 from fastapi import Depends, Header
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from langgraph.graph.graph import CompiledGraph
+from langgraph.types import StateSnapshot
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from chatbot.agent import create_agent
@@ -55,3 +56,14 @@ async def get_agent() -> AsyncGenerator[CompiledGraph, None]:
 
 
 AgentDep = Annotated[CompiledGraph, Depends(get_agent)]
+
+
+async def get_agent_state(
+    conversation_id: str,
+    agent: Annotated[CompiledGraph, Depends(get_agent)],
+) -> StateSnapshot:
+    config = {"configurable": {"thread_id": conversation_id}}
+    return await agent.aget_state(config)
+
+
+AgentStateDep = Annotated[StateSnapshot, Depends(get_agent_state)]
