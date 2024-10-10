@@ -21,14 +21,14 @@ from chatbot.routers.conversation import router as conversation_router
 from chatbot.routers.message import router as message_router
 from chatbot.routers.share import router as share_router
 from chatbot.schemas import UserProfile
-from chatbot.state import app_state
+from chatbot.state import sqlalchemy_engine
 from chatbot.utils import remove_driver
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Create tables for ORM models
-    async with app_state.sqlalchemy_engine.begin() as conn:
+    async with sqlalchemy_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
     # Create checkpointer tables

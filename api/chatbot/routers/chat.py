@@ -22,7 +22,7 @@ from chatbot.schemas import (
     ChatMessage,
     InfoMessage,
 )
-from chatbot.state import app_state
+from chatbot.state import chat_model, sqlalchemy_session
 from chatbot.utils import utcnow
 
 router = APIRouter(
@@ -43,7 +43,7 @@ async def chat(
         try:
             payload: str = await websocket.receive_text()
             message = ChatMessage.model_validate_json(payload)
-            async with app_state.sqlalchemy_session() as session:
+            async with sqlalchemy_session() as session:
                 conv: Conversation = await session.get(
                     Conversation, message.conversation
                 )
@@ -108,7 +108,7 @@ async def chat(
                         ).inc(msg.usage_metadata["output_tokens"])
 
             conv.last_message_at = utcnow()
-            async with app_state.sqlalchemy_session() as session:
+            async with sqlalchemy_session() as session:
                 conv = await session.merge(conv)
                 await session.commit()
 
@@ -126,14 +126,14 @@ async def chat(
                     max_tokens=20,
                     start_on="human",  # This means that the first message should be from the user after trimming.
                 )
-                smry_chain = create_smry_chain(app_state.chat_model)
+                smry_chain = create_smry_chain(chat_model)
                 title_raw: str = await smry_chain.ainvoke(
                     input={"messages": windowed_messages},
                     config={"metadata": chain_metadata},
                 )
                 title = title_raw.strip('"')
                 conv.title = title
-                async with app_state.sqlalchemy_session() as session:
+                async with sqlalchemy_session() as session:
                     conv = await session.merge(conv)
                     await session.commit()
 
