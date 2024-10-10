@@ -1,18 +1,14 @@
-from typing import Annotated
-
 from fastapi import (
     APIRouter,
-    Depends,
     WebSocket,
     WebSocketDisconnect,
     WebSocketException,
 )
 from langchain_core.messages import AIMessage, BaseMessage, trim_messages
-from langgraph.graph.graph import CompiledGraph
 from loguru import logger
 
 from chatbot.chains.summarization import create_smry_chain
-from chatbot.dependencies import UserIdHeader, get_agent
+from chatbot.dependencies import AgentDep, UserIdHeaderDep
 from chatbot.metrics.llm import input_tokens, output_tokens
 from chatbot.models import Conversation
 from chatbot.schemas import (
@@ -34,8 +30,8 @@ router = APIRouter(
 @router.websocket("")
 async def chat(
     websocket: WebSocket,
-    userid: Annotated[str | None, UserIdHeader()] = None,
-    agent: CompiledGraph = Depends(get_agent),
+    userid: UserIdHeaderDep,
+    agent: AgentDep,
 ):
     await websocket.accept()
     logger.info("websocket connected")

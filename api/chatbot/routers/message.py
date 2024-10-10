@@ -1,11 +1,7 @@
-from typing import Annotated
-
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException
 from langchain_core.messages import BaseMessage
-from langgraph.graph.graph import CompiledGraph
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from chatbot.dependencies import UserIdHeader, get_agent, get_sqlalchemy_session
+from chatbot.dependencies import AgentDep, SqlalchemySessionDep, UserIdHeaderDep
 from chatbot.models import Conversation as ORMConversation
 
 router = APIRouter(
@@ -19,9 +15,9 @@ router = APIRouter(
 async def thumbup(
     conversation_id: str,
     message_id: str,
-    userid: Annotated[str | None, UserIdHeader()] = None,
-    session: AsyncSession = Depends(get_sqlalchemy_session),
-    agent: CompiledGraph = Depends(get_agent),
+    userid: UserIdHeaderDep,
+    session: SqlalchemySessionDep,
+    agent: AgentDep,
 ) -> None:
     """Using message index as the uuid is in the message body which is json dumped into redis,
     and is impossible to filter on.
@@ -51,9 +47,9 @@ async def thumbup(
 async def thumbdown(
     conversation_id: str,
     message_id: str,
-    userid: Annotated[str | None, UserIdHeader()] = None,
-    session: AsyncSession = Depends(get_sqlalchemy_session),
-    agent: CompiledGraph = Depends(get_agent),
+    userid: UserIdHeaderDep,
+    session: SqlalchemySessionDep,
+    agent: AgentDep,
 ) -> None:
     """Using message index as the uuid is in the message body which is json dumped into redis,
     and is impossible to filter on.
