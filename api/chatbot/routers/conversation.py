@@ -16,7 +16,7 @@ from chatbot.schemas import (
     CreateConversation,
     UpdateConversation,
 )
-from chatbot.state import app_state
+from chatbot.state import chat_model
 
 router = APIRouter(
     prefix="/api/conversations",
@@ -134,7 +134,7 @@ async def summarize(
         start_on="human",  # This means that the first message should be from the user after trimming.
     )
 
-    smry_chain = create_smry_chain(app_state.chat_model)
+    smry_chain = create_smry_chain(chat_model)
     title_raw: str = await smry_chain.ainvoke(
         input={"messages": windowed_messages},
         config={
