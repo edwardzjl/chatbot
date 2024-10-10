@@ -3,7 +3,7 @@ from langchain_core.messages import BaseMessage, trim_messages
 from sqlalchemy import select
 
 from chatbot.chains.summarization import create_smry_chain
-from chatbot.dependencies import AgentDep, SqlalchemySessionDep, UserIdHeaderDep
+from chatbot.dependencies import AgentStateDep, SqlalchemySessionDep, UserIdHeaderDep
 from chatbot.models import Conversation as ORMConversation
 from chatbot.schemas import (
     ChatMessage,
@@ -39,15 +39,13 @@ async def get_conversation(
     conversation_id: str,
     userid: UserIdHeaderDep,
     session: SqlalchemySessionDep,
-    agent: AgentDep,
+    agent_state: AgentStateDep,
 ) -> ConversationDetail:
     conv: ORMConversation = await session.get(ORMConversation, conversation_id)
     if conv.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
 
-    config = {"configurable": {"thread_id": conversation_id}}
-    state = await agent.aget_state(config)
-    lc_msgs: list[BaseMessage] = state.values.get("messages", [])
+    lc_msgs: list[BaseMessage] = agent_state.values.get("messages", [])
     messages = [
         (
             ChatMessage.from_lc(
@@ -113,15 +111,13 @@ async def summarize(
     conversation_id: str,
     userid: UserIdHeaderDep,
     session: SqlalchemySessionDep,
-    agent: AgentDep,
+    agent_state: AgentStateDep,
 ) -> dict[str, str]:
     conv: ORMConversation = await session.get(ORMConversation, conversation_id)
     if conv.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
 
-    config = {"configurable": {"thread_id": conversation_id}}
-    state = await agent.aget_state(config)
-    msgs: list[BaseMessage] = state.values.get("messages", [])
+    msgs: list[BaseMessage] = agent_state.values.get("messages", [])
 
     windowed_messages = trim_messages(
         msgs,

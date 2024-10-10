@@ -7,7 +7,7 @@ from langchain_core.messages import BaseMessage
 from sqlalchemy import select
 from starlette.requests import Request
 
-from chatbot.dependencies import AgentDep, SqlalchemySessionDep, UserIdHeaderDep
+from chatbot.dependencies import AgentStateDep, SqlalchemySessionDep, UserIdHeaderDep
 from chatbot.models import Conversation as ORMConv, Share as ORMShare
 from chatbot.schemas import ChatMessage, CreateShare, Share
 
@@ -38,14 +38,12 @@ async def get_shares(
 async def get_share(
     share_id: str,
     session: SqlalchemySessionDep,
-    agent: AgentDep,
+    agent_state: AgentStateDep,
 ) -> Share:
     """Get a share by id"""
     share: ORMShare = await session.get(ORMShare, share_id)
 
-    config = {"configurable": share.snapshot_ref}
-    state = await agent.aget_state(config)
-    lc_msgs: list[BaseMessage] = state.values.get("messages", [])
+    lc_msgs: list[BaseMessage] = agent_state.values.get("messages", [])
     messages = [
         (
             ChatMessage.from_lc(lc_message=message, conv_id=share_id, from_=share.owner)
@@ -66,16 +64,14 @@ async def create_share(
     request: Request,
     userid: UserIdHeaderDep,
     session: SqlalchemySessionDep,
-    agent: AgentDep,
+    agent_state: AgentStateDep,
 ) -> Share:
     # TODO: maybe only get the conv.owner
     conv: ORMConv = await session.get(ORMConv, payload.source_id)
     if conv.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
 
-    config = {"configurable": {"thread_id": payload.source_id}}
-    state = await agent.aget_state(config)
-    snapshot_ref = state.config["configurable"]
+    snapshot_ref = agent_state.config["configurable"]
 
     share_id = uuid4()
     shared_url = urljoin(str(request.url), f"/share/{share_id}")
