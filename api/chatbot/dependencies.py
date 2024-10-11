@@ -10,7 +10,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from chatbot.agent import create_agent
 from chatbot.config import settings
 from chatbot.state import chat_model, sqlalchemy_session
-from chatbot.utils import remove_driver
 
 
 def UserIdHeader(alias: str | None = None, **kwargs):
@@ -50,7 +49,7 @@ SqlalchemySessionDep = Annotated[AsyncSession, Depends(get_sqlalchemy_session)]
 
 async def get_agent() -> AsyncGenerator[CompiledGraph, None]:
     async with AsyncPostgresSaver.from_conn_string(
-        remove_driver(str(settings.db_url))
+        settings.psycopg_url
     ) as checkpointer:
         yield create_agent(chat_model, checkpointer)
 
