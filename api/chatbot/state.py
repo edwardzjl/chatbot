@@ -19,10 +19,4 @@ sqlalchemy_session = sessionmaker(
     autoflush=False,
     class_=AsyncSession,
 )
-chat_model = ChatOpenAI(
-    openai_api_base=str(settings.llm.url),
-    model=settings.llm.model,
-    openai_api_key=settings.llm.creds,
-    max_tokens=1024,
-    streaming=True,
-)
+chat_model = ChatOpenAI(**settings.llm)
