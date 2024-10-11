@@ -21,7 +21,6 @@ from chatbot.routers.message import router as message_router
 from chatbot.routers.share import router as share_router
 from chatbot.schemas import UserProfile
 from chatbot.state import sqlalchemy_engine
-from chatbot.utils import remove_driver
 
 
 @asynccontextmanager
@@ -32,7 +31,7 @@ async def lifespan(app: FastAPI):
 
     # Create checkpointer tables
     async with AsyncPostgresSaver.from_conn_string(
-        remove_driver(str(settings.db_url))
+        settings.psycopg_url
     ) as checkpointer:
         await checkpointer.setup()
 
