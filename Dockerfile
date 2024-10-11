@@ -20,7 +20,8 @@ FROM python:3.12-slim as app
 WORKDIR /app
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
-  libpq5
+  libpq5 \
+  && apt-get clean && rm -rf /var/lib/apt/lists /var/cache/apt/archives
 COPY --from=backend-builder /.venv ./.venv
 ENV PATH="/app/.venv/bin:$PATH"
 COPY api/ .
