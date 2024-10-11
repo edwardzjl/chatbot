@@ -19,9 +19,9 @@ spec:
           image: bitnami/pgbouncer:latest
           envFrom:
             - configMapRef:
-                name: pgbouncer
+                name: pgbouncer-bitnami
             - secretRef:
-                name: pgbouncer
+                name: pgbouncer-bitnami
           ports:
             - containerPort: 5432
               name: session-prt
@@ -31,13 +31,20 @@ spec:
               cpu: 50m
               memory: 50Mi
           volumeMounts:
-            - name: auth-file
-              mountPath: /etc/pgbouncer/auth_file
+            - name: config-vol
+              mountPath: /bitnami/pgbouncer/conf/
               readOnly: true
       volumes:
-        - name: auth-file
-          secret:
-            secretName: auth-file
+        - name: config-vol  # cannot name it to 'config' or kubernetes will not be able to find it.
+          projected:
+            sources:
+              - configMap:
+                  name: pgbouncer
+              - secret:
+                  name: pgbouncer
+                  items:
+                    - key: auth_file
+                      path: userlist.txt
       # assign pods to nodes with the postgres primary
       affinity:
         podAffinity:
