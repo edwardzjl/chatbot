@@ -37,20 +37,63 @@ class TestSettings(unittest.TestCase):
         settings = Settings(llm=custom_llm)
         self.assertEqual(settings.llm, custom_llm)
 
-    def test_psycopg_url_default(self):
+    def test_postgres_primary_url_default(self):
         settings = Settings()
-        expected = "postgresql://postgres:postgres@localhost:5432/"
-        self.assertEqual(settings.psycopg_url, expected)
+        expected = "postgresql+psycopg://postgres:postgres@localhost:5432/"
+        self.assertEqual(str(settings.postgres_primary_url), expected)
 
-    def test_psycopg_url_custom(self):
-        custom_url = "postgresql+psycopg2://custom_user:custom_pass@localhost/custom_db"
-        settings = Settings(db_url=custom_url)
-        expected = "postgresql://custom_user:custom_pass@localhost/custom_db"
-        self.assertEqual(settings.psycopg_url, expected)
+    def test_postgres_primary_url_custom(self):
+        custom_primary_url = (
+            "postgresql+psycopg://primary_user:primary_pass@localhost/primary_db"
+        )
+        settings = Settings(postgres_primary_url=custom_primary_url)
+        expected = "postgresql+psycopg://primary_user:primary_pass@localhost/primary_db"
+        self.assertEqual(str(settings.postgres_primary_url), expected)
+
+    def test_postgres_standby_url_default(self):
+        settings = Settings()
+        expected = "postgresql+psycopg://postgres:postgres@localhost:5432/"
+        self.assertEqual(str(settings.postgres_standby_url), expected)
+
+    def test_postgres_standby_url_custom(self):
+        custom_standby_url = (
+            "postgresql+psycopg://standby_user:standby_pass@localhost/standby_db"
+        )
+        settings = Settings(postgres_standby_url=custom_standby_url)
+        expected = "postgresql+psycopg://standby_user:standby_pass@localhost/standby_db"
+        self.assertEqual(str(settings.postgres_standby_url), expected)
 
     def test_invalid_db_url(self):
         with self.assertRaises(ValidationError):
-            Settings(db_url="invalid_url")
+            Settings(postgres_primary_url="invalid_url")
+        with self.assertRaises(ValidationError):
+            Settings(postgres_standby_url="invalid_url")
+
+    def test_psycopg_primary_url_default(self):
+        settings = Settings()
+        expected = "postgresql://postgres:postgres@localhost:5432/"
+        self.assertEqual(settings.psycopg_primary_url, expected)
+
+    def test_psycopg_primary_url_custom(self):
+        custom_primary_url = (
+            "postgresql+psycopg://primary_user:primary_pass@localhost/primary_db"
+        )
+        settings = Settings(postgres_primary_url=custom_primary_url)
+        expected = "postgresql://primary_user:primary_pass@localhost/primary_db"
+        self.assertEqual(settings.psycopg_primary_url, expected)
+
+    def test_psycopg_standby_url_default(self):
+        settings = Settings()
+        expected = "postgresql://postgres:postgres@localhost:5432/"
+        self.assertEqual(settings.psycopg_standby_url, expected)
+
+    def test_psycopg_standby_url_custom(self):
+        custom_standby_url = (
+            "postgresql+psycopg://standby_user:standby_pass@localhost/standby_db"
+        )
+        settings = Settings(postgres_standby_url=custom_standby_url)
+        expected = "postgresql://standby_user:standby_pass@localhost/standby_db"
+        self.assertEqual(settings.psycopg_standby_url, expected)
 
 
 if __name__ == "__main__":

@@ -31,7 +31,7 @@ async def lifespan(app: FastAPI):
 
     # Create checkpointer tables
     async with AsyncPostgresSaver.from_conn_string(
-        settings.psycopg_url
+        settings.psycopg_primary_url
     ) as checkpointer:
         await checkpointer.setup()
 

@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from chatbot.agent import create_agent
 from chatbot.config import settings
-from chatbot.state import chat_model, sqlalchemy_session
+from chatbot.state import chat_model, sqlalchemy_session, sqlalchemy_ro_session
 
 
 def UserIdHeader(alias: str | None = None, **kwargs):
@@ -47,9 +47,17 @@ async def get_sqlalchemy_session() -> AsyncGenerator[AsyncSession, None]:
 SqlalchemySessionDep = Annotated[AsyncSession, Depends(get_sqlalchemy_session)]
 
 
+async def get_sqlalchemy_ro_session() -> AsyncGenerator[AsyncSession, None]:
+    async with sqlalchemy_ro_session() as session:
+        yield session
+
+
+SqlalchemyROSessionDep = Annotated[AsyncSession, Depends(get_sqlalchemy_ro_session)]
+
+
 async def get_agent() -> AsyncGenerator[CompiledGraph, None]:
     async with AsyncPostgresSaver.from_conn_string(
-        settings.psycopg_url
+        settings.psycopg_primary_url
     ) as checkpointer:
         yield create_agent(chat_model, checkpointer)
 
