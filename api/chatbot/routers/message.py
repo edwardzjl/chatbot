@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from langchain_core.messages import BaseMessage
 
-from chatbot.dependencies import AgentDep, SqlalchemySessionDep, UserIdHeaderDep
+from chatbot.dependencies import AgentDep, SqlalchemyROSessionDep, UserIdHeaderDep
 from chatbot.models import Conversation as ORMConversation
 
 router = APIRouter(
@@ -16,7 +16,7 @@ async def thumbup(
     conversation_id: str,
     message_id: str,
     userid: UserIdHeaderDep,
-    session: SqlalchemySessionDep,
+    session: SqlalchemyROSessionDep,
     agent: AgentDep,
 ) -> None:
     """Using message index as the uuid is in the message body which is json dumped into redis,
@@ -48,7 +48,7 @@ async def thumbdown(
     conversation_id: str,
     message_id: str,
     userid: UserIdHeaderDep,
-    session: SqlalchemySessionDep,
+    session: SqlalchemyROSessionDep,
     agent: AgentDep,
 ) -> None:
     """Using message index as the uuid is in the message body which is json dumped into redis,

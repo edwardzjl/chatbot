@@ -29,12 +29,22 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_nested_delimiter="__")
 
     llm: dict[str, Any] = Field(default_factory=lambda: {"api_key": "NOT_SET"})
-    db_url: PostgresDsn = "postgresql+psycopg://postgres:postgres@localhost:5432/"
-    """Database url. Must be a valid postgresql connection string."""
+    postgres_primary_url: PostgresDsn = (
+        "postgresql+psycopg://postgres:postgres@localhost:5432/"
+    )
+    """Primary database url. Read/Write. Must be a valid postgresql connection string."""
+    postgres_standby_url: PostgresDsn = postgres_primary_url
+    """Standby database url. Read Only. If present must be a valid postgresql connection string.
+    Defaults to `postgres_primary_url`.
+    """
 
     @property
-    def psycopg_url(self) -> str:
-        return remove_postgresql_variants(str(self.db_url))
+    def psycopg_primary_url(self) -> str:
+        return remove_postgresql_variants(str(self.postgres_primary_url))
+
+    @property
+    def psycopg_standby_url(self) -> str:
+        return remove_postgresql_variants(str(self.postgres_standby_url))
 
 
 settings = Settings()

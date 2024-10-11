@@ -3,7 +3,12 @@ from langchain_core.messages import BaseMessage, trim_messages
 from sqlalchemy import select
 
 from chatbot.chains.summarization import create_smry_chain
-from chatbot.dependencies import AgentStateDep, SqlalchemySessionDep, UserIdHeaderDep
+from chatbot.dependencies import (
+    AgentStateDep,
+    SqlalchemyROSessionDep,
+    SqlalchemySessionDep,
+    UserIdHeaderDep,
+)
 from chatbot.models import Conversation as ORMConversation
 from chatbot.schemas import (
     ChatMessage,
@@ -23,7 +28,7 @@ router = APIRouter(
 @router.get("")
 async def get_conversations(
     userid: UserIdHeaderDep,
-    session: SqlalchemySessionDep,
+    session: SqlalchemyROSessionDep,
 ) -> list[Conversation]:
     # TODO: support pagination
     stmt = (
@@ -38,7 +43,7 @@ async def get_conversations(
 async def get_conversation(
     conversation_id: str,
     userid: UserIdHeaderDep,
-    session: SqlalchemySessionDep,
+    session: SqlalchemyROSessionDep,
     agent_state: AgentStateDep,
 ) -> ConversationDetail:
     conv: ORMConversation = await session.get(ORMConversation, conversation_id)
@@ -110,7 +115,7 @@ async def delete_conversation(
 async def summarize(
     conversation_id: str,
     userid: UserIdHeaderDep,
-    session: SqlalchemySessionDep,
+    session: SqlalchemyROSessionDep,
     agent_state: AgentStateDep,
 ) -> dict[str, str]:
     conv: ORMConversation = await session.get(ORMConversation, conversation_id)

@@ -7,7 +7,12 @@ from langchain_core.messages import BaseMessage
 from sqlalchemy import select
 from starlette.requests import Request
 
-from chatbot.dependencies import AgentDep, SqlalchemySessionDep, UserIdHeaderDep
+from chatbot.dependencies import (
+    AgentDep,
+    SqlalchemyROSessionDep,
+    SqlalchemySessionDep,
+    UserIdHeaderDep,
+)
 from chatbot.models import Conversation as ORMConv, Share as ORMShare
 from chatbot.schemas import ChatMessage, CreateShare, Share
 
@@ -22,7 +27,7 @@ router = APIRouter(
 @router.get("")
 async def get_shares(
     userid: UserIdHeaderDep,
-    session: SqlalchemySessionDep,
+    session: SqlalchemyROSessionDep,
 ) -> list[Share]:
     """Get shares by userid"""
     # TODO: support pagination
@@ -37,7 +42,7 @@ async def get_shares(
 @router.get("/{share_id}")
 async def get_share(
     share_id: str,
-    session: SqlalchemySessionDep,
+    session: SqlalchemyROSessionDep,
     agent: AgentDep,
 ) -> Share:
     """Get a share by id"""
