@@ -24,8 +24,15 @@ class EndpointFilter(logging.Filter):
 
 
 uvicorn_logger = logging.getLogger("uvicorn.access")
-uvicorn_logger.addFilter(EndpointFilter(path="/api/healthz"))
+# API doc endpoints
 uvicorn_logger.addFilter(EndpointFilter(path="/api/openapi.json"))
 uvicorn_logger.addFilter(EndpointFilter(path="/api/docs"))
 uvicorn_logger.addFilter(EndpointFilter(path="/api/redoc"))
+# Health and metrics endpoints
+uvicorn_logger.addFilter(EndpointFilter(path="/api/healthz"))
 uvicorn_logger.addFilter(EndpointFilter(path="/metrics"))
+# Static file endpoints
+uvicorn_logger.addFilter(EndpointFilter(path="/static/"))
+uvicorn_logger.addFilter(EndpointFilter(path="/favicon.ico"))
+uvicorn_logger.addFilter(EndpointFilter(path="/logo192.pgn"))
+uvicorn_logger.addFilter(EndpointFilter(path="/manifest.json"))
