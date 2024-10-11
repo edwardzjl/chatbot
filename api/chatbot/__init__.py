@@ -34,5 +34,5 @@ uvicorn_logger.addFilter(EndpointFilter(path="/metrics"))
 # Static file endpoints
 uvicorn_logger.addFilter(EndpointFilter(path="/static/"))
 uvicorn_logger.addFilter(EndpointFilter(path="/favicon.ico"))
-uvicorn_logger.addFilter(EndpointFilter(path="/logo192.pgn"))
+uvicorn_logger.addFilter(EndpointFilter(path="/logo192.png"))
 uvicorn_logger.addFilter(EndpointFilter(path="/manifest.json"))
