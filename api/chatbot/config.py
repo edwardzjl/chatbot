@@ -1,7 +1,8 @@
 import re
 from typing import Any
+from typing_extensions import Self
 
-from pydantic import Field, PostgresDsn
+from pydantic import Field, PostgresDsn, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -33,10 +34,16 @@ class Settings(BaseSettings):
         "postgresql+psycopg://postgres:postgres@localhost:5432/"
     )
     """Primary database url. Read/Write. Must be a valid postgresql connection string."""
-    postgres_standby_url: PostgresDsn = postgres_primary_url
+    postgres_standby_url: PostgresDsn | None = None
     """Standby database url. Read Only. If present must be a valid postgresql connection string.
     Defaults to `postgres_primary_url`.
     """
+
+    @model_validator(mode="after")
+    def set_default_standby_url(self) -> Self:
+        if self.postgres_standby_url is None:
+            self.postgres_standby_url = self.postgres_primary_url
+        return self
 
     @property
     def psycopg_primary_url(self) -> str:
