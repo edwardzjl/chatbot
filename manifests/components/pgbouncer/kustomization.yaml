@@ -7,16 +7,21 @@ resources:
 
 configMapGenerator:
   - name: pgbouncer
+    files:
+      - pgbouncer.ini
+  # The bitnami pgbouncer image requires some environment variables to work, although they are overridden by the config file
+  - name: pgbouncer-bitnami
     envs:
       - params.env
 
 secretGenerator:
   - name: pgbouncer
-    envs:
-      - secret-params.env
-  - name: auth-file
     files:
       - auth_file
+  # The bitnami pgbouncer image requires some environment variables to work, although they are overridden by the config file
+  - name: pgbouncer-bitnami
+    envs:
+      - secret-params.env
 
 images:
   - name: bitnami/pgbouncer
