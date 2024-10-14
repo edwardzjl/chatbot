@@ -9,14 +9,14 @@ COPY web/ ./
 RUN yarn build
 
 
-FROM python:3.12 as backend-builder
+FROM python:3.13 as backend-builder
 ENV PIPENV_VENV_IN_PROJECT=1
 RUN pip install pipenv
 COPY api/Pipfile api/Pipfile.lock ./
 RUN pipenv install --deploy --categories="packages prod-packages"
 
 
-FROM python:3.12-slim as app
+FROM python:3.13-slim as app
 WORKDIR /app
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
