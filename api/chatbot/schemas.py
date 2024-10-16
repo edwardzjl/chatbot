@@ -19,15 +19,12 @@ class ChatMessage(BaseModel):
     """Conversation id"""
     from_: str | None = Field(None, alias="from")
     """A transient field to determine conversation id."""
-    content: str | None = None
+    content: str | list[str | dict] | None = None
     type: Literal[
         "text", "stream/start", "stream/text", "stream/end", "info", "error"
     ] = "text"
     feedback: Literal["thumbup", "thumbdown", None] = None
     additional_kwargs: dict[str, Any] | None = None
-    # sent_at is not an important information for the user, as far as I can tell.
-    # But it introduces some complexity in the code, so I'm removing it for now.
-    # sent_at: datetime = Field(default_factory=datetime.now)
 
     @staticmethod
     def from_lc(
@@ -36,11 +33,11 @@ class ChatMessage(BaseModel):
         additional_kwargs = deepcopy(lc_message.additional_kwargs)
         return ChatMessage(
             parent_id=additional_kwargs.pop("parent_id", None),
-            id=lc_message.id if lc_message.id else str(uuid4()),
-            conversation=conv_id,
+            id=lc_message.id or str(uuid4()),
+            conversation=conv_id or additional_kwargs.pop("session_id", None),
             from_=from_ or lc_message.type,
             content=lc_message.content,
-            type="text",
+            type=additional_kwargs.pop("type", "text"),
             feedback=additional_kwargs.pop("feedback", None),
             additional_kwargs=additional_kwargs,
         )
@@ -51,9 +48,12 @@ class ChatMessage(BaseModel):
         """
         additional_kwargs = (self.additional_kwargs or {}) | {
             "type": self.type,
+            "session_id": self.conversation,
         }
         if self.parent_id:
             additional_kwargs["parent_id"] = self.parent_id
+        if self.feedback:
+            additional_kwargs["feedback"] = self.feedback
         match self.from_:
             case "system":
                 return SystemMessage(
