@@ -9,8 +9,35 @@ spec:
   rules:
     - to:
         - operation:
-            paths:
-              - /*
+            notPaths:
+              - /metrics
+        - operation:
+            notPaths:
+              - /share/*
+        - operation:
+            notPaths:
+              - /api/shares/*
+        - operation:
+            notPaths:
+              - /static/*
+        - operation:
+            notPaths:
+              - /favicon.ico
+        - operation:
+            notPaths:
+              - /manifest.json
+  selector:
+    matchLabels:
+      app: chatbot
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: default-allow-all
+spec:
+  action: ALLOW
+  rules:
+    - {}
   selector:
     matchLabels:
       app: chatbot

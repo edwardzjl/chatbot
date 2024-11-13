@@ -6,12 +6,40 @@ spec:
   action: CUSTOM
   provider:
     name: chatbot-oauth2-proxy
+  rules:
+    - to:
+        - operation:
+            notPaths:
+              - /metrics
+        - operation:
+            notPaths:
+              - /share/*
+        - operation:
+            notPaths:
+              - /api/shares/*
+        - operation:
+            notPaths:
+              - /static/*
+        - operation:
+            notPaths:
+              - /favicon.ico
+        - operation:
+            notPaths:
+              - /manifest.json
   targetRefs:
     - kind: Service
       group: ""
       name: chatbot
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: default-allow-all
+spec:
+  action: ALLOW
   rules:
-    - to:
-        - operation:
-            paths:
-              - /*
+    - {}
+  targetRefs:
+    - kind: Service
+      group: ""
+      name: chatbot
