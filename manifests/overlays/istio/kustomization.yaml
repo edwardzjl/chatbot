@@ -8,11 +8,10 @@ kind: Kustomization
 resources:
   - ../../base
   - virtual-service.yaml
-  - authorizationpolicy.yaml
 
 components:
   - ../../components/pgbouncer
   - ../../components/monitoring
-  - ../../components/auth
+  - ../../components/ext-authz
   # I need to tweak the scaling metrics
   # - ../../components/autoscaler
