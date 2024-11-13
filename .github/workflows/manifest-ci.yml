@@ -27,5 +27,7 @@ jobs:
       - run: curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
       - run: echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check
       - run: chmod +x kubectl
-      - run: ./kubectl kustomize ./manifests/overlays/istio
-      - run: ./kubectl kustomize ./manifests/overlays/knative-serving
+      - run: ./kubectl kustomize ./manifests/overlays/istio-ambient
+      - run: ./kubectl kustomize ./manifests/overlays/istio-sidecar
+      # knative overlay is disabled as it's not actively developed for now.
+      # - run: ./kubectl kustomize ./manifests/overlays/knative-serving
