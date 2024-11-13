@@ -6,12 +6,14 @@ namespace: jlzhou-chatbot
 resources:
   - namespace.yaml
   - ../../base
-  - authorizationpolicy.yaml
 
 components:
   - ../../components/pgbouncer
   - ../../components/monitoring
   - ../../components/ingress/gateway-api
-  - ../../components/ext-authz/provider/oauth2-proxy
+  - ../../components/ext-authz
   # I need to tweak the scaling metrics
   # - ../../components/autoscaler
+
+patches:
+  - path: authorizationpolicy.yaml
