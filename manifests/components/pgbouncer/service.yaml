@@ -8,5 +8,5 @@ spec:
     app: pgbouncer
   ports:
     - port: 5432
-      name: session-prt
+      name: tcp-session-prt
       targetPort: session-prt
