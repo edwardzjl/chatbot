@@ -6,13 +6,12 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: redis
+      app.kubernetes.io/name: redis
   template:
     metadata:
-      annotations:
-        sidecar.istio.io/inject: "false"
       labels:
-        app: redis
+        app.kubernetes.io/name: redis
+        sidecar.istio.io/inject: "false"
     spec:
       containers:
         - name: redis

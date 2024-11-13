@@ -1,0 +1,17 @@
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: chatbot-ext-authz
+spec:
+  action: CUSTOM
+  provider:
+    name: chatbot-oauth2-proxy
+  targetRefs:
+    - kind: Service
+      group: ""
+      name: chatbot
+  rules:
+    - to:
+        - operation:
+            paths:
+              - /*
