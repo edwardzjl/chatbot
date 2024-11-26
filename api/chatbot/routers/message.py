@@ -1,8 +1,12 @@
+from typing import TYPE_CHECKING
+
 from fastapi import APIRouter, HTTPException
-from langchain_core.messages import BaseMessage
 
 from chatbot.dependencies import AgentDep, SqlalchemyROSessionDep, UserIdHeaderDep
 from chatbot.models import Conversation as ORMConversation
+
+if TYPE_CHECKING:
+    from langchain_core.messages import BaseMessage
 
 router = APIRouter(
     prefix="/api/conversations/{conversation_id}/messages",
