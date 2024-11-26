@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from copy import deepcopy
+
 from datetime import datetime
 from typing import Any, Literal
 from uuid import UUID, uuid4
@@ -28,8 +31,8 @@ class ChatMessage(BaseModel):
 
     @staticmethod
     def from_lc(
-        lc_message: BaseMessage, conv_id: str, from_: str = None
-    ) -> "ChatMessage":
+        lc_message: BaseMessage, conv_id: str, from_: str | None = None
+    ) -> ChatMessage:
         additional_kwargs = deepcopy(lc_message.additional_kwargs)
         return ChatMessage(
             parent_id=additional_kwargs.pop("parent_id", None),
@@ -75,14 +78,14 @@ class ChatMessage(BaseModel):
                 )
 
     def model_dump(
-        self, by_alias: bool = True, exclude_none: bool = True, **kwargs
+        self, *, by_alias: bool = True, exclude_none: bool = True, **kwargs
     ) -> dict[str, Any]:
         return super().model_dump(
             by_alias=by_alias, exclude_none=exclude_none, **kwargs
         )
 
     def model_dump_json(
-        self, by_alias: bool = True, exclude_none: bool = True, **kwargs
+        self, *, by_alias: bool = True, exclude_none: bool = True, **kwargs
     ) -> str:
         return super().model_dump_json(
             by_alias=by_alias, exclude_none=exclude_none, **kwargs

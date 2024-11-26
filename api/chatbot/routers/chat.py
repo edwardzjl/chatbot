@@ -12,9 +12,9 @@ from chatbot.dependencies import AgentDep, UserIdHeaderDep
 from chatbot.metrics.llm import input_tokens, output_tokens
 from chatbot.models import Conversation
 from chatbot.schemas import (
+    AIChatEndMessage,
     AIChatMessage,
     AIChatStartMessage,
-    AIChatEndMessage,
     ChatMessage,
     InfoMessage,
 )
@@ -144,5 +144,5 @@ async def chat(
         except WebSocketDisconnect:
             logger.info("websocket disconnected")
             return
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.exception("Something goes wrong: {}", e)

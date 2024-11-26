@@ -1,6 +1,8 @@
-from collections.abc import AsyncGenerator
+from __future__ import annotations
+
 from functools import lru_cache
-from typing import Annotated, Any
+from typing import TYPE_CHECKING, Annotated, Any
+from urllib.parse import urljoin
 
 import requests
 from fastapi import Depends, Header
@@ -10,11 +12,13 @@ from langgraph.graph.graph import CompiledGraph
 from langgraph.types import StateSnapshot
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
-from urllib.parse import urljoin
 
 from chatbot.agent import create_agent
 from chatbot.config import settings
-from chatbot.state import chat_model, sqlalchemy_session, sqlalchemy_ro_session
+from chatbot.state import chat_model, sqlalchemy_ro_session, sqlalchemy_session
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
 
 
 def UserIdHeader(alias: str | None = None, **kwargs):

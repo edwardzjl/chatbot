@@ -1,9 +1,8 @@
+from typing import TYPE_CHECKING, Any
 from urllib.parse import urljoin
 from uuid import uuid4
-from typing import Any
 
 from fastapi import APIRouter, HTTPException
-from langchain_core.messages import BaseMessage
 from sqlalchemy import select
 from starlette.requests import Request
 
@@ -13,9 +12,12 @@ from chatbot.dependencies import (
     SqlalchemySessionDep,
     UserIdHeaderDep,
 )
-from chatbot.models import Conversation as ORMConv, Share as ORMShare
+from chatbot.models import Conversation as ORMConv
+from chatbot.models import Share as ORMShare
 from chatbot.schemas import ChatMessage, CreateShare, Share
 
+if TYPE_CHECKING:
+    from langchain_core.messages import BaseMessage
 
 # jlzhou: The resource name ("shares") is recommended by gemini, don't blame me.
 router = APIRouter(

@@ -7,7 +7,6 @@ from sqlalchemy.pool import NullPool
 
 from chatbot.config import settings
 
-
 sqlalchemy_engine = create_async_engine(
     str(settings.postgres_primary_url),
     poolclass=NullPool,

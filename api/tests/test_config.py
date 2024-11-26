@@ -1,8 +1,7 @@
 import unittest
 
-from pydantic import ValidationError
-
 from chatbot.config import Settings, remove_postgresql_variants
+from pydantic import ValidationError
 
 
 class TestRemovePostgresqlVariants(unittest.TestCase):

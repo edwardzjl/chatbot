@@ -17,5 +17,4 @@ def create_smry_chain(chat_model):
         ]
     )
 
-    smry_chain = tmpl | chat_model | StrOutputParser()
-    return smry_chain
+    return tmpl | chat_model | StrOutputParser()

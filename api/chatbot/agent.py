@@ -1,12 +1,16 @@
-from datetime import date
-from typing import Callable
+from __future__ import annotations
 
-from langchain_core.language_models import BaseChatModel
+import datetime
+from typing import TYPE_CHECKING, Callable
+
 from langchain_core.messages import BaseMessage, trim_messages
 from langchain_core.prompts import ChatPromptTemplate
-from langgraph.checkpoint.base import BaseCheckpointSaver
-from langgraph.graph import StateGraph, MessagesState, START, END
-from langgraph.graph.graph import CompiledGraph
+from langgraph.graph import END, START, MessagesState, StateGraph
+
+if TYPE_CHECKING:
+    from langchain_core.language_models import BaseChatModel
+    from langgraph.checkpoint.base import BaseCheckpointSaver
+    from langgraph.graph.graph import CompiledGraph
 
 
 def create_agent(
@@ -51,7 +55,9 @@ def create_agent(
         messages = await bound.ainvoke(
             {
                 "messages": windowed_messages,
-                "date": date.today(),  # TODO: maybe cannot get date here.
+                "date": datetime.datetime.now(
+                    tz=datetime.UTC
+                ).date(),  # TODO: get the current date from the user?
             }
         )
         return {
@@ -65,6 +71,4 @@ def create_agent(
     builder.add_edge(START, "chatbot")
     builder.add_edge("chatbot", END)
 
-    # Compile the graph
-    graph = builder.compile(checkpointer=checkpointer)
-    return graph
+    return builder.compile(checkpointer=checkpointer)

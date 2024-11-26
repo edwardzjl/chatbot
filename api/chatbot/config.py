@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import re
 from typing import Any
-from typing_extensions import Self
 
 from pydantic import Field, PostgresDsn, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing_extensions import Self
 
 
 def remove_postgresql_variants(dsn: str) -> str:

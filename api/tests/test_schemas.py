@@ -1,8 +1,7 @@
 import unittest
 
-from langchain_core.messages import AIMessage, HumanMessage
-
 from chatbot.schemas import ChatMessage, Conversation
+from langchain_core.messages import AIMessage, HumanMessage
 
 
 class TestConversationSchema(unittest.TestCase):
