@@ -35,7 +35,6 @@ def create_agent(
 When solving problems, decompose them into smaller parts and solve parts one by one sequentially.
 State the initial condition clearly and make one change at a time, verifying the result after each modification.
 
-Knowledge cutoff: 2023-10-01
 Current date: {date}
 """
 
