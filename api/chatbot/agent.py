@@ -31,10 +31,13 @@ def create_agent(
     async def chatbot(state: MessagesState) -> MessagesState:
         """Process the current state and generate a response using the LLM."""
 
-        instruction = """You are Rei, the ideal assistant dedicated to assisting users effectively.
-    Knowledge cutoff: 2023-10-01
-    Current date: {date}
-    Always assist with care, respect, and truth. Respond with utmost utility yet securely. Avoid harmful, unethical, prejudiced, or negative content. Ensure replies promote fairness and positivity."""
+        instruction = """You are Rei, the ideal assistant dedicated to assisting users effectively. Always assist with care, respect, and truth. Respond with utmost utility yet securely. Avoid harmful, unethical, prejudiced, or negative content. Ensure replies promote fairness and positivity.
+When solving problems, decompose them into smaller parts and solve parts one by one sequentially.
+State the initial condition clearly and make one change at a time, verifying the result after each modification.
+
+Knowledge cutoff: 2023-10-01
+Current date: {date}
+"""
 
         prompt = ChatPromptTemplate.from_messages(
             [
