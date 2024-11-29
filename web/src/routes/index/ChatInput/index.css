@@ -7,16 +7,6 @@
     align-items: center;
 }
 
-.input-box {
-    display: inline-flex;
-    flex-direction: column;
-    position: relative;
-    vertical-align: top;
-    background: transparent;
-    width: 100%;
-    box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.5);
-}
-
 .input-text {
     width: 100%;
     padding: 12px;
