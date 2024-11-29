@@ -6,22 +6,31 @@
 	"dockerComposeFile": ["./docker-compose.yml"],
 	"service": "chatbot",
 	"workspaceFolder": "/workspace",
+	// TODO: it seems not working
 	// uncomment next line will keep the container running after the devcontainer is closed
 	// "shutdownAction": "none",
+	// "shutdownAction": "stopCompose",
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// Also forward 5432 for postgres
 	"forwardPorts": [5432, 3000, 8000],
 
-	// postCreateCommand cannot access nvm, see <https://github.com/microsoft/vscode-dev-containers/issues/559>
-	// So I have to make a init script.
-	// Also note that the $pwd of this command is $workspaceFolder
-	"postCreateCommand": "sh .devcontainer/init.sh",
+	// nvm has to be run in an interactive shell while postCreateCommand runs in a non-interactive one.
+	// Running a script with '#!/bin/zsh -i' can solve this. See <https://github.com/microsoft/vscode-dev-containers/issues/559#issuecomment-693105152>
+	// Note 1: Do not add 'sh' before the script, which makes it non-interactive.
+	// Note 2: You need to make the script executable in git repo.
+	// Note 3: The $pwd of this command is $workspaceFolder
+	"postCreateCommand": ".devcontainer/init.sh",
 	"customizations": {
 		"vscode": {
 			"settings": {
 				"python.pythonPath": "/workspace/api/.venv/bin/python"
-			}
+			},
+			// TODO: It seems that these extensions are not installed during startup
+			"extensions": [
+				"ms-python.python",
+				"ms-python.debugpy"
+			]
 		}
 	}
 }
