@@ -1,5 +1,4 @@
 # forward ports in devcontainer.json
-version: '3'
 services:
   chatbot:
     image: mcr.microsoft.com/devcontainers/python:3.12
