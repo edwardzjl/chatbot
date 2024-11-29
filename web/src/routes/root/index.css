@@ -120,6 +120,7 @@
   flex-direction: column;
   overflow: auto;
   scrollbar-color: var(--border-color) transparent;
+  scrollbar-width: thin;
 }
 
 .sidemenu-date-group {
@@ -173,6 +174,7 @@
   overflow: auto;
   scroll-behavior: smooth;
   scrollbar-color: var(--border-color) transparent;
+  scrollbar-width: thin;
   border: 1px solid var(--border-color);
   background-color: var(--bg-secondary);
   position: relative;

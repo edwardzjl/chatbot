@@ -17,6 +17,8 @@
     border: 1px solid var(--border-color);
     border-radius: 5px;
     resize: none;
+    scrollbar-color: var(--border-color) transparent;
+    scrollbar-width: thin;
 }
 
 .input-text:focus {
