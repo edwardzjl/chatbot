@@ -9,6 +9,7 @@
 
 .input-text {
     width: 100%;
+    max-height: 10vw;
     padding: 12px;
     color: var(--text-primary);
     background-color: var(--bg-secondary);
