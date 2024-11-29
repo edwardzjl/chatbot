@@ -10,13 +10,13 @@
 	// "shutdownAction": "none",
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// Also forward 6379 for redis
-	"forwardPorts": [3000, 8000, 6379],
+	// Also forward 5432 for postgres
+	"forwardPorts": [5432, 3000, 8000],
 
 	// postCreateCommand cannot access nvm, see <https://github.com/microsoft/vscode-dev-containers/issues/559>
 	// So I have to make a init script.
 	// Also note that the $pwd of this command is $workspaceFolder
-	"postCreateCommand": ".devcontainer/init.sh",
+	"postCreateCommand": "sh .devcontainer/init.sh",
 	"customizations": {
 		"vscode": {
 			"settings": {
