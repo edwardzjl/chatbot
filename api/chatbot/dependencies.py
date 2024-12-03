@@ -7,6 +7,10 @@ from urllib.parse import urljoin
 import requests
 from fastapi import Depends, Header
 from langchain_core.messages.utils import convert_to_openai_messages
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import Runnable
+from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from langgraph.graph.graph import CompiledGraph
 from langgraph.types import StateSnapshot
@@ -15,7 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from chatbot.agent import create_agent
 from chatbot.config import settings
-from chatbot.state import chat_model, sqlalchemy_ro_session, sqlalchemy_session
+from chatbot.state import sqlalchemy_ro_session, sqlalchemy_session
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
@@ -64,6 +68,14 @@ async def get_sqlalchemy_ro_session() -> AsyncGenerator[AsyncSession, None]:
 SqlalchemyROSessionDep = Annotated[AsyncSession, Depends(get_sqlalchemy_ro_session)]
 
 
+@lru_cache
+def get_chat_model() -> ChatOpenAI:
+    return ChatOpenAI(**settings.llm)
+
+
+ChatModelDep = Annotated[ChatOpenAI, Depends(get_chat_model)]
+
+
 # TODO: we can support async here, but I'm not explicitly depending on `aiohttp` yet.
 @lru_cache
 def get_model_info() -> dict[str, Any]:
@@ -105,6 +117,7 @@ def get_num_tokens_vllm(messages: list) -> int:
 
 
 async def get_agent(
+    chat_model: ChatModelDep,
     model_info: Annotated[dict[str, Any], Depends(get_model_info)],
 ) -> AsyncGenerator[CompiledGraph, None]:
     async with AsyncPostgresSaver.from_conn_string(
@@ -122,12 +135,41 @@ async def get_agent(
 AgentDep = Annotated[CompiledGraph, Depends(get_agent)]
 
 
-async def get_agent_state(
-    conversation_id: str,
-    agent: Annotated[CompiledGraph, Depends(get_agent)],
-) -> StateSnapshot:
+async def get_agent_state(conversation_id: str, agent: AgentDep) -> StateSnapshot:
     config = {"configurable": {"thread_id": conversation_id}}
     return await agent.aget_state(config)
 
 
 AgentStateDep = Annotated[StateSnapshot, Depends(get_agent_state)]
+
+
+# I cannot apply `lru_cache` to this function for the following reasons:
+# - `langchain_openai.ChatOpenAI` is not hashable. When type hinting it as `chat_model: ChatOpenAI = Depends(get_chat_model)`, Python raises the following error:
+#   ```console
+#   TypeError: unhashable type: 'ChatOpenAI'
+#   ```
+# - On the other hand, when I type hint it as `chat_model: ChatModelDep`, I encounter this error:
+#   ```console
+#   pydantic.errors.PydanticUndefinedAnnotation: name 'ChatModelDep' is not defined
+#  ```
+# So for now this function is not cached.
+def get_smry_chain(chat_model: ChatModelDep) -> Runnable:
+    instruction = (
+        "You are Rei, the ideal assistant dedicated to assisting users effectively."
+    )
+
+    tmpl = ChatPromptTemplate.from_messages(
+        [
+            ("system", instruction),
+            ("placeholder", "{messages}"),
+            (
+                "system",
+                "Now Provide a short summarization for the above messages in less than 10 words, using the same language as the user.",
+            ),
+        ]
+    )
+
+    return tmpl | chat_model | StrOutputParser()
+
+
+SmrChainDep = Annotated[Runnable, Depends(get_smry_chain)]
