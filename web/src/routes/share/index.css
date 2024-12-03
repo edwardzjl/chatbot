@@ -17,8 +17,11 @@
     align-items: center;
     color: var(--text-primary);
     background-color: var(--bg-secondary);
+    overflow: auto;
+    scroll-behavior: smooth;
     /* TODO: scrollbar-color seems not working */
     scrollbar-color: var(--border-color) transparent;
+    scrollbar-width: thin;
 }
 
 .share-header {
