@@ -7,8 +7,7 @@ from fastapi import (
 from langchain_core.messages import AIMessage, BaseMessage, trim_messages
 from loguru import logger
 
-from chatbot.chains.summarization import create_smry_chain
-from chatbot.dependencies import AgentDep, UserIdHeaderDep
+from chatbot.dependencies import AgentDep, SmrChainDep, UserIdHeaderDep
 from chatbot.metrics.llm import input_tokens, output_tokens
 from chatbot.models import Conversation
 from chatbot.schemas import (
@@ -18,7 +17,7 @@ from chatbot.schemas import (
     ChatMessage,
     InfoMessage,
 )
-from chatbot.state import chat_model, sqlalchemy_session
+from chatbot.state import sqlalchemy_session
 from chatbot.utils import utcnow
 
 router = APIRouter(
@@ -32,6 +31,7 @@ async def chat(
     websocket: WebSocket,
     userid: UserIdHeaderDep,
     agent: AgentDep,
+    smry_chain: SmrChainDep,
 ):
     await websocket.accept()
     logger.info("websocket connected")
@@ -122,7 +122,6 @@ async def chat(
                     max_tokens=20,
                     start_on="human",  # This means that the first message should be from the user after trimming.
                 )
-                smry_chain = create_smry_chain(chat_model)
                 title_raw: str = await smry_chain.ainvoke(
                     input={"messages": windowed_messages},
                     config={"metadata": chain_metadata},

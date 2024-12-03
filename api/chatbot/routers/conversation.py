@@ -2,9 +2,9 @@ from fastapi import APIRouter, HTTPException
 from langchain_core.messages import BaseMessage, trim_messages
 from sqlalchemy import select
 
-from chatbot.chains.summarization import create_smry_chain
 from chatbot.dependencies import (
     AgentStateDep,
+    SmrChainDep,
     SqlalchemyROSessionDep,
     SqlalchemySessionDep,
     UserIdHeaderDep,
@@ -17,7 +17,6 @@ from chatbot.schemas import (
     CreateConversation,
     UpdateConversation,
 )
-from chatbot.state import chat_model
 
 router = APIRouter(
     prefix="/api/conversations",
@@ -117,6 +116,7 @@ async def summarize(
     userid: UserIdHeaderDep,
     session: SqlalchemyROSessionDep,
     agent_state: AgentStateDep,
+    smry_chain: SmrChainDep,
 ) -> dict[str, str]:
     conv: ORMConversation = await session.get(ORMConversation, conversation_id)
     if conv.owner != userid:
@@ -131,7 +131,6 @@ async def summarize(
         start_on="human",  # This means that the first message should be from the user after trimming.
     )
 
-    smry_chain = create_smry_chain(chat_model)
     title_raw: str = await smry_chain.ainvoke(
         input={"messages": windowed_messages},
         config={

@@ -1,6 +1,5 @@
 """This module holds some singletons that will be used accoss the app."""
 
-from langchain_openai import ChatOpenAI
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
@@ -29,4 +28,3 @@ sqlalchemy_ro_session = sessionmaker(
     autoflush=False,
     class_=AsyncSession,
 )
-chat_model = ChatOpenAI(**settings.llm)
