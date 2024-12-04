@@ -7,7 +7,7 @@ from langchain_core.messages import BaseMessage, SystemMessage, trim_messages
 from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import END, START, MessagesState, StateGraph
 
-from chatbot.safety import create_hazard_classifier
+from chatbot.safety import create_hazard_classifier, hazard_categories
 
 if TYPE_CHECKING:
     from langchain_core.language_models import BaseChatModel
@@ -37,15 +37,16 @@ def create_agent(
 
     async def input_guard(state: MessagesState) -> MessagesState:
         if hazard_classifier is not None:
+            last_message = state["messages"][-1]
             flag, category = await hazard_classifier.ainvoke(
-                input={"messages": state["messages"][-1:]}
+                input={"messages": [last_message]}
             )
             if flag == "unsafe" and category is not None:
-                content = f"""The user input may contain inproper content related to:
-{category}
-
-Please respond with care and professionalism. Avoid engaging with harmful or unethical content. Instead, guide the user towards more constructive and respectful communication."""
-                return {"messages": [SystemMessage(content=content)]}
+                # patch the hazard category to the last message
+                last_message.additional_kwargs = last_message.additional_kwargs | {
+                    "hazard": category
+                }
+                return {"messages": [last_message]}
         return {"messages": []}
 
     async def run_output_guard(state: MessagesState) -> MessagesState:
@@ -78,12 +79,20 @@ Current date: {date}
 
         bound = prompt | chat_model
 
-        windowed_messages = trim_messages(
+        windowed_messages: list[BaseMessage] = trim_messages(
             state["messages"],
             token_counter=token_counter,
             max_tokens=max_tokens,
             start_on="human",  # This means that the first message should be from the user after trimming.
         )
+        if hazard := windowed_messages[-1].additional_kwargs.get("hazard"):
+            hint_message = SystemMessage(
+                content=f"""The user input may contain inproper content related to:
+{hazard_categories.get(hazard)}
+
+Please respond with care and professionalism. Avoid engaging with harmful or unethical content. Instead, guide the user towards more constructive and respectful communication."""
+            )
+            windowed_messages.append(hint_message)
 
         messages = await bound.ainvoke(
             {
@@ -93,9 +102,7 @@ Current date: {date}
                 ).date(),  # TODO: get the current date from the user?
             }
         )
-        return {
-            "messages": [messages],
-        }
+        return {"messages": [messages]}
 
     builder = StateGraph(MessagesState)
     builder.add_node(input_guard)
