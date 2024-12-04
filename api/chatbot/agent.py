@@ -3,9 +3,11 @@ from __future__ import annotations
 import datetime
 from typing import TYPE_CHECKING, Callable
 
-from langchain_core.messages import BaseMessage, trim_messages
+from langchain_core.messages import BaseMessage, SystemMessage, trim_messages
 from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import END, START, MessagesState, StateGraph
+
+from chatbot.safety import create_hazard_classifier
 
 if TYPE_CHECKING:
     from langchain_core.language_models import BaseChatModel
@@ -16,6 +18,7 @@ if TYPE_CHECKING:
 def create_agent(
     chat_model: BaseChatModel,
     *,
+    safety_model: BaseChatModel | None = None,
     checkpointer: BaseCheckpointSaver = None,
     token_counter: (
         Callable[[list[BaseMessage]], int] | Callable[[BaseMessage], int] | None
@@ -27,6 +30,34 @@ def create_agent(
             token_counter = chat_model.get_num_tokens_from_messages
         else:
             token_counter = len
+
+    hazard_classifier = None
+    if safety_model is not None:
+        hazard_classifier = create_hazard_classifier(safety_model)
+
+    async def input_guard(state: MessagesState) -> MessagesState:
+        if hazard_classifier is not None:
+            flag, category = await hazard_classifier.ainvoke(
+                input={"messages": state["messages"][-1:]}
+            )
+            if flag == "unsafe" and category is not None:
+                content = f"""The user input may contain inproper content related to:
+{category}
+
+Please respond with care and professionalism. Avoid engaging with harmful or unethical content. Instead, guide the user towards more constructive and respectful communication."""
+                return {"messages": [SystemMessage(content=content)]}
+        return {"messages": []}
+
+    async def run_output_guard(state: MessagesState) -> MessagesState:
+        if hazard_classifier is not None:
+            flag, category = await hazard_classifier.ainvoke(
+                input={"messages": state["messages"][-2:]}
+            )
+            if flag == "unsafe" and category is not None:
+                # TODO: implementation
+                # Re-generate? or how can I update the last message?
+                ...
+        return {"messages": []}
 
     async def chatbot(state: MessagesState) -> MessagesState:
         """Process the current state and generate a response using the LLM."""
@@ -67,10 +98,11 @@ Current date: {date}
         }
 
     builder = StateGraph(MessagesState)
+    builder.add_node(input_guard)
     builder.add_node(chatbot)
 
-    # Add edges to the graph
-    builder.add_edge(START, "chatbot")
+    builder.add_edge(START, "input_guard")
+    builder.add_edge("input_guard", "chatbot")
     builder.add_edge("chatbot", END)
 
     return builder.compile(checkpointer=checkpointer)
