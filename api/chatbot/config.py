@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_nested_delimiter="__")
 
     llm: dict[str, Any] = Field(default_factory=lambda: {"api_key": "NOT_SET"})
+    safety_llm: dict[str, Any] | None = None
     postgres_primary_url: PostgresDsn = (
         "postgresql+psycopg://postgres:postgres@localhost:5432/"
     )
