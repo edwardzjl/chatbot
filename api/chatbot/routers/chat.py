@@ -67,6 +67,12 @@ async def chat(
                     # 1. we don't want to expose internal event to the user (websocket or history)
                     # 2. we want to keep the conversation history as short as possible
                     continue
+
+                tags: list[str] = event["tags"]
+                if "internal" in tags:
+                    # Our internal events are not supposed to be exposed to the user.
+                    continue
+
                 logger.trace("event: {}", event)
                 evt: str = event["event"]
                 if evt == "on_chat_model_start":
