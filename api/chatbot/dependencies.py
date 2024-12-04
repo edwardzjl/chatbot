@@ -76,6 +76,18 @@ def get_chat_model() -> ChatOpenAI:
 ChatModelDep = Annotated[ChatOpenAI, Depends(get_chat_model)]
 
 
+@lru_cache
+def get_safaty_model() -> ChatOpenAI | None:
+    return (
+        ChatOpenAI(**settings.safety_llm, tags=["internal"])
+        if settings.safety_llm is not None
+        else None
+    )
+
+
+SafetyModelDep = Annotated[ChatOpenAI, Depends(get_safaty_model)]
+
+
 # TODO: we can support async here, but I'm not explicitly depending on `aiohttp` yet.
 @lru_cache
 def get_model_info() -> dict[str, Any]:
@@ -118,6 +130,7 @@ def get_num_tokens_vllm(messages: list) -> int:
 
 async def get_agent(
     chat_model: ChatModelDep,
+    safety_model: SafetyModelDep,
     model_info: Annotated[dict[str, Any], Depends(get_model_info)],
 ) -> AsyncGenerator[CompiledGraph, None]:
     async with AsyncPostgresSaver.from_conn_string(
@@ -125,6 +138,7 @@ async def get_agent(
     ) as checkpointer:
         yield create_agent(
             chat_model,
+            safety_model=safety_model,
             checkpointer=checkpointer,
             token_counter=get_num_tokens_vllm,
             # NOTE: this is based on vllm, IDK what the response of OpenAI looks like.
