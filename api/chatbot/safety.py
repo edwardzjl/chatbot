@@ -46,7 +46,7 @@ class HazardOutputParser(BaseTransformOutputParser[tuple[str, str | None]]):
 
         flag, category = text.split("\n", 1)
         if flag.lower() == "unsafe":
-            return "unsafe", hazard_categories.get(category)
+            return "unsafe", category
         return "unknown", None
 
 
