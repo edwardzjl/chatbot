@@ -29,8 +29,8 @@ See [deployment instructions](./manifests/README.md)
 
 Key | Default Value | Description
 ---|---|---
-LLM__URL | `http://localhost:8080` | llm service url
-LLM__MODEL | `cognitivecomputations/dolphin-2.6-mistral-7b-dpo-laser` | llm model
-LLM__CREDS | `EMPTY` | llm service credentials
-DB_URL | `postgresql+psycopg://postgres:postgres@localhost:5432/` | Database url to persist messages and metadata
+LLM | `http://localhost:8080` | llm service config dict
+SAFETY_LLM | `None` | safety llm service config dict
+POSTGRES_PRIMARY_URL | `postgresql+psycopg://postgres:postgres@localhost:5432/` | Database url to read / write messages and metadata
+POSTGRES_STANDBY_URL | `None` | Database url to read messages and metadata
 LOG_LEVEL | `INFO` | log level

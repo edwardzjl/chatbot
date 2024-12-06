@@ -54,7 +54,8 @@ const Conversation = () => {
         <>
             <ChatboxHeader />
             <ChatLog className="chat-log">
-                {conversation && messages?.map((message, index) => (
+                {/* We ignore system messages when displaying. */}
+                {conversation && messages?.filter(message => message.from !== "system").map((message, index) => (
                     <ChatMessage key={index} convId={conversation.id} message={message} />
                 ))}
             </ChatLog>
