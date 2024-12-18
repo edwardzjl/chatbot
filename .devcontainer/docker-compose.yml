@@ -35,12 +35,12 @@ services:
       - --host
       - "0.0.0.0"
       - --port
-      - "8000"
+      - "8080"
       - --no-webui
     volumes:
       - ../downloads:/data
     ports:
-      - 8000:8000
+      - 8080:8080
     depends_on:
       download-weights:
         condition: service_completed_successfully
