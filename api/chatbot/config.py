@@ -3,7 +3,14 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from pydantic import Field, PostgresDsn, model_validator
+from pydantic import (
+    BaseModel,
+    Field,
+    HttpUrl,
+    PositiveInt,
+    PostgresDsn,
+    model_validator,
+)
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing_extensions import Self
 
@@ -28,11 +35,17 @@ def remove_postgresql_variants(dsn: str) -> str:
     return re.sub(pattern, "postgresql", dsn)
 
 
+class EmbeddingSettings(BaseModel):
+    url: HttpUrl
+    dims: PositiveInt
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_nested_delimiter="__")
 
     llm: dict[str, Any] = Field(default_factory=lambda: {"api_key": "NOT_SET"})
     safety_llm: dict[str, Any] | None = None
+    embeddings: EmbeddingSettings | None = None
     postgres_primary_url: PostgresDsn = (
         "postgresql+psycopg://postgres:postgres@localhost:5432/"
     )

@@ -17,6 +17,12 @@ from chatbot.agent import create_agent
 from chatbot.config import settings
 from chatbot.llm_providers import get_truncation_config
 from chatbot.state import sqlalchemy_ro_session, sqlalchemy_session
+from .embeddings import HuggingfaceTEIEmbeddings
+
+from langchain_core.embeddings import Embeddings
+from langgraph.store.memory import InMemoryStore
+# from langgraph.store.postgres import AsyncPostgresStore
+
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
@@ -85,13 +91,29 @@ def get_safaty_model() -> ChatOpenAI | None:
 SafetyModelDep = Annotated[ChatOpenAI, Depends(get_safaty_model)]
 
 
+@lru_cache
+def get_embeddings() -> Embeddings | None:
+    return HuggingfaceTEIEmbeddings(
+        base_url=str(settings.embeddings.url),
+        truncate=True,
+    ) if settings.embeddings else None
+
 async def get_agent(
     chat_model: ChatModelDep,
     safety_model: SafetyModelDep,
+    embeddings: Annotated[Embeddings | None, Depends(get_embeddings)],
 ) -> AsyncGenerator[CompiledGraph, None]:
     max_tokens, token_counter = get_truncation_config(
         settings.llm["base_url"], settings.llm["model_name"]
     )
+
+    store = InMemoryStore(
+        index={
+            "embed": embeddings,
+            "dims": settings.embeddings.dims,
+            "fields": ["$"]
+        }
+    ) if embeddings else None
 
     async with AsyncPostgresSaver.from_conn_string(
         settings.psycopg_primary_url
@@ -100,6 +122,7 @@ async def get_agent(
             chat_model,
             safety_model=safety_model,
             checkpointer=checkpointer,
+            store=store,
             token_counter=token_counter,
             max_tokens=max_tokens,
         )
