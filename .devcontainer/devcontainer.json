@@ -12,8 +12,10 @@
 	// "shutdownAction": "stopCompose",
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// Also forward 5432 for postgres
-	"forwardPorts": [5432, 3000, 8000],
+	// NOTE: devcontainer only supports forwarding the ports from the "main" container.
+	// See: <https://github.com/microsoft/vscode-remote-release/issues/4645>
+	// Once this issue is resolved, I can forward ports from other services, like 5432 for postgres and 8080 for llama.cpp.
+	"forwardPorts": [3000, 8000],
 
 	// nvm has to be run in an interactive shell while postCreateCommand runs in a non-interactive one.
 	// Running a script with '#!/bin/zsh -i' can solve this. See <https://github.com/microsoft/vscode-dev-containers/issues/559#issuecomment-693105152>
