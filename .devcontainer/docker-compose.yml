@@ -7,8 +7,40 @@ services:
     command: sleep infinity
     depends_on:
       - postgres
+      - llama-cpp
 
   postgres:
     image: postgres
     environment:
       POSTGRES_PASSWORD: postgres
+
+  download-weights:
+    build:
+      # Using huggingface-hub to download the weights as IDK if git lfs supports resumable downloads.
+      # And I'm too lazy to try it out.
+      context: hf-download
+    command: download Qwen/Qwen2.5-0.5B-Instruct-GGUF qwen2.5-0.5b-instruct-q2_k.gguf
+    volumes:
+      - ../downloads:/data
+
+  llama-cpp:
+    image: ghcr.io/ggerganov/llama.cpp:server
+    command:
+      - --model
+      - /data/models--Qwen--Qwen2.5-0.5B-Instruct-GGUF/snapshots/9217f5db79a29953eb74d5343926648285ec7e67/qwen2.5-0.5b-instruct-q2_k.gguf
+      - --n-predict
+      - "512"
+      - --alias
+      - qwen2.5-0.5b-instruct
+      - --host
+      - "0.0.0.0"
+      - --port
+      - "8000"
+      - --no-webui
+    volumes:
+      - ../downloads:/data
+    ports:
+      - 8000:8000
+    depends_on:
+      download-weights:
+        condition: service_completed_successfully
