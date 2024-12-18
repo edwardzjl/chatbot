@@ -79,20 +79,24 @@ Current date: {date}
 
         bound = prompt | chat_model
 
-        windowed_messages: list[BaseMessage] = trim_messages(
-            state["messages"],
-            token_counter=token_counter,
-            max_tokens=max_tokens,
-            start_on="human",  # This means that the first message should be from the user after trimming.
-        )
-        if hazard := windowed_messages[-1].additional_kwargs.get("hazard"):
+        hint_message = None
+        if hazard := state["messages"][-1].additional_kwargs.get("hazard"):
             hint_message = SystemMessage(
                 content=f"""The user input may contain inproper content related to:
 {hazard_categories.get(hazard)}
 
 Please respond with care and professionalism. Avoid engaging with harmful or unethical content. Instead, guide the user towards more constructive and respectful communication."""
             )
-            windowed_messages.append(hint_message)
+
+        all_messages = (
+            state["messages"] + hint_message if hint_message else state["messages"]
+        )
+        windowed_messages: list[BaseMessage] = trim_messages(
+            all_messages,
+            token_counter=token_counter,
+            max_tokens=max_tokens,
+            start_on="human",  # This means that the first message should be from the user after trimming.
+        )
 
         messages = await bound.ainvoke(
             {
