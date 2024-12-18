@@ -2,10 +2,13 @@ from __future__ import annotations
 
 import datetime
 from typing import TYPE_CHECKING, Callable
+from uuid import uuid4
 
 from langchain_core.messages import BaseMessage, SystemMessage, trim_messages
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables.config import RunnableConfig
 from langgraph.graph import END, START, MessagesState, StateGraph
+from langgraph.store.base import BaseStore
 
 from chatbot.safety import create_hazard_classifier, hazard_categories
 
@@ -19,7 +22,8 @@ def create_agent(
     chat_model: BaseChatModel,
     *,
     safety_model: BaseChatModel | None = None,
-    checkpointer: BaseCheckpointSaver = None,
+    checkpointer: BaseCheckpointSaver | None = None,
+    store: BaseStore | None = None,
     token_counter: (
         Callable[[list[BaseMessage]], int] | Callable[[BaseMessage], int] | None
     ) = None,
@@ -60,7 +64,7 @@ def create_agent(
                 ...
         return {"messages": []}
 
-    async def chatbot(state: MessagesState) -> MessagesState:
+    async def chatbot(state: MessagesState, config: RunnableConfig, *, store: BaseStore) -> MessagesState:
         """Process the current state and generate a response using the LLM."""
 
         instruction = """You are Rei, the ideal assistant dedicated to assisting users effectively. Always assist with care, respect, and truth. Respond with utmost utility yet securely. Avoid harmful, unethical, prejudiced, or negative content. Ensure replies promote fairness and positivity.
@@ -87,6 +91,18 @@ Current date: {date}
 
 Please respond with care and professionalism. Avoid engaging with harmful or unethical content. Instead, guide the user towards more constructive and respectful communication."""
             )
+        elif store is not None:
+            # no security issue detected, fetching memory
+            # Get the user id from the config
+            user_id = config["metadata"]["userid"]
+
+            # Namespace the memory
+            namespace = (user_id, "memories")
+            memories = await store.asearch(
+                namespace,
+                query=state["messages"][-1].content,
+                limit=3
+            )
 
         all_messages = (
             state["messages"] + hint_message if hint_message else state["messages"]
@@ -106,6 +122,21 @@ Please respond with care and professionalism. Avoid engaging with harmful or une
                 ).date(),  # TODO: get the current date from the user?
             }
         )
+
+        if store is not None:
+            user_id = config["metadata"]["userid"]
+
+            # Namespace the memory
+            namespace = (user_id, "memories")
+
+            # ... Analyze conversation and create a new memory
+
+            # Create a new memory ID
+            memory_id = str(uuid4())
+
+            # We create a new memory
+            await store.aput(namespace, memory_id, {"memory": "foo"})
+
         return {"messages": [messages]}
 
     builder = StateGraph(MessagesState)
@@ -116,4 +147,4 @@ Please respond with care and professionalism. Avoid engaging with harmful or une
     builder.add_edge("input_guard", "chatbot")
     builder.add_edge("chatbot", END)
 
-    return builder.compile(checkpointer=checkpointer)
+    return builder.compile(checkpointer=checkpointer, store=store)

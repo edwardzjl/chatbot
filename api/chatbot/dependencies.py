@@ -20,6 +20,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from chatbot.agent import create_agent
 from chatbot.config import settings
 from chatbot.state import sqlalchemy_ro_session, sqlalchemy_session
+from .embeddings import HuggingfaceTEIEmbeddings
+
+from langchain_core.embeddings import Embeddings
+from langgraph.store.memory import InMemoryStore
+# from langgraph.store.postgres import AsyncPostgresStore
+
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
@@ -121,18 +127,40 @@ def get_num_tokens_vllm(messages: list) -> int:
             },
         )
         resp.raise_for_status()
-        return resp.json()["count"]
+        data = resp.json()
+        # vllm: data.count
+        # llama.cpp: data.tokens ([])
+        return data["count"]
     except requests.RequestException as e:
         logger.warning("Error loading model info: {}", str(e))
         # Default to 0 if there is an error
         return 0
 
 
+@lru_cache
+def get_embeddings() -> Embeddings | None:
+    return HuggingfaceTEIEmbeddings(
+        base_url=str(settings.embeddings.url),
+        truncate=True,
+    ) if settings.embeddings else None
+
+
 async def get_agent(
     chat_model: ChatModelDep,
     safety_model: SafetyModelDep,
     model_info: Annotated[dict[str, Any], Depends(get_model_info)],
+    embeddings: Annotated[Embeddings | None, Depends(get_embeddings)],
 ) -> AsyncGenerator[CompiledGraph, None]:
+    store = InMemoryStore(
+        index={
+            "embed": embeddings,
+            "dims": settings.embeddings.dims,
+            "fields": ["$"]
+        }
+    ) if embeddings else None
+    # vllm: model_info.max_model_len
+    # llama.cpp: model_info.meta.n_ctx_train
+    max_tokens = model_info.get("max_model_len", model_info.get("meta", {}).get("n_ctx_train"))
     async with AsyncPostgresSaver.from_conn_string(
         settings.psycopg_primary_url
     ) as checkpointer:
@@ -140,9 +168,9 @@ async def get_agent(
             chat_model,
             safety_model=safety_model,
             checkpointer=checkpointer,
+            store=store,
             token_counter=get_num_tokens_vllm,
-            # NOTE: this is based on vllm, IDK what the response of OpenAI looks like.
-            max_tokens=model_info["max_model_len"],
+            max_tokens=max_tokens,
         )
 
 
