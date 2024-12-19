@@ -101,10 +101,32 @@ def get_model_info() -> dict[str, Any]:
         return next(
             (item for item in models if item["id"] == settings.llm["model_name"]), {}
         )
+        # TODO: TGI: `/info`
+        # TODO: SGLang: `/get_server_info`
 
     except requests.RequestException:
         logger.warning("Error loading model info")
         raise
+
+
+# TODO: This stucks the server
+@lru_cache
+def get_max_tokens(model_info: Annotated[dict[str, Any], Depends(get_model_info)]) -> int:
+    # TODO: the default value is just a random guess. Also do I need to expose it as a param?
+    default_max_tokens = 1024
+    owned_by = model_info.get("owned_by")
+    match owned_by:
+        case "vllm":
+            return model_info.get("max_model_len", default_max_tokens)
+        case "llama.cpp":
+            return model_info.get("meta", {}).get("n_ctx_train", default_max_tokens)
+        case "sglang":
+            # As of the time of writing, SGLang(0.4.0) provides no information about the model metadata.
+            ...
+        case _:
+            # NOTE: TGI(3.0.1) also falls into this category, as the 'owner' of TGI services to be model id.
+            # As of the time of writing, TGI(3.0.1) provides no information about the model metadata.
+            return default_max_tokens
 
 
 # TODO: langchain's `get_num_tokens_from_messages` does not support async
@@ -131,7 +153,7 @@ def get_num_tokens_vllm(messages: list) -> int:
 async def get_agent(
     chat_model: ChatModelDep,
     safety_model: SafetyModelDep,
-    model_info: Annotated[dict[str, Any], Depends(get_model_info)],
+    max_tokens: Annotated[int, Depends(get_max_tokens)],
 ) -> AsyncGenerator[CompiledGraph, None]:
     async with AsyncPostgresSaver.from_conn_string(
         settings.psycopg_primary_url
@@ -142,7 +164,7 @@ async def get_agent(
             checkpointer=checkpointer,
             token_counter=get_num_tokens_vllm,
             # NOTE: this is based on vllm, IDK what the response of OpenAI looks like.
-            max_tokens=model_info["max_model_len"],
+            max_tokens=max_tokens,
         )
 
 
