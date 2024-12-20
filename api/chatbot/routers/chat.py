@@ -8,6 +8,7 @@ from langchain_core.messages import AIMessage, BaseMessage, trim_messages
 from loguru import logger
 
 from chatbot.dependencies import AgentDep, SmrChainDep, UserIdHeaderDep
+from chatbot.metrics import connected_clients
 from chatbot.metrics.llm import input_tokens, output_tokens
 from chatbot.models import Conversation
 from chatbot.schemas import (
@@ -34,6 +35,7 @@ async def chat(
     smry_chain: SmrChainDep,
 ):
     await websocket.accept()
+    connected_clients.inc()
     logger.info("websocket connected")
     while True:
         try:
@@ -148,6 +150,7 @@ async def chat(
                 await websocket.send_text(info_message.model_dump_json())
         except WebSocketDisconnect:
             logger.info("websocket disconnected")
+            connected_clients.dec()
             return
         except Exception as e:  # noqa: BLE001
             logger.exception("Something goes wrong: {}", e)

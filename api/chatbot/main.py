@@ -46,6 +46,8 @@ app = FastAPI(
 )
 
 # Add prometheus asgi middleware to route /metrics requests
+# NOTE: although I mount it to `/metrics`, you must append the trailing slash to access the metrics. i.e. `/metrics/`
+# I think it's a bug in fastapi
 metrics_app = make_asgi_app()
 app.mount("/metrics", metrics_app)
 
