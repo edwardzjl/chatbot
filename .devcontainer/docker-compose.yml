@@ -1,9 +1,10 @@
 services:
   chatbot:
     image: mcr.microsoft.com/devcontainers/python:3.12
+    command: sleep infinity
     volumes:
       - ..:/workspace:cached
-    command: sleep infinity
+    env_file: devcontainer.env
     depends_on:
       - postgres
       - llama-cpp
