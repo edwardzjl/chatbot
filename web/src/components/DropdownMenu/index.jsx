@@ -64,6 +64,7 @@ export const DropdownList = ({ children, className, ...props }) => {
             className={`${styles.dropdownList} ${!open && styles.hidden} ${className}`}
             onClick={() => setOpen(false)}
             aria-hidden={!open}
+            role="menu"
             {...props}
         >
             {children}
