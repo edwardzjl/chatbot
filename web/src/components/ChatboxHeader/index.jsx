@@ -53,6 +53,7 @@ const ChatboxHeader = () => {
                             <button
                                 className={`${styles.themeMenuItem} ${theme === "system" && styles.selected}`}
                                 onClick={() => onThemeClick("system")}
+                                aria-label="Set theme to system default"
                             >
                                 <BrightnessMediumIcon />
                                 <span className={styles.themeMenuText}>OS Default</span>
@@ -62,6 +63,7 @@ const ChatboxHeader = () => {
                             <button
                                 className={`${styles.themeMenuItem} ${theme === "light" && styles.selected}`}
                                 onClick={() => onThemeClick("light")}
+                                aria-label="Set theme to light mode"
                             >
                                 <LightModeIcon />
                                 <span className={styles.themeMenuText}>Light</span>
@@ -71,6 +73,7 @@ const ChatboxHeader = () => {
                             <button
                                 className={`${styles.themeMenuItem} ${theme === "dark" && styles.selected}`}
                                 onClick={() => onThemeClick("dark")}
+                                aria-label="Set theme to dark mode"
                             >
                                 <DarkModeIcon />
                                 <span className={styles.themeMenuText}>Dark</span>
@@ -87,13 +90,14 @@ const ChatboxHeader = () => {
                                 height: 24,
                             }}
                             src={avatar}
+                            alt={`${username}'s avatar`}
                         />
                     </DropdownHeader>
                     <DropdownList className={styles.userInfoMenuList}>
                         <li><span>{username}</span></li>
                         <hr className={styles.userInfoMenuUsernameHr} />
                         <li>
-                            <button className={styles.themeMenuItem} onClick={handleLogout}>
+                            <button className={styles.themeMenuItem} onClick={handleLogout} aria-label="Logout">
                                 <span className={styles.themeMenuText}>Logout</span>
                             </button>
                         </li>
