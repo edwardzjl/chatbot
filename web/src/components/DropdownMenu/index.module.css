@@ -1,0 +1,24 @@
+.dropdown {
+    position: relative;
+}
+
+.dropdownHeader {
+    cursor: pointer;
+}
+
+
+.dropdownList {
+    position: absolute;
+    display: block;
+    z-index: 1000;
+}
+
+.hidden {
+    display: none;
+}
+
+.dropdownList li {
+    list-style: none;
+    width: 100%;
+    white-space: nowrap;
+}
