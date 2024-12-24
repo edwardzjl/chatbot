@@ -1,6 +1,6 @@
 import "./index.css";
 
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 
 const DropdownContext = createContext({
     open: false,
@@ -11,12 +11,13 @@ export const DropdownMenu = ({ children, className, ...props }) => {
     const [open, setOpen] = useState(false);
     const dropdownRef = useRef(null);
 
+    const close = useCallback((e) => {
+        if (!dropdownRef.current.contains(e.target)) {
+            setOpen(false);
+        }
+    }, []);
+
     useEffect(() => {
-        const close = (e) => {
-            if (!dropdownRef.current.contains(e.target)) {
-                setOpen(false);
-            }
-        };
         if (open) {
             window.addEventListener("click", close);
         }
@@ -24,7 +25,7 @@ export const DropdownMenu = ({ children, className, ...props }) => {
         return () => {
             window.removeEventListener("click", close);
         };
-    }, [open]);
+    }, [open, close]);
 
     return (
         <DropdownContext.Provider value={{ open, setOpen }}>
@@ -36,11 +37,11 @@ export const DropdownMenu = ({ children, className, ...props }) => {
 export const DropdownHeader = ({ children, className, ...props }) => {
     const { open, setOpen } = useContext(DropdownContext);
 
-    const toggleOpen = (e) => {
+    const toggleOpen = useCallback(() => {
         // if I stop propagation here the dropdown list will not be closed when click on another dropdown menu.
         // e.stopPropagation();
         setOpen(!open);
-    };
+    }, [open, setOpen]);
 
     return (
         <button className={className} onClick={toggleOpen} {...props}>
