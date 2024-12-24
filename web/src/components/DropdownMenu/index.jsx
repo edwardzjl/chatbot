@@ -1,4 +1,5 @@
-import "./index.css";
+import styles from "./index.module.css";
+
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 
@@ -29,7 +30,7 @@ export const DropdownMenu = ({ children, className, ...props }) => {
 
     return (
         <DropdownContext.Provider value={{ open, setOpen }}>
-            <div className={className} ref={dropdownRef} {...props}>{children}</div>
+            <div className={`${styles.dropdown} ${className}`} ref={dropdownRef} {...props}>{children}</div>
         </DropdownContext.Provider>
     );
 };
@@ -45,7 +46,7 @@ export const DropdownHeader = ({ children, className, ...props }) => {
 
     return (
         <button
-            className={className}
+            className={`${styles.dropdownHeader} ${className}`}
             onClick={toggleOpen}
             aria-expanded={open}
             {...props}
@@ -60,7 +61,7 @@ export const DropdownList = ({ children, className, ...props }) => {
 
     return (
         <menu
-            className={`dropdown-list ${!open && "hidden"} ${className}`}
+            className={`${styles.dropdownList} ${!open && styles.hidden} ${className}`}
             onClick={() => setOpen(false)}
             aria-hidden={!open}
             {...props}
