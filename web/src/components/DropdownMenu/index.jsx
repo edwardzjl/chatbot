@@ -44,7 +44,12 @@ export const DropdownHeader = ({ children, className, ...props }) => {
     }, [open, setOpen]);
 
     return (
-        <button className={className} onClick={toggleOpen} {...props}>
+        <button
+            className={className}
+            onClick={toggleOpen}
+            aria-expanded={open}
+            {...props}
+        >
             {children}
         </button>
     );
@@ -54,7 +59,12 @@ export const DropdownList = ({ children, className, ...props }) => {
     const { open, setOpen } = useContext(DropdownContext);
 
     return (
-        <menu className={`dropdown-list ${!open && "hidden"} ${className}`} onClick={() => setOpen(false)} {...props}>
+        <menu
+            className={`dropdown-list ${!open && "hidden"} ${className}`}
+            onClick={() => setOpen(false)}
+            aria-hidden={!open}
+            {...props}
+        >
             {children}
         </menu>
     );
