@@ -1,4 +1,4 @@
-import "./index.css";
+import styles from "./index.module.css";
 
 import { useContext } from "react";
 
@@ -41,32 +41,45 @@ const ChatboxHeader = () => {
     };
 
     return (
-        <div className="chatbox-header">
-            <div className="right-elems">
+        <div className={styles.chatboxHeader}>
+            <div className={styles.rightElems}>
                 <DropdownMenu>
-                    <DropdownHeader className="theme-menu-title">
-                        <ThemeIcon theme={theme} /><span className="theme-menu-text">Theme</span>
+                    <DropdownHeader className={styles.themeMenuTitle}>
+                        <ThemeIcon theme={theme} />
+                        <span className={styles.themeMenuText}>Theme</span>
                     </DropdownHeader>
-                    <DropdownList className="theme-menu-list">
+                    <DropdownList className={styles.themeMenuList}>
                         <li>
-                            <button className={`theme-menu-item ${theme === "system" && "selected"}`} onClick={() => onThemeClick("system")}>
-                                <BrightnessMediumIcon /><span className="theme-menu-text">OS Default</span>
+                            <button
+                                className={`${styles.themeMenuItem} ${theme === "system" && styles.selected}`}
+                                onClick={() => onThemeClick("system")}
+                            >
+                                <BrightnessMediumIcon />
+                                <span className={styles.themeMenuText}>OS Default</span>
                             </button>
                         </li>
                         <li>
-                            <button className={`theme-menu-item ${theme === "light" && "selected"}`} onClick={() => onThemeClick("light")}>
-                                <LightModeIcon /><span className="theme-menu-text">Light</span>
+                            <button
+                                className={`${styles.themeMenuItem} ${theme === "light" && styles.selected}`}
+                                onClick={() => onThemeClick("light")}
+                            >
+                                <LightModeIcon />
+                                <span className={styles.themeMenuText}>Light</span>
                             </button>
                         </li>
                         <li>
-                            <button className={`theme-menu-item ${theme === "dark" && "selected"}`} onClick={() => onThemeClick("dark")}>
-                                <DarkModeIcon /><span className="theme-menu-text">Dark</span>
+                            <button
+                                className={`${styles.themeMenuItem} ${theme === "dark" && styles.selected}`}
+                                onClick={() => onThemeClick("dark")}
+                            >
+                                <DarkModeIcon />
+                                <span className={styles.themeMenuText}>Dark</span>
                             </button>
                         </li>
                     </DropdownList>
                 </DropdownMenu>
                 <DropdownMenu>
-                    <DropdownHeader className="user-info-menu">
+                    <DropdownHeader className={styles.userInfoMenu}>
                         <Avatar
                             // NOTE: className not working on Avatar
                             sx={{
@@ -76,12 +89,12 @@ const ChatboxHeader = () => {
                             src={avatar}
                         />
                     </DropdownHeader>
-                    <DropdownList className="user-info-menu-list">
+                    <DropdownList className={styles.userInfoMenuList}>
                         <li><span>{username}</span></li>
-                        <hr className="user-info-menu-username-hr" />
+                        <hr className={styles.userInfoMenuUsernameHr} />
                         <li>
-                            <button className="theme-menu-item" onClick={handleLogout}>
-                                <span className="theme-menu-text">Logout</span>
+                            <button className={styles.themeMenuItem} onClick={handleLogout}>
+                                <span className={styles.themeMenuText}>Logout</span>
                             </button>
                         </li>
                     </DropdownList>

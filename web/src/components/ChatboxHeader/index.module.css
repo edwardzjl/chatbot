@@ -1,4 +1,4 @@
-.chatbox-header {
+.chatboxHeader {
     top: 0;
     position: sticky;
     min-height: 60px;
@@ -10,7 +10,7 @@
     z-index: 1;
 }
 
-.right-elems {
+.rightElems {
     display: flex;
     flex-direction: row;
     /* align-items: center; */
@@ -18,7 +18,7 @@
     margin-right: 2vw;
 }
 
-.theme-menu-title {
+.themeMenuTitle {
     background-color: transparent;
     color: var(--text-primary);
     display: flex;
@@ -27,18 +27,18 @@
     border: none;
 }
 
-.theme-menu-title:hover {
+.themeMenuTitle:hover {
     background-color: var(--bg-secondary);
     border-radius: 5px;
 }
 
-.theme-menu-text {
+.themeMenuText {
     margin: 0.3em;
     text-align: start;
     font-size: 0.8rem;
 }
 
-.theme-menu-list {
+.themeMenuList {
     background-color: var(--bg-primary);
     border: 1px solid var(--border-color);
     border-radius: 3px;
@@ -47,7 +47,7 @@
     padding: 0.5rem;
 }
 
-.theme-menu-item {
+.themeMenuItem {
     width: 100%;
     margin: 2px;
     background-color: transparent;
@@ -58,22 +58,22 @@
     align-items: center;
 }
 
-.theme-menu-item:hover {
+.themeMenuItem:hover {
     border: 1px solid var(--border-color);
     border-radius: 3px;
 }
 
-.theme-menu-item.selected {
+.themeMenuItem.selected {
     border: 1px solid var(--border-color);
     border-radius: 3px;
 }
 
-.user-info-menu {
+.userInfoMenu {
     background-color: transparent;
     border: none;
 }
 
-.user-info-menu-list {
+.userInfoMenuList {
     background-color: var(--bg-primary);
     border: 1px solid var(--border-color);
     border-radius: 3px;
@@ -83,6 +83,6 @@
     padding: 0.5rem;
 }
 
-.user-info-menu-username-hr {
+.userInfoMenuUsernameHr {
     border: 1px solid var(--border-color);
 }
