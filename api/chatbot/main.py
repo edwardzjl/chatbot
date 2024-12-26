@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.requests import Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
@@ -46,10 +46,17 @@ app = FastAPI(
 )
 
 # Add prometheus asgi middleware to route /metrics requests
-# NOTE: although I mount it to `/metrics`, you must append the trailing slash to access the metrics. i.e. `/metrics/`
-# I think it's a bug in fastapi
 metrics_app = make_asgi_app()
-app.mount("/metrics", metrics_app)
+app.mount("/metrics/", metrics_app)
+
+
+# NOTE: Even I mounted it to `/metrics`, I must append the trailing slash to access the metrics. i.e. `/metrics/`
+# I think it's a bug in fastapi.
+# My current solution is to add a redirect endpoint for this specific request.
+@app.get("/metrics")
+async def redirect_to_metrics_with_slash():
+    return RedirectResponse(url="/metrics/")
+
 
 app.include_router(chat_router)
 app.include_router(conversation_router)
