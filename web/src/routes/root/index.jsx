@@ -197,27 +197,29 @@ const Root = () => {
             New Chat
           </Link>
           <nav className="conv-list">
-            {groupedConvs && Object.entries(groupedConvs).flatMap(([grp, convs]) => (
-              [
-                <div key={grp}>
-                  <div className="sidemenu-date-group">{grp}</div>
-                  <ul>
-                    {convs.map((conv) => (
-                      <li key={conv.id}>
-                        <NavLink
-                          to={`conversations/${conv.id}`}
-                          className={`sidemenu-button ${({ isActive, isPending }) => isActive ? "active" : isPending ? "pending" : ""}`}
-                        >
-                          {({ isActive, isPending, isTransitioning }) => (
-                            <ChatTab chat={conv} isActive={isActive} onShareClick={onShareClick} onDeleteClick={onDeleteClick} />
-                          )}
-                        </NavLink>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ]
-            ))}
+            {groupedConvs && Object.entries(groupedConvs)
+              .filter(([_, convs]) => convs && convs.length > 0) // Filter out empty lists
+              .flatMap(([grp, convs]) => (
+                [
+                  <div key={grp}>
+                    <div className="sidemenu-date-group">{grp}</div>
+                    <ul>
+                      {convs.map((conv) => (
+                        <li key={conv.id}>
+                          <NavLink
+                            to={`conversations/${conv.id}`}
+                            className={`sidemenu-button ${({ isActive, isPending }) => isActive ? "active" : isPending ? "pending" : ""}`}
+                          >
+                            {({ isActive, isPending, isTransitioning }) => (
+                              <ChatTab chat={conv} isActive={isActive} onShareClick={onShareClick} onDeleteClick={onDeleteClick} />
+                            )}
+                          </NavLink>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ]
+              ))}
           </nav>
           <hr className="sidemenu-bottom" />
           <div className="sidemenu-bottom-group">
