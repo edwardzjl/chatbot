@@ -1,4 +1,4 @@
-.welcome-container {
+.welcomeContainer {
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -8,21 +8,25 @@
 }
 
 .welcome {
-    width: 20vw;
-    text-align: left;
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+    margin: 0.5rem 0;
 }
 
-.input-bottom {
+.inputBottom {
     position: sticky;
     bottom: 0;
     margin-top: auto;
     background-color: var(--bg-secondary);
     display: flex;
     flex-direction: column;
+    padding: 0.5rem;
 }
 
 .footer {
     color: var(--text-secondary);
     font-size: 0.75em;
     margin: 5px;
+    text-align: center;
 }
