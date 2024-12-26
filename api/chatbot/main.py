@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
+from loguru import logger
 from prometheus_client import make_asgi_app
 from sqlalchemy.exc import NoResultFound
 
@@ -82,27 +83,38 @@ def userinfo(
     )
 
 
+app.mount(
+    "/", StaticFiles(directory="static", html=True, check_dir=False), name="static"
+)
+
+
 @app.exception_handler(NoResultFound)
-async def not_found_error_handler(request: Request, exc: NoResultFound):
+def not_found_error_handler(request: Request, exc: NoResultFound):
     return JSONResponse(
         status_code=status.HTTP_404_NOT_FOUND,
         content=jsonable_encoder({"detail": str(exc)}),
     )
 
 
-app.mount(
-    "/", StaticFiles(directory="static", html=True, check_dir=False), name="static"
-)
-
 templates = Jinja2Templates(directory="static")
 
 
 # return all unregistered, non-API call to web app
 @app.exception_handler(404)
-async def custom_404_handler(request: Request, _):
+def custom_404_handler(request: Request, _):
     if request.url.path.startswith("/api"):
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
             content={"detail": "API path not found"},
         )
     return templates.TemplateResponse("index.html", {"request": request})
+
+
+@app.exception_handler(Exception)
+def exception_handler(request: Request, exc: Exception):
+    """Global exception handler."""
+    logger.exception("Unhandled error during request {}", request)
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={"detail": "server error"},
+    )
