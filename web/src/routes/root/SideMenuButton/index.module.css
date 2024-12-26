@@ -1,4 +1,4 @@
-.chat-title {
+.chatTitle {
   margin-left: 5px;
   height: 1.3rem;
   color: var(--text-primary);
@@ -9,23 +9,23 @@
   text-overflow: ellipsis;
 }
 
-.chat-title:focus {
+.chatTitle:focus {
   outline: none !important;
   border: none;
   border-bottom: 1px solid var(--text-primary);
 }
 
-.chat-op-menu {
+.chatOpMenu {
   margin-left: auto;
 }
 
-.chat-op-menu-icon {
+.chatOpMenuIcon {
   background: transparent;
   border: unset;
   color: var(--text-primary);
 }
 
-.chat-op-menu-list {
+.chatOpMenuList {
   background-color: var(--bg-primary);
   border: 1px solid var(--border-color);
   border-radius: 5px;
@@ -34,7 +34,7 @@
   padding: 0.5rem;
 }
 
-.chat-op-menu-item {
+.chatOpMenuItem {
   background: transparent;
   border: unset;
   border-radius: 5px;
@@ -45,10 +45,10 @@
   width: 100%;
 }
 
-.chat-op-menu-item:hover {
+.chatOpMenuItem:hover {
   background-color: var(--bg-secondary);
 }
 
-.chat-op-menu-item-text {
+.chatOpMenuItemText {
   margin: 0.5vw;
 }

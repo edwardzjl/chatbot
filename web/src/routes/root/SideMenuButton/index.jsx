@@ -1,4 +1,4 @@
-import "./index.css";
+import styles from "./index.module.css";
 
 import { useContext, useState, useRef } from "react";
 import Tooltip from "@mui/material/Tooltip";
@@ -103,53 +103,53 @@ const ChatTab = ({ chat, isActive, onShareClick, onDeleteClick }) => {
         <span
           aria-label="chat title"
           ref={titleRef}
-          className="chat-title"
+          className={styles.chatTitle}
           contentEditable={titleEditable}
           suppressContentEditableWarning={true}  // TODO: I'm not sure whether I can ignore this warning
           onKeyDown={handleKeyDown}
         >{chat.title}</span>
       </Tooltip>
       {isActive && (
-        <DropdownMenu className="chat-op-menu">
-          <DropdownHeader className="chat-op-menu-icon" >
+        <DropdownMenu className={styles.chatOpMenu}>
+          <DropdownHeader className={styles.chatOpMenuIcon}>
             <MoreVertIcon />
           </DropdownHeader>
-          <DropdownList className="chat-op-menu-list">
+          <DropdownList className={styles.chatOpMenuList}>
             <li>
-              <button className="chat-op-menu-item" onClick={flipPin}>
+              <button className={styles.chatOpMenuItem} onClick={flipPin}>
                 {chat.pinned ?
                   <>
                     <Icon baseClassName="material-symbols-outlined">keep_off</Icon>
-                    <span className="chat-op-menu-item-text">Unpin</span>
+                    <span className={styles.chatOpMenuItemText}>Unpin</span>
                   </> : <>
                     <Icon baseClassName="material-symbols-outlined">keep</Icon>
-                    <span className="chat-op-menu-item-text">Pin</span>
+                    <span className={styles.chatOpMenuItemText}>Pin</span>
                   </>
                 }
               </button>
             </li>
             <li>
-              <button className="chat-op-menu-item" onClick={onSummarizeClick}>
+              <button className={styles.chatOpMenuItem} onClick={onSummarizeClick}>
                 <AutoAwesomeIcon />
-                <span className="chat-op-menu-item-text">Generate title</span>
+                <span className={styles.chatOpMenuItemText}>Generate title</span>
               </button>
             </li>
             <li>
-              <button className="chat-op-menu-item" onClick={onUpdateClick}>
+              <button className={styles.chatOpMenuItem} onClick={onUpdateClick}>
                 <DriveFileRenameOutlineIcon />
-                <span className="chat-op-menu-item-text">Change title</span>
+                <span className={styles.chatOpMenuItemText}>Change title</span>
               </button>
             </li>
             <li>
-              <button className="chat-op-menu-item" onClick={() => onShareClick(chat.id, chat.title)}>
+              <button className={styles.chatOpMenuItem} onClick={() => onShareClick(chat.id, chat.title)}>
                 <ShareIcon />
-                <span className="chat-op-menu-item-text">Share</span>
+                <span className={styles.chatOpMenuItemText}>Share</span>
               </button>
             </li>
             <li>
-              <button className="chat-op-menu-item" onClick={() => onDeleteClick(chat.id, titleRef.current?.innerText)}>
+              <button className={styles.chatOpMenuItem} onClick={() => onDeleteClick(chat.id, titleRef.current?.innerText)}>
                 <DeleteOutlineIcon />
-                <span className="chat-op-menu-item-text">Delete</span>
+                <span className={styles.chatOpMenuItemText}>Delete</span>
               </button>
             </li>
           </DropdownList>
