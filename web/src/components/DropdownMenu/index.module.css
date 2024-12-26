@@ -2,23 +2,22 @@
     position: relative;
 }
 
-.dropdownHeader {
+.dropdownButton {
     cursor: pointer;
 }
 
-
-.dropdownList {
+.dropdownMenu {
     position: absolute;
     display: block;
     z-index: 1000;
 }
 
-.hidden {
-    display: none;
-}
-
-.dropdownList li {
+.dropdownMenu li {
     list-style: none;
     width: 100%;
     white-space: nowrap;
+}
+
+.hidden {
+    display: none;
 }

@@ -10,7 +10,7 @@ import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutli
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import ShareIcon from '@mui/icons-material/Share';
 
-import { DropdownMenu, DropdownHeader, DropdownList } from "components/DropdownMenu";
+import { Dropdown, DropdownButton, DropdownMenu } from "components/DropdownMenu";
 import { ConversationContext } from "contexts/conversation";
 
 /**
@@ -113,11 +113,11 @@ const ChatTab = ({ chat, isActive, onShareClick, onDeleteClick }) => {
         </span>
       </Tooltip>
       {isActive && (
-        <DropdownMenu className={styles.chatOpMenu}>
-          <DropdownHeader className={styles.chatOpMenuIcon}>
+        <Dropdown className={styles.chatOpMenu}>
+          <DropdownButton className={styles.chatOpMenuIcon}>
             <MoreVertIcon />
-          </DropdownHeader>
-          <DropdownList className={styles.chatOpMenuList}>
+          </DropdownButton>
+          <DropdownMenu className={styles.chatOpMenuList}>
             <li>
               <button className={styles.chatOpMenuItem} onClick={flipPin}>
                 {chat.pinned ?
@@ -155,8 +155,8 @@ const ChatTab = ({ chat, isActive, onShareClick, onDeleteClick }) => {
                 <span className={styles.chatOpMenuItemText}>Delete</span>
               </button>
             </li>
-          </DropdownList>
-        </DropdownMenu>
+          </DropdownMenu>
+        </Dropdown>
       )}
     </>
   );
