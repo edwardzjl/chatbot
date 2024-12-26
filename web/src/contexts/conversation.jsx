@@ -18,7 +18,7 @@ export const ConversationContext = createContext({
  * @param {Object} groupedConvs - An object where each key is a group identifier, and each value is an array of conversations.
  * @returns {Array} A flattened array containing all conversations from the input object.
  */
-const flatConvs = (groupedConvs) => {
+export const flatConvs = (groupedConvs) => {
     return Object.entries(groupedConvs).flatMap(([_, convs]) => (
         [...convs]
     ));
@@ -35,7 +35,7 @@ const flatConvs = (groupedConvs) => {
  * @param {Array} conversations - An array of conversation objects, where each object contains at least a `pinned` boolean and a `last_message_at` timestamp.
  * @returns {Array} A new array of conversations sorted first by pinned status and then by the `last_message_at` timestamp in descending order.
  */
-const sortConvs = (conversations) => {
+export const sortConvs = (conversations) => {
     // sort by pinned and last_message_at
     // See <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/toSorted>
     // and <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#sorting_array_of_objects>
@@ -71,7 +71,7 @@ const sortConvs = (conversations) => {
  * @param {Array} conversations - An array of conversation objects, where each object contains at least a `last_message_at` timestamp and a `pinned` boolean.
  * @returns {Object} An object where each key is a group label and each value is an array of conversations that belong to that group.
  */
-const groupConvs = (conversations) => {
+export const groupConvs = (conversations) => {
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
@@ -133,15 +133,22 @@ export const ConversationProvider = ({ children }) => {
 export const conversationReducer = (groupedConvs, action) => {
     switch (action.type) {
         case "added": {
+            // NOTE: To save computation, this does not sort nor group the convs.
+            // It simply insert the new conv to the first element of group 'Today'.
+            // So the returnning order matters.
+
             // action.conv: { id, title, created_at, last_message_at, owner, pinned }
-            // I'm not sorting convs here, so the order matters.
-            if (groupedConvs.Today) {
-                return { ...groupedConvs, Today: [action.conv, ...groupedConvs.Today || []] };
+            const { conv } = action;
+            // Update 'Today' group only if it exists, without side effects
+            const updatedGroupedConvs = { ...groupedConvs };
+
+            if (updatedGroupedConvs.Today) {
+                updatedGroupedConvs.Today = [conv, ...updatedGroupedConvs.Today];
+            } else {
+                updatedGroupedConvs.Today = [conv];
             }
-            if (groupedConvs.pinned) {
-                return {pinned: groupedConvs.pinned, Today: [action.conv], ...groupedConvs};
-            }
-            return {Today: [action.conv], ...groupedConvs};
+
+            return updatedGroupedConvs;
         }
         case "deleted": {
             const convs = flatConvs(groupedConvs);
