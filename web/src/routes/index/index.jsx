@@ -1,4 +1,4 @@
-import "./index.css";
+import styles from './index.module.css';
 
 import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
@@ -44,14 +44,14 @@ const Conversation = () => {
     return (
         <>
             <ChatboxHeader />
-            <div className="welcome-container">
-                <div className="welcome">{username}, hello!</div >
-                <div className="welcome">How can I help you today?</div >
+            <div className={styles.welcomeContainer}>
+                <div className={styles.welcome}>{username ? `${username}, hello!` : "Hello!"}</div >
+                <div className={styles.welcome}>How can I help you today?</div >
             </div>
             {/* TODO: add some examples here? */}
-            <div className="input-bottom">
+            <div className={styles.inputBottom}>
                 <ChatInput onSubmit={handleSubmit} />
-                <div className="footer">Chatbot can make mistakes. Consider checking important information.</div>
+                <div className={styles.footer}>Chatbot can make mistakes. Consider checking important information.</div>
             </div>
         </>
     );
