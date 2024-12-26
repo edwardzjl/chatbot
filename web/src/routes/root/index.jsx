@@ -141,7 +141,7 @@ const Root = () => {
     setCopyTooltipTitle("copied!");
     setTimeout(() => {
       setCopyTooltipTitle("copy url");
-    }, "3000");
+    }, 3000);
   };
 
   const onDeleteClick = (id, title) => {
