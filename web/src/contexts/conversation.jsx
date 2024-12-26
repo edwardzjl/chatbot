@@ -9,12 +9,32 @@ export const ConversationContext = createContext({
     dispatch: () => { },
 });
 
+/**
+ * Flattens a grouped conversation object into a single array of conversations.
+ * 
+ * The function takes an object where the keys represent group identifiers, and the values are arrays of conversations.
+ * It returns a new array containing all the individual conversations from the grouped object, preserving their order.
+ * 
+ * @param {Object} groupedConvs - An object where each key is a group identifier, and each value is an array of conversations.
+ * @returns {Array} A flattened array containing all conversations from the input object.
+ */
 const flatConvs = (groupedConvs) => {
     return Object.entries(groupedConvs).flatMap(([_, convs]) => (
         [...convs]
     ));
 };
 
+/**
+ * Sorts an array of conversations based on their pinned status and the last message timestamp.
+ * 
+ * The function first sorts conversations by whether they are pinned, with pinned conversations appearing first.
+ * If two conversations have the same pinned status, they are then sorted by the `last_message_at` timestamp, with the most recent messages appearing first.
+ * 
+ * This function uses `Array.toSorted()` to create a new array with the conversations sorted according to the specified criteria.
+ * 
+ * @param {Array} conversations - An array of conversation objects, where each object contains at least a `pinned` boolean and a `last_message_at` timestamp.
+ * @returns {Array} A new array of conversations sorted first by pinned status and then by the `last_message_at` timestamp in descending order.
+ */
 const sortConvs = (conversations) => {
     // sort by pinned and last_message_at
     // See <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/toSorted>
@@ -36,6 +56,21 @@ const sortConvs = (conversations) => {
     });
 };
 
+/**
+ * Groups an array of conversations based on their pinned status and the date of the last message.
+ * 
+ * The function categorizes conversations into the following groups:
+ * - "pinned": for pinned conversations
+ * - "Today": for conversations with the latest message sent today
+ * - "Yesterday": for conversations with the latest message sent yesterday
+ * - "Last seven days": for conversations with the latest message sent within the last seven days
+ * - A month-year format (e.g., "January 2024") for conversations older than seven days
+ * 
+ * This is achieved by comparing the `last_message_at` timestamp of each conversation with the current date, yesterday's date, and a week-old date.
+ * 
+ * @param {Array} conversations - An array of conversation objects, where each object contains at least a `last_message_at` timestamp and a `pinned` boolean.
+ * @returns {Object} An object where each key is a group label and each value is an array of conversations that belong to that group.
+ */
 const groupConvs = (conversations) => {
     const today = new Date();
     const yesterday = new Date(today);
