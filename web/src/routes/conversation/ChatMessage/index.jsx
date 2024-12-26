@@ -59,7 +59,7 @@ const ChatMessage = ({ convId, message }) => {
     setCopyTooltipTitle("copied!");
     setTimeout(() => {
       setCopyTooltipTitle("copy content");
-    }, "3000");
+    }, 3000);
   };
   const onThumbUpClick = () => {
     fetch(`/api/conversations/${convId}/messages/${message.id}/thumbup`, {
