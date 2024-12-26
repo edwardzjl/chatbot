@@ -108,7 +108,7 @@ describe('ConversationProvider', () => {
         <ConversationContext.Consumer>
           {({ groupedConvs }) => (
             Object.entries(groupedConvs).flatMap(([grp, convs]) => (
-              <div>
+              <div key={grp}>
                 {convs.map((conv) => <div key={conv.id}>{conv.title}</div>)}
               </div>
             ))
