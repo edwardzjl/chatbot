@@ -16,7 +16,14 @@
 	// See: <https://github.com/microsoft/vscode-remote-release/issues/4645>
 	// Once this issue is resolved, I can forward ports from other services, like 5432 for postgres and 8080 for llama.cpp.
 	"forwardPorts": [3000, 8000],
-
+	"portsAttributes": {
+		"3000": {
+			"label": "web"
+		},
+		"8000": {
+			"label": "api"
+		}
+	},
 	// nvm has to be run in an interactive shell while postCreateCommand runs in a non-interactive one.
 	// Running a script with '#!/bin/zsh -i' can solve this. See <https://github.com/microsoft/vscode-dev-containers/issues/559#issuecomment-693105152>
 	// Note 1: Do not add 'sh' before the script, which makes it non-interactive.
