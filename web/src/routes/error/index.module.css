@@ -1,0 +1,64 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+}
+
+.errorCode {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #e74c3c;
+    margin-bottom: 1rem;
+}
+
+.heading {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 1.5rem;
+}
+
+.message {
+    font-size: 1.1rem;
+    color: #555;
+    margin-bottom: 2rem;
+}
+
+.homeButton {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 0.8rem 2rem;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.homeButton:hover {
+    background-color: #2980b9;
+}
+
+.homeButton:focus {
+    outline: 2px solid #3498db;
+    outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+    .container {
+        width: 80%;
+        margin-top: 10vw;
+    }
+    .errorCode {
+        font-size: 2.5rem;
+    }
+    .heading {
+        font-size: 1.5rem;
+    }
+    .message {
+        font-size: 1rem;
+    }
+}
