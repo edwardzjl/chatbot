@@ -4,11 +4,11 @@ import { useContext, useEffect } from "react";
 import { useLoaderData, redirect } from "react-router-dom";
 
 import ChatboxHeader from "components/ChatboxHeader";
+import ChatLog from "components/ChatLog";
 
 import { MessageContext } from "contexts/message";
 import { WebsocketContext } from "contexts/websocket";
 
-import ChatLog from "./ChatLog";
 import ChatMessage from "./ChatMessage";
 import ChatInput from "./ChatInput";
 

@@ -3,9 +3,9 @@ import "./index.css";
 import { useContext } from "react";
 import { useLoaderData, redirect } from "react-router-dom";
 
+import ChatLog from "components/ChatLog";
 import { ThemeContext } from "contexts/theme";
 
-import ChatLog from "../conversation/ChatLog";
 import ChatMessage from "../conversation/ChatMessage";
 
 export async function loader({ params }) {
@@ -55,7 +55,7 @@ const Share = () => {
                         <ChatMessage key={index} convId={share.id} idx={index} message={message} />
                     ))}
                 </ChatLog>
-                <button className="start-button" onClick={goHome}>Start chatting!</button>
+                <button className="start-button" onClick={goHome} aria-label="Start chatting">Start chatting!</button>
             </div>
         </div>
     );
