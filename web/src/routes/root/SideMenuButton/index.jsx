@@ -1,6 +1,6 @@
 import styles from "./index.module.css";
 
-import { useContext, useState, useRef } from "react";
+import { useContext, useEffect, useState, useRef } from "react";
 import Tooltip from "@mui/material/Tooltip";
 import Icon from "@mui/material/Icon";
 
@@ -25,6 +25,12 @@ const ChatTab = ({ chat, isActive, onShareClick, onDeleteClick }) => {
   const { dispatch } = useContext(ConversationContext);
   const titleRef = useRef(null);
   const [titleEditable, setTitleEditable] = useState("false");
+
+  useEffect(() => {
+    if (titleEditable === "plaintext-only") {
+      titleRef.current.focus();
+    }
+  }, [titleEditable]);
 
   const handleKeyDown = async (e) => {
     // TODO: this will trigger in Chinese IME on OSX
@@ -51,26 +57,20 @@ const ChatTab = ({ chat, isActive, onShareClick, onDeleteClick }) => {
       // Maybe set snackbar to inform user?
     }
   };
-
-  const onUpdateClick = async (e) => {
-    // TODO: if we stop propagation, the dropdown menu will not close
-    // but if we don't, the chat title will be selected
-    // e.stopPropagation();
+  const onUpdateClick = () => {
     setTitleEditable("plaintext-only");
-    // TODO: does not work on first click without `setTimeout`, but works on following clicks, no clue why
-    // take a look at <https://github.com/microsoft/react-native-windows/issues/9292>
-    // and <https://github.com/facebook/react/issues/17894>
-    setTimeout(() => {
-      titleRef.current.focus();
-    }, 100);
+    setTimeout(() => titleRef.current.focus(), 100);
   };
 
   const onSummarizeClick = async () => {
-    fetch(`/api/conversations/${chat.id}/summarization`, {
-      method: "POST",
-    })
-      .then(res => res.json())
-      .then(data => titleRef.current.innerText = data.title);
+    try {
+      const res = await fetch(`/api/conversations/${chat.id}/summarization`, { method: "POST" });
+      const data = await res.json();
+      titleRef.current.innerText = data.title;
+    } catch (error) {
+      console.error("Error generating title", error);
+      // TODO: Show snackbar or toast notification
+    }
   }
 
   const flipPin = async () => {
@@ -107,7 +107,10 @@ const ChatTab = ({ chat, isActive, onShareClick, onDeleteClick }) => {
           contentEditable={titleEditable}
           suppressContentEditableWarning={true}  // TODO: I'm not sure whether I can ignore this warning
           onKeyDown={handleKeyDown}
-        >{chat.title}</span>
+          onBlur={() => setTitleEditable("false")}
+        >
+          {chat.title}
+        </span>
       </Tooltip>
       {isActive && (
         <DropdownMenu className={styles.chatOpMenu}>
