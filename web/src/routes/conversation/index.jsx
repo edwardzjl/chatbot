@@ -5,11 +5,11 @@ import { useLoaderData, redirect } from "react-router-dom";
 
 import ChatboxHeader from "components/ChatboxHeader";
 import ChatLog from "components/ChatLog";
+import ChatMessage from "components/ChatMessage";
 
 import { MessageContext } from "contexts/message";
 import { WebsocketContext } from "contexts/websocket";
 
-import ChatMessage from "./ChatMessage";
 import ChatInput from "./ChatInput";
 
 
