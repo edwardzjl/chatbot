@@ -2,18 +2,18 @@
  * main container of chat messages
  * align center and control max width
  */
-.message-container {
+.messageContainer {
     max-width: 40vw;
     margin-left: auto;
     margin-right: auto;
     padding-top: 1vw;
 }
 
-.message-container.mine {
+.messageContainer.mine {
     /* background-color: var(--bg-primary); */
 }
 
-.message-title {
+.messageTitle {
     display: flex;
     flex-direction: row;
 }
@@ -24,7 +24,7 @@
     height: 100;
 }
 
-.message-title-name {
+.messageTitleName {
     margin-top: auto;
     margin-bottom: auto;
     margin-left: 1vw;
@@ -32,12 +32,12 @@
     font-weight: bold;
 }
 
-.message-body {
+.messageBody {
     padding-left: 3vw;
     padding-right: 3vw;
 }
 
-.message-body:hover .message-feedbacks {
+.messageBody:hover .messageFeedbacks {
     opacity: 0.9;
     transition: opacity 1s;
 }
@@ -47,17 +47,17 @@
  * Otherwise the button just disappears immediately
  * TODO: I want to hide them completely and only show on mouse enter message.
  */
-.message-body:not(:hover) .message-feedbacks {
+.messageBody:not(:hover) .messageFeedbacks {
     opacity: 0;
     transition: opacity 1s;
 }
 
-.message-content {
+.messageContent {
     word-break: break-word;
     overflow-wrap: break-word;
 }
 
-.message-code-title {
+.messageCodeTitle {
     padding: 5px;
     padding-left: 10px;
     padding-right: 10px;
@@ -67,10 +67,10 @@
     background-color: var(--bg-primary);
 }
 
-.message-feedbacks {
+.messageFeedbacks {
     margin-left: auto;
 }
 
-.message-feedback {
+.messageFeedback {
     margin: 0.1vw;
 }

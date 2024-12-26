@@ -1,4 +1,4 @@
-import "./index.css";
+import styles from './index.module.css';
 
 import { useContext, useEffect, useState } from "react";
 import Markdown from "react-markdown";
@@ -21,11 +21,15 @@ import { UserContext } from "contexts/user";
 import { stringToColor } from "commons";
 
 /**
- * @param {string} convId
- * @param {object} message
- * @param {string} message.from
- * @param {string} message.content
- * @returns
+ * ChatMessage component that displays a single chat message along with relevant actions such as copying content,
+ * giving thumbs up/down feedback, and rendering markdown content with syntax highlighting.
+ *
+ * @param {Object} props - The component props.
+ * @param {string} props.convId - The conversation ID.
+ * @param {Object} props.message - The message object containing details like the sender, content, and feedback.
+ * @param {string} props.message.from - The sender of the message (either "You" or "AI").
+ * @param {string} props.message.content - The message content, which can include markdown.
+ * @returns {JSX.Element} The rendered ChatMessage component.
  */
 const ChatMessage = ({ convId, message }) => {
   const { theme } = useContext(ThemeContext);
@@ -36,6 +40,7 @@ const ChatMessage = ({ convId, message }) => {
   const [thumbUpTooltipTitle, setThumbUpTooltipTitle] = useState("good answer");
   const [thumbDownTooltipTitle, setThumbDownTooltipTitle] = useState("bad answer");
 
+  // Update markdown theme based on the current theme
   useEffect(() => {
     switch (theme) {
       case "dark":
@@ -54,6 +59,12 @@ const ChatMessage = ({ convId, message }) => {
     }
   }, [theme]);
 
+  /**
+   * Handles the copying of message content to the clipboard.
+   * Updates the tooltip title to indicate the content has been copied.
+   *
+   * @param {string} content - The content to be copied to the clipboard.
+   */
   const onCopyClick = (content) => {
     navigator.clipboard.writeText(content);
     setCopyTooltipTitle("copied!");
@@ -61,6 +72,11 @@ const ChatMessage = ({ convId, message }) => {
       setCopyTooltipTitle("copy content");
     }, 3000);
   };
+
+  /**
+   * Handles the thumbs up action by sending a PUT request to register the feedback.
+   * Updates the tooltip and dispatches a message update to the context.
+   */
   const onThumbUpClick = () => {
     fetch(`/api/conversations/${convId}/messages/${message.id}/thumbup`, {
       method: "PUT",
@@ -72,6 +88,11 @@ const ChatMessage = ({ convId, message }) => {
       });
     });
   };
+
+  /**
+   * Handles the thumbs down action by sending a PUT request to register the feedback.
+   * Updates the tooltip and dispatches a message update to the context.
+   */
   const onThumbDownClick = () => {
     fetch(`/api/conversations/${convId}/messages/${message.id}/thumbdown`, {
       method: "PUT",
@@ -85,37 +106,36 @@ const ChatMessage = ({ convId, message }) => {
   };
 
   /**
-   * Checks whether a message is sent by me.
-   * @param {*} message
+   * Determines if the message was sent by the current user.
+   *
+   * @param {Object} message - The message object.
+   * @returns {boolean} True if the message was sent by the current user, otherwise false.
    */
-  const myMessage = (message) => {
-    const msgFrom = message.from.toLowerCase();
-    return msgFrom === username;
-  };
+  const myMessage = message.from.toLowerCase() === username;
 
   return (
-    <div className={`message-container ${myMessage(message) && "mine"}`}>
-      <div className="message-title">
+    <div className={`${styles.messageContainer} ${myMessage ? styles.mine : ""}`}>
+      <div className={styles.messageTitle}>
         {/* NOTE: className not working on Avatar */}
-        {myMessage(message) ?
+        {myMessage ?
           <Avatar src={avatar} /> :
           // TODO: give AI an avatar
           <Avatar sx={{ bgcolor: stringToColor(message.from) }}>
             AI
           </Avatar>
         }
-        <div className="message-title-name">{myMessage(message) ? "You" : "AI"}</div>
+        <div className={styles.messageTitleName}>{myMessage ? "You" : "AI"}</div>
       </div>
-      <div className="message-body">
+      <div className={styles.messageBody}>
         <Markdown
-          className="message-content"
+          className={styles.messageContent}
           remarkPlugins={[remarkGfm]}
           components={{
             code({ inline, className, children, ...props }) {
               const match = /language-(\w+)/.exec(className || "");
               return !inline && match ? (
                 <div>
-                  <div className="message-code-title">
+                  <div className={styles.messageCodeTitle}>
                     <div>{match[1]}</div>
                     <Tooltip title={copyTooltipTitle}>
                       <ContentCopyIcon onClick={() => onCopyClick(children)} />
@@ -141,8 +161,8 @@ const ChatMessage = ({ convId, message }) => {
         >
           {message.content}
         </Markdown>
-        {!myMessage(message) && (
-          <div className="message-feedbacks">
+        {!myMessage && (
+          <div className={styles.messageFeedbacks}>
             <Tooltip title={copyTooltipTitle}>
               <ContentCopyIcon onClick={() => onCopyClick(message.content)} />
             </Tooltip>
@@ -159,7 +179,6 @@ const ChatMessage = ({ convId, message }) => {
           </div>
         )}
       </div>
-
     </div>
   );
 };
