@@ -1,19 +1,19 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 
-import { DropdownMenu, DropdownHeader, DropdownList } from "./index";
+import { Dropdown, DropdownButton, DropdownMenu } from "./index";
 
 describe("DropdownMenu Component", () => {
     test("renders DropdownMenu with children", () => {
         render(
-            <DropdownMenu>
-                <DropdownHeader>Menu</DropdownHeader>
-                <DropdownList>
+            <Dropdown>
+                <DropdownButton>Menu</DropdownButton>
+                <DropdownMenu>
                     <li>Item 1</li>
                     <li>Item 2</li>
                     <li>Item 3</li>
-                </DropdownList>
-            </DropdownMenu>
+                </DropdownMenu>
+            </Dropdown>
         );
 
         expect(screen.getByText("Menu")).toBeInTheDocument();
@@ -24,14 +24,14 @@ describe("DropdownMenu Component", () => {
 
     test("toggles DropdownList visibility on DropdownHeader click", () => {
         render(
-            <DropdownMenu>
-                <DropdownHeader>Menu</DropdownHeader>
-                <DropdownList>
+            <Dropdown>
+                <DropdownButton>Menu</DropdownButton>
+                <DropdownMenu>
                     <li>Item 1</li>
                     <li>Item 2</li>
                     <li>Item 3</li>
-                </DropdownList>
-            </DropdownMenu>
+                </DropdownMenu>
+            </Dropdown>
         );
 
         const header = screen.getByText("Menu");
@@ -50,14 +50,14 @@ describe("DropdownMenu Component", () => {
 
     test("closes DropdownList when clicking outside", () => {
         render(
-            <DropdownMenu>
-                <DropdownHeader>Menu</DropdownHeader>
-                <DropdownList>
+            <Dropdown>
+                <DropdownButton>Menu</DropdownButton>
+                <DropdownMenu>
                     <li>Item 1</li>
                     <li>Item 2</li>
                     <li>Item 3</li>
-                </DropdownList>
-            </DropdownMenu>
+                </DropdownMenu>
+            </Dropdown>
         );
 
         const header = screen.getByText("Menu");
@@ -73,14 +73,14 @@ describe("DropdownMenu Component", () => {
 
     test("closes DropdownList when an item is clicked", () => {
         render(
-            <DropdownMenu>
-                <DropdownHeader>Menu</DropdownHeader>
-                <DropdownList>
+            <Dropdown>
+                <DropdownButton>Menu</DropdownButton>
+                <DropdownMenu>
                     <li>Item 1</li>
                     <li>Item 2</li>
                     <li>Item 3</li>
-                </DropdownList>
-            </DropdownMenu>
+                </DropdownMenu>
+            </Dropdown>
         );
 
         const header = screen.getByText("Menu");

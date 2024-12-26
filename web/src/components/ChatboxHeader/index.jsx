@@ -8,7 +8,7 @@ import BrightnessMediumIcon from "@mui/icons-material/BrightnessMedium";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 
-import { DropdownMenu, DropdownHeader, DropdownList } from "components/DropdownMenu";
+import { Dropdown, DropdownButton, DropdownMenu } from "components/DropdownMenu";
 import { ThemeContext } from "contexts/theme";
 import { UserContext } from "contexts/user";
 
@@ -43,12 +43,12 @@ const ChatboxHeader = () => {
     return (
         <div className={styles.chatboxHeader}>
             <div className={styles.rightElems}>
-                <DropdownMenu>
-                    <DropdownHeader className={styles.themeMenuTitle}>
+                <Dropdown>
+                    <DropdownButton className={styles.themeMenuTitle}>
                         <ThemeIcon theme={theme} />
                         <span className={styles.themeMenuText}>Theme</span>
-                    </DropdownHeader>
-                    <DropdownList className={styles.themeMenuList}>
+                    </DropdownButton>
+                    <DropdownMenu className={styles.themeMenuList}>
                         <li>
                             <button
                                 className={`${styles.themeMenuItem} ${theme === "system" && styles.selected}`}
@@ -79,10 +79,10 @@ const ChatboxHeader = () => {
                                 <span className={styles.themeMenuText}>Dark</span>
                             </button>
                         </li>
-                    </DropdownList>
-                </DropdownMenu>
-                <DropdownMenu>
-                    <DropdownHeader className={styles.userInfoMenu}>
+                    </DropdownMenu>
+                </Dropdown>
+                <Dropdown>
+                    <DropdownButton className={styles.userInfoMenu}>
                         <Avatar
                             // NOTE: className not working on Avatar
                             sx={{
@@ -92,8 +92,8 @@ const ChatboxHeader = () => {
                             src={avatar}
                             alt={`${username}'s avatar`}
                         />
-                    </DropdownHeader>
-                    <DropdownList className={styles.userInfoMenuList}>
+                    </DropdownButton>
+                    <DropdownMenu className={styles.userInfoMenuList}>
                         <li><span>{username}</span></li>
                         <hr className={styles.userInfoMenuUsernameHr} />
                         <li>
@@ -101,8 +101,8 @@ const ChatboxHeader = () => {
                                 <span className={styles.themeMenuText}>Logout</span>
                             </button>
                         </li>
-                    </DropdownList>
-                </DropdownMenu>
+                    </DropdownMenu>
+                </Dropdown>
             </div>
         </div>
     );
