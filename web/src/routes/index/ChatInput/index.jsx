@@ -1,22 +1,29 @@
-import "./index.css";
+import styles from './index.module.css';
 
 import { useContext, useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 
-import { UserContext } from "contexts/user";
-import { ConversationContext } from "contexts/conversation";
 import { WebsocketContext } from "contexts/websocket";
-import { DEFAULT_CONV_TITLE } from "commons";
-
 
 /**
- *
+ * ChatInput component renders a text input area for users to type messages.
+ * It automatically adjusts its height based on the content and provides a "Send" button
+ * to submit the message. The submission is handled by a function passed as a prop (`onSubmit`).
+ * 
+ * The component also handles "Enter" key behavior:
+ * - Pressing "Enter" without any modifier keys submits the form.
+ * - Pressing "Enter" with modifier keys (Ctrl, Shift, Alt) allows adding new lines.
+ * 
+ * @component
+ * @example
+ * // Usage example in a parent component:
+ * <ChatInput onSubmit={handleSubmit} />
+ * 
+ * @param {Object} props - The component's props.
+ * @param {Function} props.onSubmit - A function to handle the submission of the input message.
+ * @returns {JSX.Element} The rendered `ChatInput` component.
  */
-const ChatInput = () => {
-  const { username } = useContext(UserContext);
+const ChatInput = ({ onSubmit }) => {
   const [ready,] = useContext(WebsocketContext);
-  const { dispatch } = useContext(ConversationContext);
-  const navigate = useNavigate();
   const [input, setInput] = useState("");
   const inputRef = useRef(null);
 
@@ -26,35 +33,24 @@ const ChatInput = () => {
    */
   useEffect(() => {
     if (inputRef.current) {
-      inputRef.current.style.height = "0px";
+      inputRef.current.style.height = 'auto';  // Reset height first
       const { scrollHeight } = inputRef.current;
-      inputRef.current.style.height = `${scrollHeight}px`
+      inputRef.current.style.height = `${scrollHeight}px`;  // Set height based on content
     }
-  }, [inputRef, input]);
+  }, [input]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    const conversation = await fetch("/api/conversations", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ title: DEFAULT_CONV_TITLE }),
-    }).then((res) => res.json());
-    const message = {
-      id: crypto.randomUUID(),
-      conversation: conversation.id,
-      from: username,
-      content: input,
-      type: "text",
-    };
-    sessionStorage.setItem(`init-msg:${conversation.id}`, JSON.stringify(message));
-    setInput("");
-    dispatch({ type: "added", conv: conversation });
-    navigate(`/conversations/${conversation.id}`);
+    onSubmit(input);
+    setInput(""); // Clear the input after submit
   };
 
-  const handleKeyDown = async (e) => {
+  /**
+   * Handle the keydown event for the textarea.
+   * If the user presses "Enter" without any modifier keys, the form is submitted.
+   * If modifier keys like "Ctrl", "Shift", or "Alt" are pressed, it allows adding a new line.
+   */
+  const handleKeyDown = (e) => {
     // TODO: this will trigger in Chinese IME on OSX
     if (e.key === "Enter") {
       if (e.ctrlKey || e.shiftKey || e.altKey) {
@@ -62,21 +58,21 @@ const ChatInput = () => {
         return true;
       }
       e.preventDefault();
-      await handleSubmit(e);
+      handleSubmit(e);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="input-container">
+    <form onSubmit={handleSubmit} className={styles.inputContainer}>
       <textarea
         id="input-text"
-        className="input-text"
+        className={styles.inputText}
         ref={inputRef}
         autoFocus
         value={input}
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={handleKeyDown} />
-      <button disabled={!ready} className="input-submit-button" type="submit">
+      <button disabled={!ready} className={styles.inputSubmitButton} type="submit">
         Send
       </button>
     </form>
