@@ -8,9 +8,9 @@ import BrightnessMediumIcon from "@mui/icons-material/BrightnessMedium";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 
-import { Dropdown, DropdownButton, DropdownMenu } from "components/DropdownMenu";
-import { ThemeContext } from "contexts/theme";
-import { UserContext } from "contexts/user";
+import { Dropdown, DropdownButton, DropdownMenu } from "@/components/DropdownMenu";
+import { ThemeContext } from "@/contexts/theme";
+import { UserContext } from "@/contexts/user";
 
 
 const ThemeIcon = ({ theme }) => {

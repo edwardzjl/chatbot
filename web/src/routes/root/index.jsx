@@ -13,11 +13,11 @@ import GitHubIcon from "@mui/icons-material/GitHub";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import MailOutlineIcon from "@mui/icons-material/MailOutline";
 
-import { SnackbarContext } from "contexts/snackbar";
-import { ThemeContext } from "contexts/theme";
-import { ConversationContext } from "contexts/conversation";
-import { MessageContext } from "contexts/message";
-import { WebsocketContext } from "contexts/websocket";
+import { SnackbarContext } from "@/contexts/snackbar";
+import { ThemeContext } from "@/contexts/theme";
+import { ConversationContext } from "@/contexts/conversation";
+import { MessageContext } from "@/contexts/message";
+import { WebsocketContext } from "@/contexts/websocket";
 
 import ChatTab from "./SideMenuButton";
 
@@ -152,9 +152,7 @@ const Root = () => {
   const deleteConv = async (id) => {
     delDialogRef.current?.close();
     setTargetConv({});
-    await fetch(`/api/conversations/${id}`, {
-      method: "DELETE",
-    });
+    await fetch(`/api/conversations/${id}`, { method: "DELETE" });
     dispatchConv({ type: "deleted", convId: id });
     navigate("/");
   };
@@ -162,9 +160,7 @@ const Root = () => {
   const shareConv = async (id, title) => {
     const response = await fetch(`/api/shares`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title: title, source_id: id }),
     });
     shareDialogRef.current?.close();

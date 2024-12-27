@@ -2,10 +2,10 @@ import "./index.css";
 
 import { useContext, useState, useRef, useEffect } from "react";
 
-import { UserContext } from "contexts/user";
-import { MessageContext } from "contexts/message";
-import { ConversationContext } from "contexts/conversation";
-import { WebsocketContext } from "contexts/websocket";
+import { UserContext } from "@/contexts/user";
+import { MessageContext } from "@/contexts/message";
+import { ConversationContext } from "@/contexts/conversation";
+import { WebsocketContext } from "@/contexts/websocket";
 
 
 /**
