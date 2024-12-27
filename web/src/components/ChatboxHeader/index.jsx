@@ -1,6 +1,7 @@
 import styles from "./index.module.css";
 
 import { useContext } from "react";
+import PropTypes from "prop-types";
 
 import Avatar from "@mui/material/Avatar";
 
@@ -23,6 +24,9 @@ const ThemeIcon = ({ theme }) => {
             return <BrightnessMediumIcon />;
     }
 }
+ThemeIcon.propTypes = {
+    theme: PropTypes.string,
+};
 
 
 const ChatboxHeader = () => {

@@ -1,6 +1,7 @@
 import "./index.css";
 
 import { useContext, useState, useRef, useEffect } from "react";
+import PropTypes from "prop-types";
 
 import { UserContext } from "@/contexts/user";
 import { MessageContext } from "@/contexts/message";
@@ -9,7 +10,22 @@ import { WebsocketContext } from "@/contexts/websocket";
 
 
 /**
- *
+ * ChatInput component for capturing and sending user input in a chat conversation.
+ * 
+ * The component renders a textarea for the user to type their message and a send button.
+ * It dynamically adjusts the height of the textarea based on the content and focuses on the input 
+ * when the conversation ID (`conv.id`) changes. Upon submitting the form, the message is added 
+ * to the chat log, and the conversation's last message timestamp is updated.
+ * 
+ * @component
+ * @example
+ * // Example usage of the ChatInput component
+ * <ChatInput conv={conversation} />
+ * 
+ * @param {Object} props - The props for the component.
+ * @param {Object} props.conv - The current conversation object.
+ * @param {string} props.conv.id - The ID of the conversation.
+ * @param {boolean} [props.conv.pinned] - Whether the conversation is pinned (optional).
  */
 const ChatInput = ({ conv }) => {
   const { username } = useContext(UserContext);
@@ -99,6 +115,13 @@ const ChatInput = ({ conv }) => {
       </button>
     </form>
   );
+};
+
+ChatInput.propTypes = {
+  conv: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    pinned: PropTypes.bool,
+  }).isRequired,
 };
 
 export default ChatInput;

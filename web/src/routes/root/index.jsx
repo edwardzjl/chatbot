@@ -120,7 +120,7 @@ const Root = () => {
               console.warn("unknown message type", message.type);
           }
         } catch (error) {
-          console.debug("not a json message", event.data);
+          console.error("Unhandled error: Payload may not be a valid JSON.", { eventData: event.data, errorDetails: error });
         }
       };
     }
@@ -129,7 +129,7 @@ const Root = () => {
     return () => {
       ws.current.close();
     };
-  }, []);
+  }, [dispatch, dispatchConv, setSnackbar]);
 
   const onShareClick = (id, title) => {
     setTargetConv({ id, title });
@@ -194,7 +194,7 @@ const Root = () => {
           </Link>
           <nav className="conv-list">
             {groupedConvs && Object.entries(groupedConvs)
-              .filter(([_, convs]) => convs && convs.length > 0) // Filter out empty lists
+              .filter(([, convs]) => convs && convs.length > 0) // Filter out empty lists
               .flatMap(([grp, convs]) => (
                 [
                   <div key={grp}>
@@ -206,7 +206,7 @@ const Root = () => {
                             to={`conversations/${conv.id}`}
                             className={`sidemenu-button ${({ isActive, isPending }) => isActive ? "active" : isPending ? "pending" : ""}`}
                           >
-                            {({ isActive, isPending, isTransitioning }) => (
+                            {({ isActive }) => (
                               <ChatTab chat={conv} isActive={isActive} onShareClick={onShareClick} onDeleteClick={onDeleteClick} />
                             )}
                           </NavLink>
@@ -272,7 +272,7 @@ const Root = () => {
         >
           <h2>Delete conversation?</h2>
           <div className="del-dialog-content">
-            <p>This will delete "{targetConv.title}"</p>
+            <p>This will delete &quot;{targetConv.title}&quot;</p>
           </div>
           <div className="del-dialog-actions">
             <button autoFocus onClick={() => deleteConv(targetConv.id)}>Delete</button>

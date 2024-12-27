@@ -1,6 +1,8 @@
 import styles from "./index.module.css";
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import PropTypes from "prop-types";
+
 
 /**
  * Context providing state and actions for managing dropdown open/close behavior.
@@ -50,6 +52,11 @@ export const Dropdown = ({ children, className, ...props }) => {
     );
 };
 
+Dropdown.propTypes = {
+    children: PropTypes.node.isRequired,
+    className: PropTypes.string,
+};
+
 /**
  * A button component to toggle the open/close state of the dropdown.
  *
@@ -80,6 +87,11 @@ export const DropdownButton = ({ children, className, ...props }) => {
     );
 };
 
+DropdownButton.propTypes = {
+    children: PropTypes.node.isRequired,
+    className: PropTypes.string,
+};
+
 /**
  * A menu component for displaying dropdown items. Automatically hides when the dropdown is closed.
  *
@@ -103,4 +115,9 @@ export const DropdownMenu = ({ children, className, ...props }) => {
             {children}
         </menu>
     );
+};
+
+DropdownMenu.propTypes = {
+    children: PropTypes.node.isRequired,
+    className: PropTypes.string,
 };
