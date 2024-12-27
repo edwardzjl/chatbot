@@ -1,28 +1,32 @@
 import { render, screen, fireEvent } from "@testing-library/react";
-import '@testing-library/jest-dom';  // For additional matchers like `toBeInTheDocument`
+import { beforeEach, describe, it, expect, vi } from "vitest";
+import PropTypes from 'prop-types';
 
 import { WebsocketContext } from "@/contexts/websocket";
 import ChatInput from "./index";
 
 // Mock WebsocketContext provider
 const MockWebsocketContextProvider = ({ children }) => {
-    const mockContextValue = [true];  // Mock the 'ready' value as 'true'
-    return (
-      <WebsocketContext.Provider value={mockContextValue}>
-        {children}
-      </WebsocketContext.Provider>
-    );
-  };
+  const mockContextValue = [true];  // Mock the 'ready' value as 'true'
+  return (
+    <WebsocketContext.Provider value={mockContextValue}>
+      {children}
+    </WebsocketContext.Provider>
+  );
+};
+MockWebsocketContextProvider.propTypes = {
+  children: PropTypes.node.isRequired,
+};
 
 describe("ChatInput component", () => {
   let mockOnSubmit;
 
   beforeEach(() => {
     // Mock the onSubmit function before each test
-    mockOnSubmit = jest.fn();
+    mockOnSubmit = vi.fn();
   });
 
-  test("renders the textarea and submit button", () => {
+  it("renders the textarea and submit button", () => {
     render(
       <MockWebsocketContextProvider>
         <ChatInput onSubmit={mockOnSubmit} />
@@ -30,15 +34,15 @@ describe("ChatInput component", () => {
     );
 
     // Check if the textarea and submit button are rendered
-    expect(screen.getByRole('textbox')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /send/i })).toBeInTheDocument();
+    expect(screen.getByRole('textbox')).toBeDefined();
+    expect(screen.getByRole('button', { name: /send/i })).toBeDefined();
   });
 
-  test("calls onSubmit with input value when form is submitted", () => {
+  it("calls onSubmit with input value when form is submitted", () => {
     render(
-        <MockWebsocketContextProvider>
-          <ChatInput onSubmit={mockOnSubmit} />
-        </MockWebsocketContextProvider>
+      <MockWebsocketContextProvider>
+        <ChatInput onSubmit={mockOnSubmit} />
+      </MockWebsocketContextProvider>
     );
 
     const input = screen.getByRole('textbox');
@@ -54,11 +58,11 @@ describe("ChatInput component", () => {
     expect(mockOnSubmit).toHaveBeenCalledWith('Hello, world!');
   });
 
-  test("clears the input field after submission", () => {
+  it("clears the input field after submission", () => {
     render(
-        <MockWebsocketContextProvider>
-          <ChatInput onSubmit={mockOnSubmit} />
-        </MockWebsocketContextProvider>
+      <MockWebsocketContextProvider>
+        <ChatInput onSubmit={mockOnSubmit} />
+      </MockWebsocketContextProvider>
     );
 
     const input = screen.getByRole('textbox');
@@ -74,11 +78,11 @@ describe("ChatInput component", () => {
     expect(input.value).toBe('');
   });
 
-  test("handles Enter key press to submit the form", () => {
+  it("handles Enter key press to submit the form", () => {
     render(
-        <MockWebsocketContextProvider>
-          <ChatInput onSubmit={mockOnSubmit} />
-        </MockWebsocketContextProvider>
+      <MockWebsocketContextProvider>
+        <ChatInput onSubmit={mockOnSubmit} />
+      </MockWebsocketContextProvider>
     );
 
     const input = screen.getByRole('textbox');
@@ -93,11 +97,11 @@ describe("ChatInput component", () => {
     expect(mockOnSubmit).toHaveBeenCalledWith('Hello, world!');
   });
 
-  test("does not submit the form when Enter is pressed with modifier keys", () => {
+  it("does not submit the form when Enter is pressed with modifier keys", () => {
     render(
-        <MockWebsocketContextProvider>
-          <ChatInput onSubmit={mockOnSubmit} />
-        </MockWebsocketContextProvider>
+      <MockWebsocketContextProvider>
+        <ChatInput onSubmit={mockOnSubmit} />
+      </MockWebsocketContextProvider>
     );
 
     const input = screen.getByRole('textbox');
@@ -112,11 +116,11 @@ describe("ChatInput component", () => {
     expect(mockOnSubmit).not.toHaveBeenCalled();
   });
 
-  test("adjusts the height of the textarea based on content", async () => {
+  it("adjusts the height of the textarea based on content", async () => {
     render(
-        <MockWebsocketContextProvider>
-          <ChatInput onSubmit={mockOnSubmit} />
-        </MockWebsocketContextProvider>
+      <MockWebsocketContextProvider>
+        <ChatInput onSubmit={mockOnSubmit} />
+      </MockWebsocketContextProvider>
     );
 
     const input = screen.getByRole('textbox');

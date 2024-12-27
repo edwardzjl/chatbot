@@ -1,10 +1,11 @@
-import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
+
+import { describe, expect, it } from 'vitest';
 
 import { Dropdown, DropdownButton, DropdownMenu } from "./index";
 
 describe("DropdownMenu Component", () => {
-    test("renders DropdownMenu with children", () => {
+    it("renders DropdownMenu with children", () => {
         render(
             <Dropdown>
                 <DropdownButton>Menu</DropdownButton>
@@ -16,13 +17,13 @@ describe("DropdownMenu Component", () => {
             </Dropdown>
         );
 
-        expect(screen.getByText("Menu")).toBeInTheDocument();
-        expect(screen.getByText("Item 1")).toBeInTheDocument();
-        expect(screen.getByText("Item 2")).toBeInTheDocument();
-        expect(screen.getByText("Item 3")).toBeInTheDocument();
+        expect(screen.getByText("Menu")).toBeDefined();
+        expect(screen.getByText("Item 1")).toBeDefined();
+        expect(screen.getByText("Item 2")).toBeDefined();
+        expect(screen.getByText("Item 3")).toBeDefined();
     });
 
-    test("toggles DropdownList visibility on DropdownHeader click", () => {
+    it("toggles DropdownList visibility on DropdownHeader click", () => {
         render(
             <Dropdown>
                 <DropdownButton>Menu</DropdownButton>
@@ -37,18 +38,18 @@ describe("DropdownMenu Component", () => {
         const header = screen.getByText("Menu");
 
         // Initially, the dropdown list should not be visible
-        expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+        expect(screen.queryByRole("menu")).toBeNull();
 
         // Click to open the dropdown
         fireEvent.click(header);
-        expect(screen.getByRole("menu")).toBeVisible();
+        expect(screen.getByRole("menu")).toBeDefined();
 
         // Click to close the dropdown
         fireEvent.click(header);
-        expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+        expect(screen.queryByRole("menu")).toBeNull();
     });
 
-    test("closes DropdownList when clicking outside", () => {
+    it("closes DropdownList when clicking outside", () => {
         render(
             <Dropdown>
                 <DropdownButton>Menu</DropdownButton>
@@ -64,14 +65,14 @@ describe("DropdownMenu Component", () => {
 
         // Click to open
         fireEvent.click(header);
-        expect(screen.getByRole("menu")).toBeVisible();
+        expect(screen.getByRole("menu")).toBeDefined();
 
         // Click outside to close
         fireEvent.click(document);
-        expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+        expect(screen.queryByRole("menu")).toBeNull();
     });
 
-    test("closes DropdownList when an item is clicked", () => {
+    it("closes DropdownList when an item is clicked", () => {
         render(
             <Dropdown>
                 <DropdownButton>Menu</DropdownButton>
@@ -89,10 +90,10 @@ describe("DropdownMenu Component", () => {
 
         // Click to open
         fireEvent.click(header);
-        expect(screen.getByRole("menu")).toBeVisible();
+        expect(screen.getByRole("menu")).toBeDefined();
 
         // Click item to close
         fireEvent.click(item);
-        expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+        expect(screen.queryByRole("menu")).toBeNull();
     });
 });

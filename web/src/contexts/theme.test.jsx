@@ -1,25 +1,21 @@
-import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
+import { afterEach, describe, it, expect, vi } from "vitest";
 
 import { ThemeProvider, ThemeContext } from "./theme";
 
-// Mock localStorage
-const mockSetItem = jest.fn();
-const mockGetItem = jest.fn();
-
-beforeAll(() => {
-    global.Storage.prototype.getItem = mockGetItem;
-    global.Storage.prototype.setItem = mockSetItem;
-});
+const getItemSpy = vi.spyOn(Storage.prototype, 'getItem')
+const setItemSpy = vi.spyOn(Storage.prototype, 'setItem')
 
 afterEach(() => {
-    mockSetItem.mockClear();
-    mockGetItem.mockClear();
-});
+    getItemSpy.mockClear() // clear call history
+    setItemSpy.mockClear()
+    localStorage.clear()
+})
+
 
 describe("ThemeProvider", () => {
-    test("renders correctly with default theme", () => {
-        mockGetItem.mockReturnValue(null); // Simulate no theme saved in localStorage
+    it("renders correctly with default theme", () => {
+        getItemSpy.mockReturnValue(null);
 
         render(
             <ThemeProvider>
@@ -30,11 +26,11 @@ describe("ThemeProvider", () => {
         );
 
         // Check if the default theme is "system"
-        expect(screen.getByText("system")).toBeInTheDocument();
+        expect(screen.getByText("system")).toBeDefined();
     });
 
-    test("renders correctly with theme from localStorage", () => {
-        mockGetItem.mockReturnValue("dark"); // Simulate theme being "dark" in localStorage
+    it("renders correctly with theme from localStorage", () => {
+        getItemSpy.mockReturnValue('dark');
 
         render(
             <ThemeProvider>
@@ -45,11 +41,11 @@ describe("ThemeProvider", () => {
         );
 
         // Check if the theme is correctly initialized to "dark"
-        expect(screen.getByText("dark")).toBeInTheDocument();
+        expect(screen.getByText("dark")).toBeDefined();
     });
 
-    test("sets the theme and updates localStorage", () => {
-        mockGetItem.mockReturnValue("light"); // Simulate theme being "light" in localStorage
+    it("sets the theme and updates localStorage", () => {
+        getItemSpy.mockReturnValue('light');
 
         render(
             <ThemeProvider>
@@ -65,15 +61,15 @@ describe("ThemeProvider", () => {
         );
 
         // Check initial theme
-        expect(screen.getByText("light")).toBeInTheDocument();
+        expect(screen.getByText("light")).toBeDefined();
 
         // Click button to change theme
         fireEvent.click(screen.getByText("Set Dark Theme"));
 
         // Ensure the theme is updated to "dark"
-        expect(screen.getByText("dark")).toBeInTheDocument();
+        expect(screen.getByText("dark")).toBeDefined();
 
         // Ensure localStorage is updated
-        expect(mockSetItem).toHaveBeenCalledWith("theme", "dark");
+        expect(setItemSpy).toHaveBeenCalledWith("theme", "dark")
     });
 });

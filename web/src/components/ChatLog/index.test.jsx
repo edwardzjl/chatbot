@@ -1,6 +1,5 @@
-import React from "react";
 import { render, screen } from "@testing-library/react";
-import '@testing-library/jest-dom'
+import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
 
 import ChatLog from "./index";
 
@@ -9,10 +8,17 @@ class ResizeObserverMock {
     observe() { }
     disconnect() { }
 }
-global.ResizeObserver = ResizeObserverMock;
+
+beforeEach(() => {
+    vi.stubGlobal('ResizeObserver', ResizeObserverMock)
+});
+
+afterEach(() => {
+    vi.unstubAllGlobals()
+});
 
 describe("ChatLog Component", () => {
-    test("renders children correctly", () => {
+    it("renders children correctly", () => {
         render(
             <ChatLog>
                 <div>Message 1</div>
@@ -20,11 +26,11 @@ describe("ChatLog Component", () => {
             </ChatLog>
         );
 
-        expect(screen.getByText("Message 1")).toBeInTheDocument();
-        expect(screen.getByText("Message 2")).toBeInTheDocument();
+        expect(screen.getByText("Message 1")).toBeDefined();
+        expect(screen.getByText("Message 2")).toBeDefined();
     });
 
-    test("applies the provided className", () => {
+    it("applies the provided className", () => {
         const customClass = "custom-class";
         render(
             <ChatLog className={customClass}>
@@ -33,11 +39,11 @@ describe("ChatLog Component", () => {
         );
 
         const chatLogElement = screen.getByRole("region", { name: /chat-log/i });
-        expect(chatLogElement).toHaveClass(customClass);
+        expect(chatLogElement.classList).toContain(customClass);
     });
 
-    test("scrolls to the bottom when ResizeObserver triggers", () => {
-        const observeMock = jest.spyOn(ResizeObserver.prototype, "observe");
+    it("scrolls to the bottom when ResizeObserver triggers", () => {
+        const observeMock = vi.spyOn(ResizeObserver.prototype, "observe");
         render(
             <ChatLog>
                 <div>Message</div>
@@ -48,11 +54,10 @@ describe("ChatLog Component", () => {
         expect(observeMock).toHaveBeenCalled();
     });
 
-    test("handles ResizeObserver not being supported", () => {
-        const originalResizeObserver = global.ResizeObserver;
-        global.ResizeObserver = undefined;
+    it("handles ResizeObserver not being supported", () => {
+        vi.stubGlobal('ResizeObserver', undefined)
 
-        const warnMock = jest.spyOn(console, "warn").mockImplementation(() => { });
+        const warnMock = vi.spyOn(console, "warn").mockImplementation(() => { });
 
         render(
             <ChatLog>
@@ -62,11 +67,10 @@ describe("ChatLog Component", () => {
 
         expect(warnMock).toHaveBeenCalledWith("ResizeObserver is not supported in this browser.");
 
-        global.ResizeObserver = originalResizeObserver;
         warnMock.mockRestore();
     });
 
-    test("uses smooth scrolling by default", () => {
+    it("uses smooth scrolling by default", () => {
         render(
             <ChatLog>
                 <div>Message</div>
@@ -74,13 +78,13 @@ describe("ChatLog Component", () => {
         );
 
         const chatLogElement = screen.getByRole("region", { name: /chat-log/i });
-        expect(chatLogElement).toBeInTheDocument();
+        expect(chatLogElement).toBeDefined();
 
         // Smooth scrolling is hard to directly test; focus on behavior instead.
         // Mocking scrollIntoView here is acceptable as a last resort.
     });
 
-    test("allows toggling smooth scrolling", () => {
+    it("allows toggling smooth scrolling", () => {
         render(
             <ChatLog smoothScroll={false}>
                 <div>Message</div>
@@ -88,7 +92,7 @@ describe("ChatLog Component", () => {
         );
 
         const chatLogElement = screen.getByRole("region", { name: /chat-log/i });
-        expect(chatLogElement).toBeInTheDocument();
+        expect(chatLogElement).toBeDefined();
 
         // Behavior testing rather than focusing on implementation details
         // Mocking scrollIntoView is acceptable if absolutely necessary

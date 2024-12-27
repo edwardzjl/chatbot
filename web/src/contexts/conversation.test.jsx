@@ -1,30 +1,53 @@
-import React from 'react';
 import { render, screen, act } from '@testing-library/react';
-import { ConversationProvider, conversationReducer, flatConvs, sortConvs, groupConvs, ConversationContext } from './conversation';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import {
+  ConversationProvider,
+  conversationReducer,
+  flatConvs,
+  sortConvs,
+  groupConvs,
+  ConversationContext,
+} from './conversation';
+
+
+// Mock the global fetch function
+vi.stubGlobal('fetch', vi.fn());
 
 // Mock fetch globally
 beforeEach(() => {
-  global.fetch = jest.fn(() =>
-    Promise.resolve({
-      json: () => Promise.resolve([
-        { id: '1', title: 'Conversation 1', created_at: '2024-12-01', last_message_at: '2024-12-25', owner: 'User1', pinned: false },
-        { id: '2', title: 'Conversation 2', created_at: '2024-12-02', last_message_at: '2024-12-24', owner: 'User2', pinned: true },
-      ]),
-    })
-  );
+  const mockResponse = [
+    {
+      id: '1',
+      title: 'Conversation 1',
+      created_at: '2024-12-01',
+      last_message_at: '2024-12-25',
+      owner: 'User1',
+      pinned: false,
+    },
+    {
+      id: '2',
+      title: 'Conversation 2',
+      created_at: '2024-12-02',
+      last_message_at: '2024-12-24',
+      owner: 'User2',
+      pinned: true,
+    },
+  ];
+  fetch.mockResolvedValueOnce({
+    json: vi.fn().mockResolvedValueOnce(mockResponse),
+  });
 });
 
 // Clean up after tests to reset mock
 afterEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 const today = new Date();
 const yesterday = new Date().setDate(today.getDate() - 1);
 
-
 describe('Helper Functions', () => {
-  test('flatConvs should flatten grouped conversations', () => {
+  it('flatConvs should flatten grouped conversations', () => {
     const groupedConvs = {
       pinned: [{ id: '2', title: 'Conversation 2' }],
       Today: [{ id: '1', title: 'Conversation 1' }],
@@ -35,7 +58,7 @@ describe('Helper Functions', () => {
     expect(result[1].title).toBe('Conversation 1');
   });
 
-  test('sortConvs should sort conversations by pinned and last_message_at', () => {
+  it('sortConvs should sort conversations by pinned and last_message_at', () => {
     const convs = [
       { id: '1', title: 'Conversation 1', last_message_at: '2024-12-25', pinned: false },
       { id: '2', title: 'Conversation 2', last_message_at: '2024-12-24', pinned: true },
@@ -45,7 +68,7 @@ describe('Helper Functions', () => {
     expect(sortedConvs[1].title).toBe('Conversation 1');
   });
 
-  test('groupConvs should group conversations by date', () => {
+  it('groupConvs should group conversations by date', () => {
     const convs = [
       { id: '1', title: 'Conversation 1', last_message_at: today },
       { id: '2', title: 'Conversation 2', last_message_at: yesterday },
@@ -63,7 +86,7 @@ describe('conversationReducer', () => {
     Today: [{ id: '1', title: 'Conversation 1' }],
   };
 
-  test('should handle "added" action', () => {
+  it('should handle "added" action', () => {
     const action = {
       type: 'added',
       conv: { id: '2', title: 'Conversation 2' },
@@ -72,19 +95,19 @@ describe('conversationReducer', () => {
     expect(newState.Today).toHaveLength(2);
   });
 
-  test('should handle "deleted" action', () => {
+  it('should handle "deleted" action', () => {
     const action = { type: 'deleted', convId: '1' };
     const newState = conversationReducer(initialState, action);
     expect(newState.Today).toBeUndefined();
   });
 
-  test.skip('should handle "renamed" action', () => {
+  it.skip('should handle "renamed" action', () => {
     const action = { type: 'renamed', convId: '1', title: 'Updated Title' };
     const newState = conversationReducer(initialState, action);
     expect(newState.Today[0].title).toBe('Updated Title');
   });
 
-  test('should handle "reordered" action', () => {
+  it('should handle "reordered" action', () => {
     const convs = [
       { id: '1', title: 'Conversation 1', last_message_at: today, pinned: false },
       { id: '2', title: 'Conversation 2', last_message_at: yesterday, pinned: true },
@@ -94,7 +117,7 @@ describe('conversationReducer', () => {
     expect(newState.Today[0].title).toBe('Updated Conversation 1');
   });
 
-  test('should handle "replaceAll" action', () => {
+  it('should handle "replaceAll" action', () => {
     const action = { type: 'replaceAll', groupedConvs: { Today: [], pinned: [] } };
     const newState = conversationReducer(initialState, action);
     expect(newState.Today).toHaveLength(0);
@@ -102,17 +125,19 @@ describe('conversationReducer', () => {
 });
 
 describe('ConversationProvider', () => {
-  test('fetches and displays conversations', async () => {
+  it('fetches and displays conversations', async () => {
     render(
       <ConversationProvider>
         <ConversationContext.Consumer>
-          {({ groupedConvs }) => (
+          {({ groupedConvs }) =>
             Object.entries(groupedConvs).flatMap(([grp, convs]) => (
               <div key={grp}>
-                {convs.map((conv) => <div key={conv.id}>{conv.title}</div>)}
+                {convs.map((conv) => (
+                  <div key={conv.id}>{conv.title}</div>
+                ))}
               </div>
             ))
-          )}
+          }
         </ConversationContext.Consumer>
       </ConversationProvider>
     );
@@ -122,7 +147,7 @@ describe('ConversationProvider', () => {
       await new Promise((r) => setTimeout(r, 0));
     });
 
-    expect(screen.getByText('Conversation 1')).toBeInTheDocument();
-    expect(screen.getByText('Conversation 2')).toBeInTheDocument();
+    expect(screen.getByText('Conversation 1')).toBeDefined();
+    expect(screen.getByText('Conversation 2')).toBeDefined();
   });
 });
