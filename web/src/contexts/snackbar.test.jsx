@@ -1,5 +1,6 @@
-import React, { useContext } from "react";
+import { useContext } from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect } from 'vitest';
 
 import { SnackbarProvider, SnackbarContext } from "./snackbar";
 
@@ -28,7 +29,7 @@ describe("SnackbarProvider", () => {
                 <div>Test Child</div>
             </SnackbarProvider>
         );
-        expect(screen.getByText("Test Child")).toBeInTheDocument();
+        expect(screen.getByText("Test Child")).toBeDefined();
     });
 
     it("should provide the correct default values for snackbar", () => {
@@ -39,9 +40,9 @@ describe("SnackbarProvider", () => {
         );
 
         // Check the default values of snackbar
-        expect(screen.getByText("No message")).toBeInTheDocument();  // Default message
-        expect(screen.getByText("info")).toBeInTheDocument();  // Default severity
-        expect(screen.getByText("Snackbar is closed")).toBeInTheDocument();  // Default open state
+        expect(screen.getByText("No message")).toBeDefined();  // Default message
+        expect(screen.getByText("info")).toBeDefined();  // Default severity
+        expect(screen.getByText("Snackbar is closed")).toBeDefined();  // Default open state
     });
 
     it("should update the snackbar context when setSnackbar is called", () => {
@@ -55,8 +56,8 @@ describe("SnackbarProvider", () => {
         fireEvent.click(button);
 
         // Check if snackbar values are updated
-        expect(screen.getByText("Test error message")).toBeInTheDocument();
-        expect(screen.getByText("error")).toBeInTheDocument();
-        expect(screen.getByText("Snackbar is open")).toBeInTheDocument();
+        expect(screen.getByText("Test error message")).toBeDefined();
+        expect(screen.getByText("error")).toBeDefined();
+        expect(screen.getByText("Snackbar is open")).toBeDefined();
     });
 });

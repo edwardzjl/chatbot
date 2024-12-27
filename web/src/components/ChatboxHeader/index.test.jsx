@@ -1,5 +1,5 @@
-import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
 
 import { ThemeContext } from "@/contexts/theme";
 import { UserContext } from "@/contexts/user";
@@ -7,14 +7,14 @@ import { UserContext } from "@/contexts/user";
 import ChatboxHeader from "./index";
 
 const setup = () => render(
-    <ThemeContext.Provider value={mockThemeContextValue}>
+  <ThemeContext.Provider value={mockThemeContextValue}>
     <UserContext.Provider value={mockUserContextValue}>
       <ChatboxHeader />
     </UserContext.Provider>
   </ThemeContext.Provider>
 );
 
-const mockSetTheme = jest.fn();
+const mockSetTheme = vi.fn();
 const mockThemeContextValue = {
   theme: "light",
   setTheme: mockSetTheme,
@@ -26,22 +26,21 @@ const mockUserContextValue = {
 };
 
 describe("ChatboxHeader", () => {
-
-  test("renders the username and avatar", () => {
+  it("renders the username and avatar", () => {
     setup();
-    expect(screen.getByAltText("testuser's avatar")).toBeInTheDocument();
-    expect(screen.getByText("testuser")).toBeInTheDocument();
+    expect(screen.getByAltText("testuser's avatar")).toBeDefined();
+    expect(screen.getByText("testuser")).toBeDefined();
   });
 
-  test("renders the theme menu and allows theme change", () => {
+  it("renders the theme menu and allows theme change", () => {
     setup();
     fireEvent.click(screen.getByText("Theme"));
-    expect(screen.getByLabelText("Set theme to light mode")).toBeInTheDocument();
+    expect(screen.getByLabelText("Set theme to light mode")).toBeDefined();
     fireEvent.click(screen.getByLabelText("Set theme to dark mode"));
     expect(mockSetTheme).toHaveBeenCalledWith("dark");
   });
 
-  test("handles logout", () => {
+  it("handles logout", () => {
     setup();
     delete window.location;
     window.location = { href: "" };
