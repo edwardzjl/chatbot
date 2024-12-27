@@ -1,6 +1,7 @@
 import styles from "./index.module.css";
 
 import { useContext, useEffect, useState, useRef } from "react";
+import PropTypes from "prop-types";
 import Tooltip from "@mui/material/Tooltip";
 import Icon from "@mui/material/Icon";
 
@@ -160,6 +161,17 @@ const ChatTab = ({ chat, isActive, onShareClick, onDeleteClick }) => {
       )}
     </>
   );
+};
+
+ChatTab.propTypes = {
+  chat: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    title: PropTypes.string.isRequired,
+    pinned: PropTypes.bool.isRequired,
+  }).isRequired,
+  isActive: PropTypes.bool.isRequired,
+  onShareClick: PropTypes.func.isRequired,
+  onDeleteClick: PropTypes.func.isRequired,
 };
 
 export default ChatTab;

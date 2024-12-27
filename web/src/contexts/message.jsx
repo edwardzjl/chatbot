@@ -1,4 +1,5 @@
 import { createContext, useReducer } from "react";
+import PropTypes from "prop-types";
 
 
 /**
@@ -21,8 +22,11 @@ export const MessageProvider = ({ children }) => {
             {children}
         </MessageContext.Provider>
     );
-}
+};
 
+MessageProvider.propTypes = {
+  children: PropTypes.node.isRequired,
+};
 
 export const messagessReducer = (messages, action) => {
     switch (action.type) {

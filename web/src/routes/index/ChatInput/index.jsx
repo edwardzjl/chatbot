@@ -1,8 +1,10 @@
 import styles from './index.module.css';
 
 import { useContext, useState, useRef, useEffect } from "react";
+import PropTypes from "prop-types";
 
 import { WebsocketContext } from "@/contexts/websocket";
+
 
 /**
  * ChatInput component renders a text input area for users to type messages.
@@ -77,6 +79,10 @@ const ChatInput = ({ onSubmit }) => {
       </button>
     </form>
   );
+};
+
+ChatInput.propTypes = {
+  onSubmit: PropTypes.func.isRequired,
 };
 
 export default ChatInput;

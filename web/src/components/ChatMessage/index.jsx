@@ -5,6 +5,7 @@ import Markdown from "react-markdown";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import remarkGfm from "remark-gfm";
 import { darcula, googlecode } from "react-syntax-highlighter/dist/esm/styles/hljs";
+import PropTypes from "prop-types";
 
 import Avatar from "@mui/material/Avatar";
 import Tooltip from "@mui/material/Tooltip";
@@ -19,6 +20,7 @@ import { ThemeContext } from "@/contexts/theme";
 import { MessageContext } from "@/contexts/message";
 import { UserContext } from "@/contexts/user";
 import { stringToColor } from "@/commons";
+
 
 /**
  * ChatMessage component that displays a single chat message along with relevant actions such as copying content,
@@ -181,6 +183,11 @@ const ChatMessage = ({ convId, message }) => {
       </div>
     </div>
   );
+};
+
+ChatMessage.propTypes = {
+  convId: PropTypes.string,
+  message: PropTypes.node.isRequired,
 };
 
 export default ChatMessage;

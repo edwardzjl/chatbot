@@ -1,4 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
+import PropTypes from "prop-types";
+
 
 /**
  * ChatLog is a container for ChatMessage that will automatically scroll to the bottom when window size changes.
@@ -11,9 +13,9 @@ const ChatLog = ({ children, className = "", smoothScroll = true }) => {
   const chatLogRef = useRef(null);
   const messagesEndRef = useRef(null);
 
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: smoothScroll ? "smooth" : "auto" });
-  };
+  }, [smoothScroll]);
 
   useEffect(() => {
     if (!window.ResizeObserver) {
@@ -32,7 +34,7 @@ const ChatLog = ({ children, className = "", smoothScroll = true }) => {
     return () => {
       resizeObserver.disconnect();
     };
-  }, []);
+  }, [scrollToBottom]);
 
   return (
     <div ref={chatLogRef} className={className} role="region" aria-label="chat-log">
@@ -40,6 +42,12 @@ const ChatLog = ({ children, className = "", smoothScroll = true }) => {
       <div ref={messagesEndRef} />
     </div>
   );
+};
+
+ChatLog.propTypes = {
+  children: PropTypes.node.isRequired,
+  className: PropTypes.string,
+  smoothScroll: PropTypes.bool,
 };
 
 export default ChatLog;

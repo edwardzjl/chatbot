@@ -17,7 +17,8 @@ export default function ErrorPage() {
                 <span>{error.status} {error.statusText || error.message}</span>
             </h1>
             <h2 className={styles.heading}>Oops! Something went wrong.</h2>
-            <p className={styles.message}>Sorry, we couldn't find the page you are looking for...</p>
+            {/* Yes, `&apos;` is html5 only. But I feel `&lsquo;` and `&rsquo;` weird as there's no left or right in single quote. */}
+            <p className={styles.message}>Sorry, we couldn&apos;t find the page you are looking for...</p>
             <button className={styles.homeButton} onClick={handleClick}>
                 HOME
             </button>

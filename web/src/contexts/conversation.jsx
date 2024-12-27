@@ -1,4 +1,5 @@
 import { createContext, useEffect, useReducer } from "react";
+import PropTypes from "prop-types";
 
 
 /**
@@ -19,9 +20,7 @@ export const ConversationContext = createContext({
  * @returns {Array} A flattened array containing all conversations from the input object.
  */
 export const flatConvs = (groupedConvs) => {
-    return Object.entries(groupedConvs).flatMap(([_, convs]) => (
-        [...convs]
-    ));
+    return Object.values(groupedConvs).flatMap(convs => [...convs]);
 };
 
 /**
@@ -127,8 +126,11 @@ export const ConversationProvider = ({ children }) => {
             {children}
         </ConversationContext.Provider>
     );
-}
+};
 
+ConversationProvider.propTypes = {
+  children: PropTypes.node.isRequired,
+};
 
 export const conversationReducer = (groupedConvs, action) => {
     switch (action.type) {

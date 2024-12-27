@@ -1,7 +1,9 @@
 import { createContext, useEffect, useState } from "react";
 import sha256 from "js-sha256";
+import PropTypes from "prop-types";
 
 import generateName from "@/names";
+
 
 export const UserContext = createContext({
     userid: generateName(),
@@ -61,4 +63,8 @@ export const UserProvider = ({ children }) => {
             {children}
         </UserContext.Provider>
     );
-}
+};
+
+UserProvider.propTypes = {
+  children: PropTypes.node.isRequired,
+};
