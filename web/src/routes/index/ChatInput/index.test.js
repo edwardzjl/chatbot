@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import '@testing-library/jest-dom';  // For additional matchers like `toBeInTheDocument`
 
-import { WebsocketContext } from "contexts/websocket";
+import { WebsocketContext } from "@/contexts/websocket";
 import ChatInput from "./index";
 
 // Mock WebsocketContext provider

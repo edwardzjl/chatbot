@@ -3,10 +3,10 @@ import styles from './index.module.css';
 import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { UserContext } from "contexts/user";
-import { ConversationContext } from "contexts/conversation";
-import ChatboxHeader from "components/ChatboxHeader";
-import { DEFAULT_CONV_TITLE } from "commons";
+import { UserContext } from "@/contexts/user";
+import { ConversationContext } from "@/contexts/conversation";
+import ChatboxHeader from "@/components/ChatboxHeader";
+import { DEFAULT_CONV_TITLE } from "@/commons";
 
 import ChatInput from "./ChatInput";
 

@@ -1,27 +1,27 @@
-import "normalize.css";
-import "./index.css";
 
-import React from "react";
-import ReactDOM from "react-dom/client";
+// import reactLogo from './assets/react.svg'
+// import viteLogo from '/vite.svg'
+
+import './App.css'
+
 import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
 
-import Root, { action as rootAction } from "routes/root";
-import Index from "routes/index";
-import Conversation, { loader as conversationLoader } from "routes/conversation";
-import Sharing from "routes/sharing";
-import Share, { loader as shareLoader } from "routes/share";
-import ErrorPage from "routes/error";
+import Root, { action as rootAction } from "@/routes/root";
+import Index from "@/routes/index";
+import Conversation, { loader as conversationLoader } from "@/routes/conversation";
+import Sharing from "@/routes/sharing";
+import Share, { loader as shareLoader } from "@/routes/share";
+import ErrorPage from "@/routes/error";
 
-import reportWebVitals from "./reportWebVitals";
+import { SnackbarProvider } from "@/contexts/snackbar";
+import { ThemeProvider } from "@/contexts/theme";
+import { UserProvider } from "@/contexts/user";
+import { ConversationProvider } from "@/contexts/conversation";
+import { MessageProvider } from "@/contexts/message";
 
-import { SnackbarProvider } from "contexts/snackbar";
-import { ThemeProvider } from "contexts/theme";
-import { UserProvider } from "contexts/user";
-import { ConversationProvider } from "contexts/conversation";
-import { MessageProvider } from "contexts/message";
 
 const router = createBrowserRouter([
   {
@@ -59,9 +59,8 @@ const router = createBrowserRouter([
   }
 ]);
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(
-  <React.StrictMode>
+function App() {
+  return (
     <ThemeProvider>
       <SnackbarProvider>
         <UserProvider>
@@ -73,10 +72,7 @@ root.render(
         </UserProvider>
       </SnackbarProvider>
     </ThemeProvider>
-  </React.StrictMode>
-);
+  )
+}
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+export default App

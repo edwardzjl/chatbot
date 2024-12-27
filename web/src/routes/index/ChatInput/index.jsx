@@ -2,7 +2,7 @@ import styles from './index.module.css';
 
 import { useContext, useState, useRef, useEffect } from "react";
 
-import { WebsocketContext } from "contexts/websocket";
+import { WebsocketContext } from "@/contexts/websocket";
 
 /**
  * ChatInput component renders a text input area for users to type messages.

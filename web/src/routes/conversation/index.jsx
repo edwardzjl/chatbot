@@ -3,12 +3,12 @@ import "./index.css";
 import { useContext, useEffect } from "react";
 import { useLoaderData, redirect } from "react-router-dom";
 
-import ChatboxHeader from "components/ChatboxHeader";
-import ChatLog from "components/ChatLog";
-import ChatMessage from "components/ChatMessage";
+import ChatboxHeader from "@/components/ChatboxHeader";
+import ChatLog from "@/components/ChatLog";
+import ChatMessage from "@/components/ChatMessage";
 
-import { MessageContext } from "contexts/message";
-import { WebsocketContext } from "contexts/websocket";
+import { MessageContext } from "@/contexts/message";
+import { WebsocketContext } from "@/contexts/websocket";
 
 import ChatInput from "./ChatInput";
 

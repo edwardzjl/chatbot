@@ -10,8 +10,8 @@ import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutli
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import ShareIcon from '@mui/icons-material/Share';
 
-import { Dropdown, DropdownButton, DropdownMenu } from "components/DropdownMenu";
-import { ConversationContext } from "contexts/conversation";
+import { Dropdown, DropdownButton, DropdownMenu } from "@/components/DropdownMenu";
+import { ConversationContext } from "@/contexts/conversation";
 
 /**
  *

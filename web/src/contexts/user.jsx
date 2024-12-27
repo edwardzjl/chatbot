@@ -1,6 +1,7 @@
 import { createContext, useEffect, useState } from "react";
-import generateName from "names";
 import sha256 from "js-sha256";
+
+import generateName from "@/names";
 
 export const UserContext = createContext({
     userid: generateName(),

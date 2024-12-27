@@ -9,7 +9,10 @@ format:
 	yarn format
 
 test:
-	yarn test
+	yarn test --watchAll=false
+
+build:
+	yarn build
 
 ######################
 # HELP

@@ -3,9 +3,9 @@ import "./index.css";
 import { useContext } from "react";
 import { useLoaderData, redirect } from "react-router-dom";
 
-import ChatLog from "components/ChatLog";
-import ChatMessage from "components/ChatMessage";
-import { ThemeContext } from "contexts/theme";
+import ChatLog from "@/components/ChatLog";
+import ChatMessage from "@/components/ChatMessage";
+import { ThemeContext } from "@/contexts/theme";
 
 
 export async function loader({ params }) {

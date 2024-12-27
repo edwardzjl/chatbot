@@ -1,8 +1,8 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 
-import { ThemeContext } from "contexts/theme";
-import { UserContext } from "contexts/user";
+import { ThemeContext } from "@/contexts/theme";
+import { UserContext } from "@/contexts/user";
 
 import ChatboxHeader from "./index";
 

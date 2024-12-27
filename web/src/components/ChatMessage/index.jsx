@@ -15,10 +15,10 @@ import ThumbUpOutlined from "@mui/icons-material/ThumbUpOutlined";
 import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import ThumbDownOutlined from "@mui/icons-material/ThumbDownOutlined";
 
-import { ThemeContext } from "contexts/theme";
-import { MessageContext } from "contexts/message";
-import { UserContext } from "contexts/user";
-import { stringToColor } from "commons";
+import { ThemeContext } from "@/contexts/theme";
+import { MessageContext } from "@/contexts/message";
+import { UserContext } from "@/contexts/user";
+import { stringToColor } from "@/commons";
 
 /**
  * ChatMessage component that displays a single chat message along with relevant actions such as copying content,
