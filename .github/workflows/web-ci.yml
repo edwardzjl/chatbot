@@ -29,7 +29,7 @@ jobs:
         node-version: lts/*
     - name: Install modules
       run: yarn
-    - name: Run ESLint
+    - name: lint
       run: make lint
   test:
     defaults:
@@ -43,5 +43,5 @@ jobs:
         node-version: lts/*
     - name: Install modules
       run: yarn
-    - name: Run ESLint
-      run: yarn test --watchAll=false
+    - name: test
+      run: make test
