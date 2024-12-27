@@ -25,7 +25,7 @@ RUN apt-get update \
 COPY --from=backend-builder /.venv ./.venv
 ENV PATH="/app/.venv/bin:$PATH"
 COPY api/ .
-COPY --from=frontend-builder /build/build ./static
+COPY --from=frontend-builder /build/dist ./static
 
 RUN adduser --system --no-create-home --group chatbot \
   && chown -R chatbot:chatbot /app
