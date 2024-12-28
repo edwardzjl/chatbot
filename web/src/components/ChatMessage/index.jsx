@@ -187,7 +187,7 @@ const ChatMessage = ({ convId, message }) => {
 
 ChatMessage.propTypes = {
   convId: PropTypes.string,
-  message: PropTypes.node.isRequired,
+  message: PropTypes.object.isRequired,
 };
 
 export default ChatMessage;
