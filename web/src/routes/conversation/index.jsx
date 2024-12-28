@@ -24,6 +24,44 @@ export async function loader({ params }) {
     return { conversation };
 }
 
+/**
+ * Conversation Component
+ *
+ * This component handles the rendering and functionality of a single conversation in the chat application.
+ * It integrates with multiple contexts to manage conversation data, user messages, WebSocket communication, 
+ * and UI updates. The component is designed to display messages, handle message input, and manage WebSocket interactions.
+ *
+ * Loader:
+ * - Fetches conversation data from the API using the conversation ID provided in the route parameters.
+ * - Redirects to the homepage if the conversation ID is invalid or the fetch request fails.
+ *
+ * Contexts Used:
+ * - ConversationContext: Manages the list of grouped conversations and dispatch actions.
+ * - UserContext: Provides the current user's details, such as the username.
+ * - WebsocketContext: Manages WebSocket connection status and message-sending functionality.
+ * - MessageContext: Manages the state of messages within the current conversation.
+ *
+ * Effects:
+ * - Initializes the message context with messages from the fetched conversation.
+ * - Handles sending an "init message" if present in `sessionStorage`, and removes it after sending.
+ *
+ * Functions:
+ * - sendMessage: Sends a message via WebSocket and updates the UI with the user's message. 
+ *   Also reorders conversations based on the latest message timestamp.
+ *
+ * UI Components:
+ * - ChatboxHeader: Displays the header for the chatbox.
+ * - ChatLog: Renders a scrollable area containing the chat messages.
+ * - ChatMessage: Renders individual chat messages, excluding system messages.
+ * - ChatInput: Provides a text input field for sending messages.
+ * - Footer: Displays a disclaimer below the input field.
+ *
+ * Props: None
+ *
+ * Usage:
+ * - This component is typically used as a route target in a React Router configuration for `/conversations/:convId`.
+ * - It relies on the `loader` function to pre-fetch conversation data.
+ */
 const Conversation = () => {
     const { conversation } = useLoaderData();
     const { groupedConvs, dispatch: dispatchConv } = useContext(ConversationContext);
