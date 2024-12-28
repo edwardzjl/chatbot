@@ -141,16 +141,14 @@ export const conversationReducer = (groupedConvs, action) => {
 
             // action.conv: { id, title, created_at, last_message_at, owner, pinned }
             const { conv } = action;
-            // Update 'Today' group only if it exists, without side effects
-            const updatedGroupedConvs = { ...groupedConvs };
 
-            if (updatedGroupedConvs.Today) {
-                updatedGroupedConvs.Today = [conv, ...updatedGroupedConvs.Today];
+            if (!groupedConvs.Today) {
+                return { Today: [conv], ...groupedConvs };
             } else {
-                updatedGroupedConvs.Today = [conv];
+                const updatedGroupedConvs = { ...groupedConvs };
+                updatedGroupedConvs.Today = [conv, ...updatedGroupedConvs.Today];
+                return updatedGroupedConvs;
             }
-
-            return updatedGroupedConvs;
         }
         case "deleted": {
             const convs = flatConvs(groupedConvs);
