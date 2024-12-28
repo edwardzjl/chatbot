@@ -1,4 +1,4 @@
-import "./index.css";
+import styles from "./index.module.css";
 
 import { useContext, useState, useRef, useEffect } from "react";
 import PropTypes from "prop-types";
@@ -101,16 +101,16 @@ const ChatInput = ({ conv }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="input-container">
+    <form onSubmit={handleSubmit} className={styles.inputContainer}>
       <textarea
         id="input-text"
-        className="input-text"
+        className={styles.inputText}
         ref={inputRef}
         autoFocus
         value={input}
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={handleKeyDown} />
-      <button disabled={!ready} className="input-submit-button" type="submit">
+      <button disabled={!ready} className={styles.inputSubmitButton} type="submit">
         Send
       </button>
     </form>
