@@ -7,7 +7,7 @@ import ChatInput from "./index";
 
 // Mock WebsocketContext provider
 const MockWebsocketContextProvider = ({ children }) => {
-  const mockContextValue = [true];  // Mock the 'ready' value as 'true'
+  const mockContextValue = {ready: true};  // Mock the 'ready' value as 'true'
   return (
     <WebsocketContext.Provider value={mockContextValue}>
       {children}
