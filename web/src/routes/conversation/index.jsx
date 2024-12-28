@@ -1,4 +1,4 @@
-import "./index.css";
+import styles from "./index.module.css";
 
 import { useContext, useEffect } from "react";
 import { useLoaderData, redirect } from "react-router-dom";
@@ -90,15 +90,15 @@ const Conversation = () => {
     return (
         <>
             <ChatboxHeader />
-            <ChatLog className="chat-log">
+            <ChatLog className={styles.chatLog}>
                 {/* We ignore system messages when displaying. */}
                 {conversation && messages?.filter(message => message.from !== "system").map((message, index) => (
                     <ChatMessage key={index} convId={conversation.id} message={message} />
                 ))}
             </ChatLog>
-            <div className="input-bottom">
+            <div className={styles.inputBottom}>
                 <ChatInput onSubmit={sendMessage} />
-                <div className="footer">Chatbot can make mistakes. Consider checking important information.</div>
+                <div className={styles.footer}>Chatbot can make mistakes. Consider checking important information.</div>
             </div>
         </>
     );
