@@ -1,37 +1,47 @@
 import styles from "./index.module.css";
 
 import { useContext, useState, useRef, useEffect } from "react";
+import { useParams } from "react-router";
 import PropTypes from "prop-types";
 
-import { UserContext } from "@/contexts/user";
-import { MessageContext } from "@/contexts/message";
-import { ConversationContext } from "@/contexts/conversation";
 import { WebsocketContext } from "@/contexts/websocket";
 
 
 /**
- * ChatInput component for capturing and sending user input in a chat conversation.
- * 
- * The component renders a textarea for the user to type their message and a send button.
- * It dynamically adjusts the height of the textarea based on the content and focuses on the input 
- * when the conversation ID (`conv.id`) changes. Upon submitting the form, the message is added 
- * to the chat log, and the conversation's last message timestamp is updated.
- * 
- * @component
- * @example
- * // Example usage of the ChatInput component
- * <ChatInput conv={conversation} />
- * 
- * @param {Object} props - The props for the component.
- * @param {Object} props.conv - The current conversation object.
- * @param {string} props.conv.id - The ID of the conversation.
- * @param {boolean} [props.conv.pinned] - Whether the conversation is pinned (optional).
+ * ChatInput Component
+ *
+ * This component renders a chat input form with a dynamically resizing textarea and a submit button. 
+ * It integrates with a WebSocket context to disable the submit button when the WebSocket is not ready.
+ * The component also focuses on the textarea when the conversation ID changes and supports keyboard 
+ * shortcuts for submitting the input.
+ *
+ * Props:
+ * @param {Object} props - The props object.
+ * @param {Function} props.onSubmit - Callback function to handle the submission of user input.
+ *                                     Receives the input string as an argument.
+ *
+ * Features:
+ * - Dynamically adjusts the textarea height based on its content.
+ * - Autofocuses the textarea when the conversation ID (`convId`) changes.
+ * - Disables the submit button when the WebSocket is not ready.
+ * - Supports "Enter" key for submission unless used with Ctrl, Shift, or Alt (Shift adds a new line).
+ *
+ * Contexts:
+ * - Uses the `WebsocketContext` to determine the readiness state (`ready`) of the WebSocket.
+ *
+ * Hooks:
+ * - `useState` for managing the input text.
+ * - `useRef` for accessing the textarea DOM node.
+ * - `useEffect` for handling focus and dynamic height adjustments.
+ *
+ * Usage:
+ * ```jsx
+ * <ChatInput onSubmit={(message) => console.log("User input:", message)} />
+ * ```
  */
-const ChatInput = ({ conv }) => {
-  const { username } = useContext(UserContext);
-  const { dispatch } = useContext(MessageContext);
-  const { groupedConvs, dispatch: dispatchConv } = useContext(ConversationContext);
-  const [ready, send] = useContext(WebsocketContext);
+const ChatInput = ({ onSubmit }) => {
+  const params = useParams();
+  const {ready} = useContext(WebsocketContext);
 
   const [input, setInput] = useState("");
   const inputRef = useRef(null);
@@ -40,10 +50,10 @@ const ChatInput = ({ conv }) => {
    * Focus on input when convId changes.
    */
   useEffect(() => {
-    if (conv.id) {
+    if (params.convId) {
       inputRef.current.focus();
     }
-  }, [conv.id]);
+  }, [params]);
 
   /**
    * Adjusting height of textarea.
@@ -59,33 +69,8 @@ const ChatInput = ({ conv }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!ready) {
-      return;
-    }
-    const message = { id: crypto.randomUUID(), from: username, content: input, type: "text" };
-    const payload = {
-      conversation: conv.id,
-      ...message,
-    };
+    onSubmit(input);
     setInput("");
-    // append user input to chatlog
-    dispatch({
-      type: "added",
-      message: message,
-    });
-    // update last_message_at of the conversation to re-order conversations
-    if (conv.pinned && groupedConvs.pinned && groupedConvs.pinned[0]?.id !== conv.id) {
-      dispatchConv({
-        type: "reordered",
-        conv: { id: conv.id, last_message_at: new Date().toISOString() },
-      });
-    } else if (groupedConvs.Today && groupedConvs.Today[0]?.id !== conv.id) {
-      dispatchConv({
-        type: "reordered",
-        conv: { id: conv.id, last_message_at: new Date().toISOString() },
-      });
-    }
-    send(JSON.stringify(payload));
   };
 
   const handleKeyDown = async (e) => {
@@ -118,10 +103,7 @@ const ChatInput = ({ conv }) => {
 };
 
 ChatInput.propTypes = {
-  conv: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    pinned: PropTypes.bool,
-  }).isRequired,
+  onSubmit: PropTypes.func.isRequired,
 };
 
 export default ChatInput;

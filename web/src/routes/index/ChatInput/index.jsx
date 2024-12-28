@@ -25,7 +25,7 @@ import { WebsocketContext } from "@/contexts/websocket";
  * @returns {JSX.Element} The rendered `ChatInput` component.
  */
 const ChatInput = ({ onSubmit }) => {
-  const [ready,] = useContext(WebsocketContext);
+  const {ready} = useContext(WebsocketContext);
   const [input, setInput] = useState("");
   const inputRef = useRef(null);
 
