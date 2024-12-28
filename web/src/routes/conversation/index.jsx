@@ -7,7 +7,9 @@ import ChatboxHeader from "@/components/ChatboxHeader";
 import ChatLog from "@/components/ChatLog";
 import ChatMessage from "@/components/ChatMessage";
 
+import { ConversationContext } from "@/contexts/conversation";
 import { MessageContext } from "@/contexts/message";
+import { UserContext } from "@/contexts/user";
 import { WebsocketContext } from "@/contexts/websocket";
 
 import ChatInput from "./ChatInput";
@@ -24,31 +26,66 @@ export async function loader({ params }) {
 
 const Conversation = () => {
     const { conversation } = useLoaderData();
-    const [ready, send] = useContext(WebsocketContext);
+    const { groupedConvs, dispatch: dispatchConv } = useContext(ConversationContext);
+    const { username } = useContext(UserContext);
+    const {ready, send} = useContext(WebsocketContext);
     const { messages, dispatch } = useContext(MessageContext);
 
     useEffect(() => {
-        if (conversation?.messages) {
-            dispatch({
-                type: "replaceAll",
-                messages: conversation.messages,
-            });
-            const initMsg = sessionStorage.getItem(`init-msg:${conversation.id}`);
-            if (initMsg === undefined || initMsg === null) {
-                return;
-            }
-            const message = JSON.parse(initMsg);
-            dispatch({
-                type: "added",
-                message: message,
-            });
-            if (ready) {
-                // TODO: should I wait until ready?
-                send(JSON.stringify({ additional_kwargs: { require_summarization: true }, ...message }));
-            }
-            sessionStorage.removeItem(`init-msg:${conversation.id}`);
+        // Update the message context.
+        dispatch({
+            type: "replaceAll",
+            messages: conversation.messages,
+        });
+        if (!ready) {
+            console.error("Websocket not ready!");
+            return;
         }
-    }, [conversation]);
+
+        const initMsg = sessionStorage.getItem(`init-msg:${conversation.id}`);
+        if (initMsg === undefined || initMsg === null) {
+            return;
+        }
+        const message = JSON.parse(initMsg);
+        dispatch({
+            type: "added",
+            message: message,
+        });
+        // Send the init message if there's any.
+        send(JSON.stringify({ additional_kwargs: { require_summarization: true }, ...message }));
+        sessionStorage.removeItem(`init-msg:${conversation.id}`);
+    }, [conversation, dispatch, ready, send]);
+
+    const sendMessage = async (text) => {
+      if (!ready) {
+          console.error("Websocket not ready!");
+        return;
+      }
+      const message = { id: crypto.randomUUID(), from: username, content: text, type: "text" };
+      const payload = {
+        conversation: conversation.id,
+        ...message,
+      };
+      // append user input to chatlog
+      dispatch({
+        type: "added",
+        message: message,
+      });
+      // update last_message_at of the conversation to re-order conversations
+      // TODO: this seems buggy
+      if (conversation.pinned && groupedConvs.pinned && groupedConvs.pinned[0]?.id !== conversation.id) {
+        dispatchConv({
+          type: "reordered",
+          conv: { id: conversation.id, last_message_at: new Date().toISOString() },
+        });
+      } else if (groupedConvs.Today && groupedConvs.Today[0]?.id !== conversation.id) {
+        dispatchConv({
+          type: "reordered",
+          conv: { id: conversation.id, last_message_at: new Date().toISOString() },
+        });
+      }
+      send(JSON.stringify(payload));
+    };
 
     return (
         <>
@@ -60,7 +97,7 @@ const Conversation = () => {
                 ))}
             </ChatLog>
             <div className="input-bottom">
-                <ChatInput conv={conversation} />
+                <ChatInput onSubmit={sendMessage} />
                 <div className="footer">Chatbot can make mistakes. Consider checking important information.</div>
             </div>
         </>

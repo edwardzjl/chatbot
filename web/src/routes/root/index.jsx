@@ -1,6 +1,6 @@
 import "./index.css";
 
-import { forwardRef, useContext, useEffect, useRef, useState } from "react";
+import { forwardRef, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { Link, NavLink, Outlet, redirect, useNavigate, useNavigation } from "react-router-dom";
 
 import Snackbar from "@mui/material/Snackbar";
@@ -185,7 +185,12 @@ const Root = () => {
   };
 
   return (
-    <WebsocketContext.Provider value={[isReady, ws.current?.send.bind(ws.current)]}>
+    <WebsocketContext.Provider
+      value={{
+        isReady,
+        send: useCallback((...args) => ws.current?.send(...args), []),
+      }}
+    >
       <div className={`App theme-${theme}`}>
         <aside className="sidemenu">
           <Link className="sidemenu-button" to="/">
