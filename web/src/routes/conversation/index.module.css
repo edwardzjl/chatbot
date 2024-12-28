@@ -1,8 +1,8 @@
-.chat-log {
+.chatLog {
     text-align: left;
 }
 
-.input-bottom {
+.inputBottom {
     position: sticky;
     bottom: 0;
     margin-top: auto;
