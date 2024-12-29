@@ -191,7 +191,7 @@ const Root = () => {
   return (
     <WebsocketContext.Provider
       value={{
-        isReady,
+        ready: isReady,
         send: useCallback((...args) => ws.current?.send(...args), []),
       }}
     >
