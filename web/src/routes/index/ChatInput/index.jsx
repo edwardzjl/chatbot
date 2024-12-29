@@ -43,6 +43,11 @@ const ChatInput = ({ onSubmit }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!ready) {
+      // TODO: let user know.
+      console.error("Websocket not ready!");
+      return;
+    }
     onSubmit(input);
     setInput(""); // Clear the input after submit
   };
