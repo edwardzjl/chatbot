@@ -127,7 +127,11 @@ const Root = () => {
     conn();
 
     return () => {
-      ws.current.close();
+      // Only close the connection if it's open
+      // See <https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/readyState#websocket.open>
+      if (ws.current.readyState === 1) {
+        ws.current.close();
+      }
     };
   }, [dispatch, dispatchConv, setSnackbar]);
 
