@@ -21,6 +21,7 @@ import { ThemeProvider } from "@/contexts/theme";
 import { UserProvider } from "@/contexts/user";
 import { ConversationProvider } from "@/contexts/conversation";
 import { MessageProvider } from "@/contexts/message";
+import { WebsocketProvider } from "@/contexts/websocket";
 
 
 const router = createBrowserRouter([
@@ -65,9 +66,11 @@ function App() {
       <SnackbarProvider>
         <UserProvider>
           <ConversationProvider>
-            <MessageProvider>
-              <RouterProvider router={router} />
-            </MessageProvider>
+            <WebsocketProvider>
+              <MessageProvider>
+                <RouterProvider router={router} />
+              </MessageProvider>
+            </WebsocketProvider>
           </ConversationProvider>
         </UserProvider>
       </SnackbarProvider>
