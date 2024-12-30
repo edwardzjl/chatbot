@@ -1,7 +1,7 @@
 import "./index.css";
 
 import { forwardRef, useContext, useEffect, useRef, useState } from "react";
-import { Link, NavLink, Outlet, redirect, useNavigate, useNavigation } from "react-router-dom";
+import { Link, NavLink, Outlet, redirect, useNavigate } from "react-router-dom";
 
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
@@ -50,7 +50,6 @@ const Root = () => {
   const [copyTooltipTitle, setCopyTooltipTitle] = useState("copy url");
 
   const navigate = useNavigate();
-  const navigation = useNavigation();
 
   useEffect(() => {
     if (data === null || data === undefined) {
@@ -249,10 +248,7 @@ const Root = () => {
           <button onClick={() => delDialogRef.current?.close()}>Cancel</button>
         </div>
       </dialog>
-      {/* TODO: this loading state will render the delete dialog */}
-      <section className={`chatbox ${navigation.state === "loading" ? "loading" : ""}`}>
         <Outlet />
-      </section>
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}

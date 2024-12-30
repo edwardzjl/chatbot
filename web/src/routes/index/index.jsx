@@ -42,7 +42,7 @@ const Conversation = () => {
       };
 
     return (
-        <>
+        <section className={styles.chatbox}>
             <ChatboxHeader />
             <div className={styles.welcomeContainer}>
                 <div className={styles.welcome}>{username ? `${username}, hello!` : "Hello!"}</div >
@@ -53,7 +53,7 @@ const Conversation = () => {
                 <ChatInput onSubmit={handleSubmit} />
                 <div className={styles.footer}>Chatbot can make mistakes. Consider checking important information.</div>
             </div>
-        </>
+        </section>
     );
 }
 

@@ -1,7 +1,7 @@
 import styles from "./index.module.css";
 
 import { useContext, useEffect } from "react";
-import { useLoaderData, redirect } from "react-router-dom";
+import { useLoaderData, useNavigation, redirect } from "react-router-dom";
 
 import ChatboxHeader from "@/components/ChatboxHeader";
 import ChatLog from "@/components/ChatLog";
@@ -64,6 +64,7 @@ export async function loader({ params }) {
  */
 const Conversation = () => {
     const { conversation } = useLoaderData();
+    const navigation = useNavigation();
     const { groupedConvs, dispatch: dispatchConv } = useContext(ConversationContext);
     const { username } = useContext(UserContext);
     const {ready, send} = useContext(WebsocketContext);
@@ -126,7 +127,7 @@ const Conversation = () => {
     };
 
     return (
-        <>
+        <section className={`${styles.chatbox} ${navigation.state === "loading" ? "loading" : ""}`}>
             <ChatboxHeader />
             <ChatLog className={styles.chatLog}>
                 {/* We ignore system messages when displaying. */}
@@ -138,7 +139,7 @@ const Conversation = () => {
                 <ChatInput onSubmit={sendMessage} />
                 <div className={styles.footer}>Chatbot can make mistakes. Consider checking important information.</div>
             </div>
-        </>
+        </section>
     );
 }
 

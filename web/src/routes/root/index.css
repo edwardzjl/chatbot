@@ -168,30 +168,6 @@
   margin: 0.5rem;
 }
 
-.chatbox {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  overflow: auto;
-  scroll-behavior: smooth;
-  scrollbar-color: var(--border-color) transparent;
-  scrollbar-width: thin;
-  border: 1px solid var(--border-color);
-  background-color: var(--bg-secondary);
-  position: relative;
-}
-
-/*
- * Add loading will break the dialog now
- * Need to investigate more
- * See <https://developer.mozilla.org/en-US/docs/Web/HTML/Element/dialog>
- */
-/* .chatbox.loading {
-  opacity: 0.25;
-  transition: opacity 200ms;
-  transition-delay: 200ms;
-} */
-
 .del-dialog {
   width: 25vw;
   color: var(--text-primary);
