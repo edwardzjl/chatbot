@@ -21,7 +21,7 @@
     scrollbar-width: thin;
 }
 
-.share-header {
+.shareHeader {
     /* width: 40vw; */
     width: 90%;
     max-width: 600px;
@@ -29,18 +29,18 @@
     /* Only show the bottom border */
 }
 
-.share-title {}
+.shareTitle {}
 
-.share-time {}
+.shareTime {}
 
-.chat-log {
+.chatLog {
     text-align: left;
     width: 100%;
     max-width: 800px;
     margin: 0 auto;
 }
 
-.start-button {
+.startButton {
     margin-bottom: 2vw;
     padding: 1rem;
     background-color: var(--bg-primary);
@@ -53,7 +53,7 @@
     cursor: pointer;
 }
 
-.start-button:hover {
+.startButton:hover {
     background-color: var(--border-color);
     transform: scale(1.05);
 }
