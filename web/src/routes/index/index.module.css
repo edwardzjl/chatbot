@@ -1,3 +1,12 @@
+.chatbox {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-secondary);
+    position: relative;
+}
+
 .welcomeContainer {
     height: 100%;
     display: flex;
