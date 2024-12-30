@@ -1,17 +1,13 @@
 import "./index.css";
 
 import { forwardRef, useContext, useEffect, useRef, useState } from "react";
-import { Link, NavLink, Outlet, redirect, useNavigate } from "react-router-dom";
+import { Outlet, redirect, useNavigate } from "react-router-dom";
 
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import Tooltip from "@mui/material/Tooltip";
 
-import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import GitHubIcon from "@mui/icons-material/GitHub";
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import MailOutlineIcon from "@mui/icons-material/MailOutline";
 
 import { SnackbarContext } from "@/contexts/snackbar";
 import { ThemeContext } from "@/contexts/theme";
@@ -19,8 +15,7 @@ import { ConversationContext } from "@/contexts/conversation";
 import { MessageContext } from "@/contexts/message";
 import { WebsocketContext } from "@/contexts/websocket";
 
-import ChatTab from "./ChatTab";
-
+import Sidebar from "./Sidebar";
 
 const Alert = forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -35,7 +30,7 @@ export async function action({ request }) {
 }
 
 const Root = () => {
-  const { groupedConvs, dispatch: dispatchConv } = useContext(ConversationContext);
+  const { dispatch: dispatchConv } = useContext(ConversationContext);
 
   const { theme } = useContext(ThemeContext);
   const { snackbar, setSnackbar } = useContext(SnackbarContext);
@@ -156,51 +151,8 @@ const Root = () => {
 
   return (
     <div className={`App theme-${theme}`}>
-      <aside className="sidemenu">
-        <Link className="sidemenu-button" to="/">
-          <AddOutlinedIcon />
-          New Chat
-        </Link>
-        <nav className="conv-list">
-          {groupedConvs && Object.entries(groupedConvs)
-            .filter(([, convs]) => convs && convs.length > 0) // Filter out empty lists
-            .flatMap(([grp, convs]) => (
-              [
-                <div key={grp}>
-                  <div className="sidemenu-date-group">{grp}</div>
-                  <ul>
-                    {convs.map((conv) => (
-                      <li key={conv.id}>
-                        <NavLink
-                          to={`conversations/${conv.id}`}
-                          className={`sidemenu-button ${({ isActive, isPending }) => isActive ? "active" : isPending ? "pending" : ""}`}
-                        >
-                          {({ isActive }) => (
-                            <ChatTab chat={conv} isActive={isActive} onShareClick={onShareClick} onDeleteClick={onDeleteClick} />
-                          )}
-                        </NavLink>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ]
-            ))}
-        </nav>
-        <hr className="sidemenu-bottom" />
-        <div className="sidemenu-bottom-group">
-          <div className="sidemenu-bottom-group-items">
-            <InfoOutlinedIcon />
-          </div>
-          <div className="sidemenu-bottom-group-items">
-            <a href="https://github.com/edwardzjl/chatbot" target="_blank" rel="noreferrer"> <GitHubIcon /> </a>
-          </div>
-          <div className="sidemenu-bottom-group-items">
-            <a href="mailto:jameszhou2108@hotmail.com">
-              <MailOutlineIcon />
-            </a>
-          </div>
-        </div>
-      </aside>
+      <Sidebar onShareClick={onShareClick} onDeleteClick={onDeleteClick} />
+      <Outlet />
       <dialog
         id="share-conv-dialog"
         className="del-dialog"
@@ -248,7 +200,6 @@ const Root = () => {
           <button onClick={() => delDialogRef.current?.close()}>Cancel</button>
         </div>
       </dialog>
-        <Outlet />
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}
