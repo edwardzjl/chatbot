@@ -1,4 +1,4 @@
-import "./index.css";
+import styles from "./index.module.css";
 
 import { useContext } from "react";
 import { useLoaderData, redirect } from "react-router-dom";
@@ -44,18 +44,18 @@ const Share = () => {
 
 
     return (
-        <div className={`App theme-${theme}`}>
-            <div className="sharebox">
-                <div className="share-header">
-                    <h1 className="share-title">{share.title}</h1>
+        <div className={`${styles.App} theme-${theme}`}>
+            <div className={styles.sharebox}>
+                <div className={styles.shareHeader}>
+                    <h1 className={styles.shareTitle}>{share.title}</h1>
                     <p>Shared @ {formatTimestamp(share.created_at)}</p>
                 </div>
-                <ChatLog className="chat-log">
+                <ChatLog className={styles.chatLog}>
                     {share?.messages?.map((message, index) => (
                         <ChatMessage key={index} convId={share.id} idx={index} message={message} />
                     ))}
                 </ChatLog>
-                <button className="start-button" onClick={goHome} aria-label="Start chatting">Start chatting!</button>
+                <button className={styles.shartButton} onClick={goHome} aria-label="Start chatting">Start chatting!</button>
             </div>
         </div>
     );
