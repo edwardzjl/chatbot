@@ -1,0 +1,77 @@
+.sidebar {
+    width: 260px;
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, .2);
+    background-color: var(--bg-primary);
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+.sidebar li {
+    list-style: none;
+    width: 100%;
+}
+
+.sidebar a {
+    color: unset;
+    text-decoration: none;
+}
+
+.convList {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    overflow: auto;
+    scrollbar-color: var(--border-color) transparent;
+    scrollbar-width: thin;
+}
+
+.sidebarDateGroup {
+    color: var(--text-3);
+    text-align: start;
+    margin: 10px;
+    margin-top: 20px;
+}
+
+.sidebarButton {
+    height: 2rem;
+    margin: 2px;
+    padding: 3px;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    border: none;
+    border-radius: 5px;
+    transition: ease 0.25s all;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.sidemenu-button:hover {
+    background-color: var(--bg-secondary);
+}
+
+.sidemenu-button.active {
+    background-color: var(--bg-secondary);
+}
+
+.sidebarBottom {
+    margin-top: auto;
+    width: 90%;
+    border: 1px solid var(--border-color);
+}
+
+.sidebarBottomGroup {
+    margin: 1rem;
+    display: flex;
+}
+
+.sidebarBottomGroupItem {
+    margin: 0.5rem;
+}
