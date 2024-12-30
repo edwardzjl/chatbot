@@ -19,7 +19,7 @@ import { ConversationContext } from "@/contexts/conversation";
 import { MessageContext } from "@/contexts/message";
 import { WebsocketContext } from "@/contexts/websocket";
 
-import ChatTab from "./SideMenuButton";
+import ChatTab from "./ChatTab";
 
 
 const Alert = forwardRef(function Alert(props, ref) {
