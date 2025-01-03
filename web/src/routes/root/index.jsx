@@ -14,8 +14,10 @@ import { ThemeContext } from "@/contexts/theme";
 import { ConversationContext } from "@/contexts/conversation";
 import { MessageContext } from "@/contexts/message";
 import { WebsocketContext } from "@/contexts/websocket";
+import Dialog from '@/components/Dialog';
 
 import Sidebar from "./Sidebar";
+
 
 const Alert = forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -41,7 +43,7 @@ const Root = () => {
   const sharedDialogRef = useRef();
   const delDialogRef = useRef();
   // A transient state to store the target conversation to be shared or deleted
-  const [targetConv, setTargetConv] = useState({});
+  const [targetConv, setTargetConv] = useState(null);
   const [copyTooltipTitle, setCopyTooltipTitle] = useState("copy url");
 
   const navigate = useNavigate();
@@ -153,53 +155,53 @@ const Root = () => {
     <div className={`App theme-${theme}`}>
       <Sidebar onShareClick={onShareClick} onDeleteClick={onDeleteClick} />
       <Outlet />
-      <dialog
-        id="share-conv-dialog"
-        className="del-dialog"
+      <Dialog
         ref={shareDialogRef}
-      >
-        <h2>Share conversation</h2>
-        <div className="del-dialog-content">
-          <label>title:</label>
-          <input id="title" type="text" defaultValue={targetConv.title || ""} />
-        </div>
-        <div className="del-dialog-actions">
-          <button autoFocus onClick={() => shareConv(targetConv.id, targetConv.title)}>Ok</button>
-          <button onClick={() => shareDialogRef.current?.close()}>Cancel</button>
-        </div>
-      </dialog>
-      <dialog
-        id="conv-shared-dialog"
-        className="del-dialog"
+        title="Share conversation"
+        content={
+          <>
+            <label>title:</label>
+            <input id="title" type="text" defaultValue={targetConv.title || ""} />
+          </>
+        }
+        actions={
+          <>
+            <button autoFocus onClick={() => shareConv(targetConv.id, targetConv.title)}>Ok</button>
+            <button onClick={() => shareDialogRef.current?.close()}>Cancel</button>
+          </>
+        }
+      />
+
+      <Dialog
         ref={sharedDialogRef}
-      >
-        <h2>Conversation shared</h2>
-        <div className="del-dialog-content">
-          <input id="shared-url" type="url" readOnly value={targetConv.url || ""} />
-          {/* Set slotProps or the tooltip won't be visible */}
-          {/* See <https://github.com/mui/material-ui/issues/40870#issuecomment-2044719356> */}
-          <Tooltip title={copyTooltipTitle} slotProps={{ popper: { disablePortal: true } }} >
-            <ContentCopyIcon onClick={() => onCopyClick(targetConv.url)} />
-          </Tooltip>
-        </div>
-        <div className="del-dialog-actions">
-          <button onClick={() => sharedDialogRef.current?.close()}>Ok</button>
-        </div>
-      </dialog>
-      <dialog
-        id="del-conv-dialog"
-        className="del-dialog"
+        title="Conversation shared"
+        content={
+          <>
+            <input id="shared-url" type="url" readOnly value={targetConv.url || ""} />
+            {/* Set slotProps or the tooltip won't be visible */}
+            {/* See <https://github.com/mui/material-ui/issues/40870#issuecomment-2044719356> */}
+            <Tooltip title={copyTooltipTitle} slotProps={{ popper: { disablePortal: true } }}>
+              <ContentCopyIcon onClick={() => onCopyClick(targetConv.url)} />
+            </Tooltip>
+          </>
+        }
+        actions={<button onClick={() => sharedDialogRef.current?.close()}>Ok</button>}
+      />
+
+      <Dialog
         ref={delDialogRef}
-      >
-        <h2>Delete conversation?</h2>
-        <div className="del-dialog-content">
+        title="Delete conversation?"
+        content={
           <p>This will delete &quot;{targetConv.title}&quot;</p>
-        </div>
-        <div className="del-dialog-actions">
-          <button autoFocus onClick={() => deleteConv(targetConv.id)}>Delete</button>
-          <button onClick={() => delDialogRef.current?.close()}>Cancel</button>
-        </div>
-      </dialog>
+        }
+        actions={
+          <>
+            <button autoFocus onClick={() => deleteConv(targetConv.id)}>Delete</button>
+            <button onClick={() => delDialogRef.current?.close()}>Cancel</button>
+          </>
+        }
+      />
+
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}
