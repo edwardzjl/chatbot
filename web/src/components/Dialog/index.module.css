@@ -1,0 +1,46 @@
+.dialog {
+    width: 25vw;
+    color: var(--text-primary);
+    background-color: var(--bg-primary);
+    border: none;
+    border-radius: 5px;
+}
+
+.dialogTitle {
+    white-space: nowrap;
+}
+
+.dialogContent {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin: 2rem;
+}
+
+.dialogContent>label {
+    margin: 0.5rem;
+}
+
+.dialogContent>input {
+    margin: 0.5rem;
+    outline: 0;
+    border-width: 0 0 2px;
+    color: var(--text-primary);
+    background-color: var(--bg-primary);
+}
+
+.dialogActions {
+    margin-top: auto;
+    display: flex;
+    flex-direction: row-reverse;
+}
+
+.dialogActions>button {
+    color: var(--text-primary);
+    background-color: var(--bg-secondary);
+    border: unset;
+    border-radius: 5px;
+    margin: 5px;
+    padding: 10px;
+}
