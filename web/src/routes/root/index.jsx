@@ -91,7 +91,7 @@ const Root = () => {
     useEffect(() => {
         // Register the message handler when component mounts
         registerMessageHandler(handleWebSocketMessage);
-        
+
         // Unregister when component unmounts
         return () => {
             unregisterMessageHandler(handleWebSocketMessage);

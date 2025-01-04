@@ -8,9 +8,35 @@
     flex-direction: column;
 }
 
+.sidebar.collapsed {
+    width: 60px; /* 折叠时的宽度，只需要能容纳图标即可 */
+}
+
 .sidebar a {
     color: unset;
     text-decoration: none;
+}
+
+.sidebarContent {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar.collapsed .sidebarContent {
+    display: none;
+}
+
+.toggleButton {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
 }
 
 .sidebarButton {
