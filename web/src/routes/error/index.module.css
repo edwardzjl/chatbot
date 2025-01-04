@@ -4,9 +4,9 @@
     align-items: center;
     justify-content: center;
     text-align: center;
-    min-height: 100vh;
-    margin: 0;
-    padding: 20px;
+    background-color: var(--bg-primary);
+    inset: 0;
+    position: absolute;
 }
 
 .errorCode {
@@ -18,13 +18,13 @@
 
 .heading {
     font-size: 2rem;
-    color: #333;
+    color: var(--text-primary);
     margin-bottom: 1.5rem;
 }
 
 .message {
     font-size: 1.1rem;
-    color: #555;
+    color: var(--text-secondary);
     margin-bottom: 2rem;
 }
 
