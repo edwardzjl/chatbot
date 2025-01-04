@@ -15,6 +15,8 @@ import { ConversationContext } from "@/contexts/conversation";
 import { MessageContext } from "@/contexts/message";
 import { WebsocketContext } from "@/contexts/websocket";
 
+import CollapsibleWrapper from "@/components/CollapsibleWrapper";
+
 import Sidebar from "./Sidebar";
 
 const Alert = forwardRef(function Alert(props, ref) {
@@ -151,7 +153,16 @@ const Root = () => {
 
   return (
     <div className={`App theme-${theme}`}>
-      <Sidebar onShareClick={onShareClick} onDeleteClick={onDeleteClick} />
+      <CollapsibleWrapper
+        initialCollapsed={false}
+        duration={500}
+        collapsedWidth="60px"
+        expandedWidth="250px"
+        togglePosition="right"
+        toggleLabel={{ expand: '→', collapse: '←' }}
+      >
+        <Sidebar onShareClick={onShareClick} onDeleteClick={onDeleteClick} />
+      </CollapsibleWrapper>
       <Outlet />
       <dialog
         id="share-conv-dialog"

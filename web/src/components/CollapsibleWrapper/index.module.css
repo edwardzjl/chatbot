@@ -1,0 +1,46 @@
+.collapsibleWrapper {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    /* border: 1px solid #ddd; */
+    overflow: hidden;
+    position: relative;
+    /* background-color: #f9f9f9; */
+}
+
+/* .collapsibleContent {
+    flex: 1;
+    overflow: auto;
+    padding: 10px;
+} */
+
+.toggleButton {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: #f5f5f5;
+    border: none;
+    cursor: pointer;
+    z-index: 10;
+    width: 30px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.toggleButton:hover {
+    background-color: #e0e0e0;
+}
+
+/* Position the button on the left or right */
+.collapsibleWrapper .toggleButton {
+    left: auto;
+    right: -15px;
+    /* Adjust for button width */
+}
+
+.collapsibleWrapper .toggleButton.left {
+    left: -15px;
+    right: auto;
+}
