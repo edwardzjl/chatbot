@@ -25,4 +25,4 @@ generatorOptions:
 
 images:
   - name: quay.io/oauth2-proxy/oauth2-proxy
-    newTag: v7.7.1
+    newTag: v7.8.0
