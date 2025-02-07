@@ -26,6 +26,7 @@ export default defineConfig({
   resolve: {
     alias: {
         '@/': '/src/',
+        'micromark-extension-math': 'micromark-extension-llm-math',
     },
   },
 })

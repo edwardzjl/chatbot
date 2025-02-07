@@ -4,6 +4,8 @@ import { useContext, useEffect, useState } from "react";
 import Markdown from "react-markdown";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 import { darcula, googlecode } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import PropTypes from "prop-types";
 
@@ -131,7 +133,8 @@ const ChatMessage = ({ convId, message }) => {
       <div className={styles.messageBody}>
         <Markdown
           className={styles.messageContent}
-          remarkPlugins={[remarkGfm]}
+          remarkPlugins={[remarkGfm, remarkMath]}
+          rehypePlugins={[rehypeKatex]}
           components={{
             code({ inline, className, children, ...props }) {
               const match = /language-(\w+)/.exec(className || "");
