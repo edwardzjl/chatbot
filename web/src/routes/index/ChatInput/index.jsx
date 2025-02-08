@@ -81,7 +81,7 @@ const ChatInput = ({ onSubmit }) => {
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={handleKeyDown} />
       <button disabled={!ready} className={styles.inputSubmitButton} type="submit">
-        <SendRoundedIcon sx={{ fontSize: "1rem" }} />
+        <SendRoundedIcon sx={{ fontSize: "1.5rem" }} />
       </button>
     </form>
   );
