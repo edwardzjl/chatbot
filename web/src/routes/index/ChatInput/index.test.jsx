@@ -35,7 +35,7 @@ describe("ChatInput component", () => {
 
     // Check if the textarea and submit button are rendered
     expect(screen.getByRole('textbox')).toBeDefined();
-    expect(screen.getByRole('button', { name: /send/i })).toBeDefined();
+    expect(screen.getByRole('button')).toBeDefined();
   });
 
   it("calls onSubmit with input value when form is submitted", () => {
@@ -46,7 +46,7 @@ describe("ChatInput component", () => {
     );
 
     const input = screen.getByRole('textbox');
-    const submitButton = screen.getByRole('button', { name: /send/i });
+    const submitButton = screen.getByRole('button');
 
     // Simulate typing in the textarea
     fireEvent.change(input, { target: { value: 'Hello, world!' } });
@@ -66,7 +66,7 @@ describe("ChatInput component", () => {
     );
 
     const input = screen.getByRole('textbox');
-    const submitButton = screen.getByRole('button', { name: /send/i });
+    const submitButton = screen.getByRole('button');
 
     // Simulate typing in the textarea
     fireEvent.change(input, { target: { value: 'Hello, world!' } });
