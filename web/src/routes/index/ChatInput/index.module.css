@@ -5,6 +5,8 @@
     display: flex;
     flex-direction: row;
     align-items: center;
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
 }
 
 .inputText {
@@ -12,10 +14,9 @@
     max-height: 10vw;
     padding: 12px;
     color: var(--text-primary);
-    background-color: var(--bg-secondary);
+    background-color: transparent;
     font-size: 1.25em;
-    border: 1px solid var(--border-color);
-    border-radius: 5px;
+    border: unset;
     resize: none;
     scrollbar-color: var(--border-color) transparent;
     scrollbar-width: thin;
@@ -23,18 +24,20 @@
 
 .inputText:focus {
     outline: none !important;
-    border: 1px solid var(--border-color);
 }
 
 .inputSubmitButton {
-    width: 70px;
-    height: 60px;
-    margin-left: 2vw;
-    background-color: #0da37f;
-    border: unset;
-    border-radius: 5px;
+    width: 3rem;
+    height: 3rem;
+    margin: 1rem;
+    padding: 1rem;
+    /* The button is a little squashed, forcing aspect ratio here. */
+    aspect-ratio: 1;
+    border: none;
+    border-radius: 50%;
     cursor: pointer;
     color: var(--text-primary);
+    background-color: #0da37f;
 }
 
 .inputSubmitButton:disabled {

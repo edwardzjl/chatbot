@@ -3,6 +3,7 @@ import styles from "./index.module.css";
 import { useContext, useState, useRef, useEffect } from "react";
 import { useParams } from "react-router";
 import PropTypes from "prop-types";
+import SendRoundedIcon from '@mui/icons-material/SendRounded';
 
 import { WebsocketContext } from "@/contexts/websocket";
 
@@ -41,7 +42,7 @@ import { WebsocketContext } from "@/contexts/websocket";
  */
 const ChatInput = ({ onSubmit }) => {
   const params = useParams();
-  const {ready} = useContext(WebsocketContext);
+  const { ready } = useContext(WebsocketContext);
 
   const [input, setInput] = useState("");
   const inputRef = useRef(null);
@@ -101,7 +102,7 @@ const ChatInput = ({ onSubmit }) => {
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={handleKeyDown} />
       <button disabled={!ready} className={styles.inputSubmitButton} type="submit">
-        Send
+        <SendRoundedIcon sx={{ fontSize: "1rem" }} />
       </button>
     </form>
   );
