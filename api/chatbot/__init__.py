@@ -32,7 +32,11 @@ uvicorn_logger.addFilter(EndpointFilter(path="/api/redoc"))
 uvicorn_logger.addFilter(EndpointFilter(path="/api/healthz"))
 uvicorn_logger.addFilter(EndpointFilter(path="/metrics"))
 # Static file endpoints
+## CRA build files
 uvicorn_logger.addFilter(EndpointFilter(path="/static/"))
 uvicorn_logger.addFilter(EndpointFilter(path="/favicon.ico"))
 uvicorn_logger.addFilter(EndpointFilter(path="/logo192.png"))
 uvicorn_logger.addFilter(EndpointFilter(path="/manifest.json"))
+## Vite build files
+uvicorn_logger.addFilter(EndpointFilter(path="/assets/"))
+uvicorn_logger.addFilter(EndpointFilter(path="/vite.svg"))
