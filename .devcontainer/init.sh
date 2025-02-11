@@ -9,4 +9,5 @@ cd ..
 # install node dependencies
 nvm install --lts
 cd web
-yarn
+corepack enable
+yarn install
