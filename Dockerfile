@@ -1,11 +1,12 @@
 FROM node:lts-alpine AS frontend-builder
 
 ARG PUBLIC_URL=
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 
 WORKDIR /build
-COPY web/package.json web/yarn.lock ./
+COPY web/package.json web/yarn.lock web/.yarnrc.yml ./
 RUN corepack enable \
-  & yarn install
+  && yarn install
 COPY web/ ./
 RUN yarn build
 
