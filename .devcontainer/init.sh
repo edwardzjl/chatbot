@@ -1,4 +1,4 @@
-#!/bin/zsh -i
+#!/bin/bash -i
 
 # install python dependencies
 python -m pip install pipenv --user
