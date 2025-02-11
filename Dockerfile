@@ -4,7 +4,8 @@ ARG PUBLIC_URL=
 
 WORKDIR /build
 COPY web/package.json web/yarn.lock ./
-RUN yarn
+RUN corepack enable \
+  & yarn install
 COPY web/ ./
 RUN yarn build
 
