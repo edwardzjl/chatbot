@@ -53,11 +53,11 @@
     align-items: center;
 }
 
-.sidemenu-button:hover {
+.sidebarButton:hover {
     background-color: var(--bg-secondary);
 }
 
-.sidemenu-button.active {
+.sidebarButton.active {
     background-color: var(--bg-secondary);
 }
 

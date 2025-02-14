@@ -14,7 +14,7 @@ import { ConversationContext } from "@/contexts/conversation";
 import ChatTab from "../ChatTab";
 
 
-const Sidebar = ({onShareClick, onDeleteClick}) => {
+const Sidebar = ({ onShareClick, onDeleteClick }) => {
     const { groupedConvs } = useContext(ConversationContext);
 
     return (
@@ -35,7 +35,8 @@ const Sidebar = ({onShareClick, onDeleteClick}) => {
                                         <li key={conv.id}>
                                             <NavLink
                                                 to={`conversations/${conv.id}`}
-                                                className={`${styles.sidebarButton} ${({ isActive, isPending }) => isActive ? "active" : isPending ? "pending" : ""}`}
+                                                className={({ isActive, isPending }) =>
+                                                    `${styles.sidebarButton} ${isActive ? styles.active : isPending ? styles.pending : ""}`}
                                             >
                                                 {({ isActive }) => (
                                                     <ChatTab chat={conv} isActive={isActive} onShareClick={onShareClick} onDeleteClick={onDeleteClick} />
