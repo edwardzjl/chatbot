@@ -1,6 +1,8 @@
 .chatTitle {
   margin-left: 5px;
+  /* line-height should be equal to height */
   height: 1.3rem;
+  line-height: 1.3rem;
   color: var(--text-primary);
   border: none;
   /* the following 3 lines ellipsis text */
