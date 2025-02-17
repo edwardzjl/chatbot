@@ -1883,7 +1883,7 @@ __metadata:
     globals: "npm:^15.14.0"
     js-sha256: "npm:^0.11.0"
     jsdom: "npm:^26.0.0"
-    material-icons: "npm:^1.13.13"
+    material-icons: "npm:^1.13.14"
     micromark-extension-llm-math: "npm:^3.1.0"
     normalize.css: "npm:^8.0.1"
     react: "npm:^19.0.0"
@@ -3948,10 +3948,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"material-icons@npm:^1.13.13":
-  version: 1.13.13
-  resolution: "material-icons@npm:1.13.13"
-  checksum: 10c0/b21a46bc024b46efbf622b0171a6ee9b107c37010fe218b8960888a4386fb3ba93e4e29e3a8b4e4d7c481f97a63d5c9f5e4b827ae5be8f448d189cfc41d00390
+"material-icons@npm:^1.13.14":
+  version: 1.13.14
+  resolution: "material-icons@npm:1.13.14"
+  checksum: 10c0/4c0f9a8ff02545ce7747c621b5ffa1738212628189c9419f4cd2e75f7f8cf9e98ed5f946724a2d7e169cfebc439875df0ba9f79ba94a574e16cbb0c5ce26e55a
   languageName: node
   linkType: hard
 
