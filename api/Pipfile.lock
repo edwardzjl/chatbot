@@ -556,12 +556,12 @@
         },
         "langchain-core": {
             "hashes": [
-                "sha256:26504cf1e8e6c310adad907b890d4e3c147581cfa7434114f6dc1134fe4bc6d3",
-                "sha256:a057ebeddd2158d3be14bde341b25640ddf958b6989bd6e47160396f5a8202ae"
+                "sha256:328688228ece259da734417d477994a69cf8202dea9ed4271f2d792e3575c6fc",
+                "sha256:81a4097226e180fa6c64e2d2ab38dcacbbc23b64fc109fb15622910fe8951670"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.9' and python_version < '4.0'",
-            "version": "==0.3.34"
+            "version": "==0.3.35"
         },
         "langchain-openai": {
             "hashes": [
