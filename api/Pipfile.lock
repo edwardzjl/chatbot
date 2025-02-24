@@ -556,12 +556,12 @@
         },
         "langchain-core": {
             "hashes": [
-                "sha256:328688228ece259da734417d477994a69cf8202dea9ed4271f2d792e3575c6fc",
-                "sha256:81a4097226e180fa6c64e2d2ab38dcacbbc23b64fc109fb15622910fe8951670"
+                "sha256:8202fd6506ce139a3a1b1c4c3006216b1c7fffa40bdd1779f7d2c67f75eb5f79",
+                "sha256:cda8786e616caa2f68f7cc9e811b9b50e3b63fb2094333318b348e5961a7ea01"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.9' and python_version < '4.0'",
-            "version": "==0.3.35"
+            "version": "==0.3.37"
         },
         "langchain-openai": {
             "hashes": [
@@ -574,20 +574,20 @@
         },
         "langgraph": {
             "hashes": [
-                "sha256:61ae2b2140940d32543a384ebc96f5cca13c14932a377fba58e73257f9997de6",
-                "sha256:a6c1e491674a11b8d4f946cb7120ae0d18313f0daf6bb16cccd9d49ea547a780"
+                "sha256:91a522df764e66068f1a6de09ea748cea0687912838f29218c1d1b92b1ca025f",
+                "sha256:db6e63e0771e2e8fb17dc0e040007b32f009e0f114e35d8348e336eb15f068e5"
             ],
             "index": "pypi",
-            "markers": "python_full_version >= '3.9.0' and python_version < '4.0'",
-            "version": "==0.2.73"
+            "markers": "python_version < '4.0' and python_full_version >= '3.9.0'",
+            "version": "==0.2.74"
         },
         "langgraph-checkpoint": {
             "hashes": [
-                "sha256:769d73544a3f4e89e65ba8034ad15e233c9a81bbd62b0a678d233849a0026c32",
-                "sha256:e3fffb7ce35b709caab2422fd6db2ec9fc446aab18a3845d30ffb6ace391d738"
+                "sha256:49ba8cfa12b2aae845ccc3b1fbd1d7a8d3a6c4a2e387ab3a92fca40dd3d4baa5",
+                "sha256:dfab51076a6eddb5f9e146cfe1b977e3dd6419168b2afa23ff3f4e47973bf06f"
             ],
             "markers": "python_full_version >= '3.9.0' and python_full_version < '4.0.0'",
-            "version": "==2.0.15"
+            "version": "==2.0.16"
         },
         "langgraph-checkpoint-postgres": {
             "hashes": [
@@ -600,19 +600,19 @@
         },
         "langgraph-sdk": {
             "hashes": [
-                "sha256:ce2b58466d1700d06149782ed113157a8694a6d7932c801f316cd13fab315fe4",
-                "sha256:dea1363e72562cb1e82a2d156be8d5b1a69ff3fe8815eee0e1e7a2f423242ec1"
+                "sha256:12906ed965905fa27e0c28d9fa07dc6fd89e6895ff321ff049fdf3965d057cc4",
+                "sha256:4fab62caad73661ffe4c3ababedcd0d7bfaaba986bee4416b9c28948458a3af5"
             ],
             "markers": "python_full_version >= '3.9.0' and python_full_version < '4.0.0'",
-            "version": "==0.1.51"
+            "version": "==0.1.53"
         },
         "langsmith": {
             "hashes": [
-                "sha256:97f9bebe0b7cb0a4f278e6ff30ae7d5ededff3883b014442ec6d7d575b02a0f1",
-                "sha256:fbb9dd97b0f090219447fca9362698d07abaeda1da85aa7cc6ec6517b36581b1"
+                "sha256:2f1f9e27c4fc6dd605557c3cdb94465f4f33464ab195c69ce599b6ee44d18275",
+                "sha256:7c05512d19a7741b348879149f4b7ef6aa4495abd12ad2e9418243664559b521"
             ],
             "markers": "python_version >= '3.9' and python_version < '4.0'",
-            "version": "==0.3.8"
+            "version": "==0.3.10"
         },
         "loguru": {
             "hashes": [
