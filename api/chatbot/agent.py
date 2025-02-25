@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Callable
 from langchain_core.messages import BaseMessage, SystemMessage, trim_messages
 from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import END, START, MessagesState, StateGraph
+from loguru import logger
 
 from chatbot.safety import create_hazard_classifier, hazard_categories
 
@@ -29,7 +30,15 @@ def create_agent(
         if hasattr(chat_model, "get_num_tokens_from_messages"):
             token_counter = chat_model.get_num_tokens_from_messages
         else:
+            logger.warning(
+                "Could not get token counter function from chat model, will truncate messages by message count. This may lead to context overflow."
+            )
             token_counter = len
+    if max_tokens is None:
+        raise ValueError("`None` passed as `max_tokens` which is not allowed")
+
+    # leave 0.2 for new tokens
+    _max_tokens = int(max_tokens * 0.8)
 
     hazard_classifier = None
     if safety_model is not None:
@@ -94,7 +103,7 @@ Please respond with care and professionalism. Avoid engaging with harmful or une
         windowed_messages: list[BaseMessage] = trim_messages(
             all_messages,
             token_counter=token_counter,
-            max_tokens=max_tokens,
+            max_tokens=_max_tokens,
             start_on="human",  # This means that the first message should be from the user after trimming.
         )
 
