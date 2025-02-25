@@ -20,6 +20,11 @@ spec:
             - "0.0.0.0"
             - --port
             - "8000"
+            # When deploying behind proxies or in a service mesh (common in Kubernetes environments),
+            # it is essential to set the `--forwarded-allow-ips` parameter (or the `FORWARDED_ALLOW_IPS` environment variable) correctly.
+            # This setting should include the IP addresses of the load balancers (2 in my deployment environment) and the ingress pod's IP.
+            # Since the ingress pod's IP can change, I use the cluster's pod CIDR range instead.
+            # For more details, see: <https://www.uvicorn.org/settings/#http>
           envFrom:
             - configMapRef:
                 name: chatbot
