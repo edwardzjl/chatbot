@@ -100,7 +100,7 @@ const Conversation = () => {
           console.error("Websocket not ready!");
         return;
       }
-      const message = { id: crypto.randomUUID(), from: username, content: text, type: "text" };
+      const message = { id: crypto.randomUUID(), from: username, content: text, type: "human" };
       const payload = {
         conversation: conversation.id,
         ...message,

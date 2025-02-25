@@ -3,10 +3,10 @@ from __future__ import annotations
 from copy import deepcopy
 
 from datetime import datetime
-from typing import Any, Literal
+from typing import Any, Literal, Type
 from uuid import UUID, uuid4
 
-from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
+from langchain_core.messages import BaseMessage, _message_from_dict
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from chatbot.utils import utcnow
@@ -23,59 +23,52 @@ class ChatMessage(BaseModel):
     from_: str | None = Field(None, alias="from")
     """A transient field to determine conversation id."""
     content: str | list[str | dict] | None = None
-    type: Literal[
-        "text", "stream/start", "stream/text", "stream/end", "info", "error"
-    ] = "text"
-    feedback: Literal["thumbup", "thumbdown", None] = None
+    type: str
     additional_kwargs: dict[str, Any] | None = None
 
     @staticmethod
-    def from_lc(
-        lc_message: BaseMessage, conv_id: str, from_: str | None = None
-    ) -> ChatMessage:
+    def from_lc(lc_message: BaseMessage) -> ChatMessage:
         additional_kwargs = deepcopy(lc_message.additional_kwargs)
-        return ChatMessage(
-            parent_id=additional_kwargs.pop("parent_id", None),
-            id=lc_message.id or str(uuid4()),
-            conversation=conv_id or additional_kwargs.pop("session_id", None),
-            from_=from_ or lc_message.type,
-            content=lc_message.content,
-            type=additional_kwargs.pop("type", "text"),
-            feedback=additional_kwargs.pop("feedback", None),
-            additional_kwargs=additional_kwargs,
-        )
+
+        # NOTE: By this we extend the `type` field of langchain message to support more types.
+        msg_type = additional_kwargs.pop("type", lc_message.type)
+
+        msg_class = message_class_map.get(msg_type, ChatMessage)
+
+        kwargs = {
+            "parent_id": additional_kwargs.pop("parent_id", None),
+            "id": lc_message.id or str(uuid4()),
+            "conversation": additional_kwargs.pop("session_id", None),
+            "from": lc_message.name,
+            "content": lc_message.content,
+            "type": msg_type,
+            "additional_kwargs": additional_kwargs,
+        }
+
+        if feedback := additional_kwargs.pop("feedback", None):
+            kwargs["feedback"] = feedback
+
+        return msg_class(**kwargs)
 
     def to_lc(self) -> BaseMessage:
-        """Convert to langchain message.
-        Note: for file messages, the content is used for LLM, and other fields are used for displaying to frontend.
-        """
+        """Convert to langchain message."""
         additional_kwargs = (self.additional_kwargs or {}) | {
             "type": self.type,
             "session_id": self.conversation,
         }
         if self.parent_id:
             additional_kwargs["parent_id"] = self.parent_id
-        if self.feedback:
+        if hasattr(self, "feedback"):
             additional_kwargs["feedback"] = self.feedback
-        match self.from_:
-            case "system":
-                return SystemMessage(
-                    id=self.id,
-                    content=self.content,
-                    additional_kwargs=additional_kwargs,
-                )
-            case "ai":
-                return AIMessage(
-                    id=self.id,
-                    content=self.content,
-                    additional_kwargs=additional_kwargs,
-                )
-            case _:  # username
-                return HumanMessage(
-                    id=self.id,
-                    content=self.content,
-                    additional_kwargs=additional_kwargs,
-                )
+
+        kwargs = {
+            "id": self.id,
+            "name": self.from_,
+            "content": self.content,
+            "additional_kwargs": additional_kwargs,
+        }
+
+        return _message_from_dict({"type": self.type, "data": kwargs})
 
     def model_dump(
         self, *, by_alias: bool = True, exclude_none: bool = True, **kwargs
@@ -92,24 +85,30 @@ class ChatMessage(BaseModel):
         )
 
 
+class HumanChatMessage(ChatMessage):
+    type: Literal["human"] = "human"
+
+
 class AIChatMessage(ChatMessage):
-    from_: Literal["ai"] = Field("ai", alias="from")
+    type: Literal["ai"] = "ai"
+    feedback: Literal["thumbup", "thumbdown", None] = None
 
 
-class AIChatStartMessage(AIChatMessage):
-    content: Literal[None] = None
-    type: Literal["stream/start"] = "stream/start"
-
-
-class AIChatEndMessage(AIChatMessage):
-    content: Literal[None] = None
-    type: Literal["stream/end"] = "stream/end"
+class AIChatMessageChunk(AIChatMessage):
+    type: Literal["AIMessageChunk"] = "AIMessageChunk"
 
 
 class InfoMessage(ChatMessage):
-    from_: Literal["system"] = Field("system", alias="from")
     content: dict[str, Any]
     type: Literal["info"] = "info"
+
+
+message_class_map: dict[str, Type[ChatMessage]] = {
+    "human": HumanChatMessage,
+    "ai": AIChatMessage,
+    "AIMessageChunk": AIChatMessageChunk,
+    "info": InfoMessage,
+}
 
 
 class Conversation(BaseModel):

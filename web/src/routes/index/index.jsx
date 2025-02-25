@@ -31,7 +31,7 @@ const Conversation = () => {
             conversation: conversation.id,
             from: username,
             content: input,
-            type: "text",
+            type: "human",
           };
           sessionStorage.setItem(`init-msg:${conversation.id}`, JSON.stringify(message));
           dispatch({ type: "added", conv: conversation });

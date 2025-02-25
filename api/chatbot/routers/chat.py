@@ -12,11 +12,10 @@ from chatbot.metrics import connected_clients
 from chatbot.metrics.llm import input_tokens, output_tokens
 from chatbot.models import Conversation
 from chatbot.schemas import (
-    AIChatEndMessage,
     AIChatMessage,
-    AIChatStartMessage,
     ChatMessage,
     InfoMessage,
+    HumanChatMessage,
 )
 from chatbot.state import sqlalchemy_session
 from chatbot.utils import utcnow
@@ -40,7 +39,7 @@ async def chat(
     while True:
         try:
             payload: str = await websocket.receive_text()
-            message = ChatMessage.model_validate_json(payload)
+            message = HumanChatMessage.model_validate_json(payload)
             async with sqlalchemy_session() as session:
                 conv: Conversation = await session.get(
                     Conversation, message.conversation
@@ -54,7 +53,7 @@ async def chat(
                 "userid": userid,
             }
             async for event in agent.astream_events(
-                input={"messages": [("user", message.content)]},
+                input={"messages": [message.to_lc()]},
                 config={
                     "run_name": "chat",
                     "metadata": chain_metadata,
@@ -78,28 +77,18 @@ async def chat(
                 logger.trace("event: {}", event)
                 evt: str = event["event"]
                 if evt == "on_chat_model_start":
-                    msg = AIChatStartMessage(
+                    # Send an empty non-chunk message to start the streaming.
+                    msg = AIChatMessage(
                         parent_id=message.id,
-                        id=event["run_id"],
+                        id=f"run-{event['run_id']}",
                         conversation=message.conversation,
+                        content="",  # Tired of handling null / undefined in js, simply sending an empty string.
                     )
                     await websocket.send_text(msg.model_dump_json())
                 if evt == "on_chat_model_stream":
-                    msg = AIChatMessage(
-                        parent_id=message.id,
-                        id=event["run_id"],
-                        conversation=message.conversation,
-                        content=event["data"]["chunk"].content,
-                        type="stream/text",
-                    )
+                    msg = ChatMessage.from_lc(event["data"]["chunk"])
                     await websocket.send_text(msg.model_dump_json())
                 if evt == "on_chat_model_end":
-                    msg = AIChatEndMessage(
-                        parent_id=message.id,
-                        id=event["run_id"],
-                        conversation=message.conversation,
-                    )
-                    await websocket.send_text(msg.model_dump_json())
                     msg: AIMessage = event["data"]["output"]
                     if msg.usage_metadata is not None:
                         input_tokens.labels(

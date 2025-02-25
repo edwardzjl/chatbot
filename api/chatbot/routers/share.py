@@ -49,20 +49,12 @@ async def get_share(
 ) -> Share:
     """Get a share by id"""
     share: ORMShare = await session.get(ORMShare, share_id)
+    res = Share.model_validate(share)
 
     config = {"configurable": share.snapshot_ref}
     agent_state = await agent.aget_state(config)
     lc_msgs: list[BaseMessage] = agent_state.values.get("messages", [])
-    messages = [
-        (
-            ChatMessage.from_lc(lc_message=message, conv_id=share_id, from_=share.owner)
-            if message.type == "human"
-            else ChatMessage.from_lc(lc_message=message, conv_id=share_id)
-        )
-        for message in lc_msgs
-    ]
-
-    res = Share.model_validate(share)
+    messages = [ChatMessage.from_lc(message) for message in lc_msgs]
     res.messages = messages
     return res
 

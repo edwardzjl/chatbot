@@ -53,26 +53,18 @@ const Root = () => {
     try {
       const message = JSON.parse(data);
       switch (message.type) {
-        case "text":
+        case "human":
+        case "ai":
           dispatch({
             type: "added",
             message: message,
           });
           break;
-        case "stream/start":
-          dispatch({
-            type: "added",
-            // Initialize an empty content if undefined
-            message: { content: message.content || "", ...message },
-          });
-          break;
-        case "stream/text":
+        case "AIMessageChunk":
           dispatch({
             type: "appended",
             message: message,
           });
-          break;
-        case "stream/end":
           break;
         case "info":
           if (message.content.type === "title-generated") {
@@ -92,7 +84,7 @@ const Root = () => {
           console.warn("unknown message type", message.type);
       }
     } catch (error) {
-      console.error("Unhandled error: Payload may not be a valid JSON.", { eventData: event.data, errorDetails: error });
+      console.error("Unhandled error: Payload may not be a valid JSON.", { Data: data, errorDetails: error });
     }
   }, [data, dispatch, dispatchConv, setSnackbar]);
 
