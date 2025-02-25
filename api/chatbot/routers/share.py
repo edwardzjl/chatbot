@@ -85,7 +85,7 @@ async def create_share(
     snapshot_ref = agent_state.config["configurable"]
 
     share_id = uuid4()
-    shared_url = urljoin(str(request.url), f"/share/{share_id}")
+    shared_url = urljoin(str(request.base_url), f"/share/{share_id}")
 
     share = ORMShare(
         id=share_id,
