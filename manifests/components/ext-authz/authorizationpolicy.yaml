@@ -11,21 +11,18 @@ spec:
         - operation:
             notPaths:
               - /metrics
-        - operation:
-            notPaths:
-              - /share/*
-        - operation:
-            notPaths:
-              - /api/shares/*
-        - operation:
-            notPaths:
-              - /static/*
-        - operation:
-            notPaths:
+              - /share/{*}
+              - /api/shares/{*}
+              - /static/{*}
               - /favicon.ico
-        - operation:
-            notPaths:
+              - /assets/{*}
+              - /vite.svg
               - /manifest.json
+        - operation:
+            paths:
+              - /api/shares/{*}
+            notMethods:
+              - GET
 ---
 apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
