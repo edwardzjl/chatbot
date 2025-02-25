@@ -12,7 +12,7 @@ export const MessageContext = createContext({
 
 export const MessageProvider = ({ children }) => {
     const [messages, dispatch] = useReducer(
-        messagessReducer,
+        messagesReducer,
         /** @type {[{id: string, title: string?, messages: Array, active: boolean}]} */
         []
     );
@@ -28,7 +28,7 @@ MessageProvider.propTypes = {
   children: PropTypes.node.isRequired,
 };
 
-export const messagessReducer = (messages, action) => {
+export const messagesReducer = (messages, action) => {
     switch (action.type) {
         case "added": {
             // find reversly could potentially be faster as the full message usually is the last one (streamed).
