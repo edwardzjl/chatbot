@@ -49,19 +49,10 @@ async def get_conversation(
     if conv.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
 
-    lc_msgs: list[BaseMessage] = agent_state.values.get("messages", [])
-    messages = [
-        (
-            ChatMessage.from_lc(
-                lc_message=message, conv_id=conversation_id, from_=userid
-            )
-            if message.type == "human"
-            else ChatMessage.from_lc(lc_message=message, conv_id=conversation_id)
-        )
-        for message in lc_msgs
-    ]
-
     res = ConversationDetail.model_validate(conv)
+
+    lc_msgs: list[BaseMessage] = agent_state.values.get("messages", [])
+    messages = [ChatMessage.from_lc(message) for message in lc_msgs]
     res.messages = messages
     return res
 
@@ -128,7 +119,7 @@ async def summarize(
         msgs,
         token_counter=len,
         max_tokens=20,
-        start_on="human",  # This means that the first message should be from the user after trimming.
+        start_on="human",  # This means that the first message should be from the user after trimming, which also means that we abandon the original system message.
     )
 
     title_raw: str = await smry_chain.ainvoke(

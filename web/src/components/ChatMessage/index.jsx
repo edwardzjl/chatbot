@@ -115,7 +115,7 @@ const ChatMessage = ({ convId, message }) => {
    * @param {Object} message - The message object.
    * @returns {boolean} True if the message was sent by the current user, otherwise false.
    */
-  const myMessage = message.from.toLowerCase() === username;
+  const myMessage = message.from && message.from.toLowerCase() === username;
 
   return (
     <div className={`${styles.messageContainer} ${myMessage ? styles.mine : ""}`}>
@@ -163,7 +163,7 @@ const ChatMessage = ({ convId, message }) => {
             },
           }}
         >
-          {message.content}
+          {message.content || ""}
         </Markdown>
         {!myMessage && (
           <div className={styles.messageFeedbacks}>
