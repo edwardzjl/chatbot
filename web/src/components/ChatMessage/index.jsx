@@ -132,7 +132,6 @@ const ChatMessage = ({ convId, message }) => {
       </div>
       <div className={styles.messageBody}>
         <Markdown
-          className={styles.messageContent}
           remarkPlugins={[remarkGfm, remarkMath]}
           rehypePlugins={[rehypeKatex]}
           components={{
