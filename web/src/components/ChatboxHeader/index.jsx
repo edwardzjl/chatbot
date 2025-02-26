@@ -16,12 +16,12 @@ import { UserContext } from "@/contexts/user";
 
 const ThemeIcon = ({ theme }) => {
     switch (theme) {
-        case "light":
-            return <LightModeIcon />;
-        case "dark":
-            return <DarkModeIcon />;
-        default:
-            return <BrightnessMediumIcon />;
+    case "light":
+        return <LightModeIcon />;
+    case "dark":
+        return <DarkModeIcon />;
+    default:
+        return <BrightnessMediumIcon />;
     }
 }
 ThemeIcon.propTypes = {

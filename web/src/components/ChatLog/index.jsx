@@ -10,44 +10,44 @@ import PropTypes from "prop-types";
  * @param {boolean} [props.smoothScroll=true] - Whether to enable smooth scrolling.
  */
 const ChatLog = ({ children, className = "", smoothScroll = true }) => {
-  const chatLogRef = useRef(null);
-  const messagesEndRef = useRef(null);
+    const chatLogRef = useRef(null);
+    const messagesEndRef = useRef(null);
 
-  const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: smoothScroll ? "smooth" : "auto" });
-  }, [smoothScroll]);
+    const scrollToBottom = useCallback(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: smoothScroll ? "smooth" : "auto" });
+    }, [smoothScroll]);
 
-  useEffect(() => {
-    if (!window.ResizeObserver) {
-      console.warn("ResizeObserver is not supported in this browser.");
-      return;
-    }
+    useEffect(() => {
+        if (!window.ResizeObserver) {
+            console.warn("ResizeObserver is not supported in this browser.");
+            return;
+        }
 
-    const resizeObserver = new ResizeObserver(() => {
-      scrollToBottom();
-    });
+        const resizeObserver = new ResizeObserver(() => {
+            scrollToBottom();
+        });
 
-    if (chatLogRef.current) {
-      resizeObserver.observe(chatLogRef.current);
-    }
+        if (chatLogRef.current) {
+            resizeObserver.observe(chatLogRef.current);
+        }
 
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, [scrollToBottom]);
+        return () => {
+            resizeObserver.disconnect();
+        };
+    }, [scrollToBottom]);
 
-  return (
-    <div ref={chatLogRef} className={className} role="region" aria-label="chat-log">
-      {children}
-      <div ref={messagesEndRef} />
-    </div>
-  );
+    return (
+        <div ref={chatLogRef} className={className} role="region" aria-label="chat-log">
+            {children}
+            <div ref={messagesEndRef} />
+        </div>
+    );
 };
 
 ChatLog.propTypes = {
-  children: PropTypes.node.isRequired,
-  className: PropTypes.string,
-  smoothScroll: PropTypes.bool,
+    children: PropTypes.node.isRequired,
+    className: PropTypes.string,
+    smoothScroll: PropTypes.bool,
 };
 
 export default ChatLog;

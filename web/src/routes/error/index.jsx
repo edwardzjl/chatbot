@@ -5,7 +5,7 @@ import { useRouteError, useNavigate } from "react-router-dom";
 
 import { ThemeContext } from "@/contexts/theme";
 
-export default function ErrorPage() {
+const ErrorPage = () => {
     const navigate = useNavigate();
     const { theme } = useContext(ThemeContext);
     console.log(theme)
@@ -30,3 +30,5 @@ export default function ErrorPage() {
         </div>
     );
 }
+
+export default ErrorPage;

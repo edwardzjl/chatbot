@@ -5,8 +5,8 @@
 import './App.css'
 
 import {
-  createBrowserRouter,
-  RouterProvider,
+    createBrowserRouter,
+    RouterProvider,
 } from "react-router-dom";
 
 import Root, { action as rootAction } from "@/routes/root";
@@ -25,57 +25,57 @@ import { WebsocketProvider } from "@/contexts/websocket";
 
 
 const router = createBrowserRouter([
-  {
-    path: "/",
-    id: "root",
-    element: <Root />,
-    errorElement: <ErrorPage />,
-    action: rootAction,
-    children: [
-      {
-        index: true,
-        element: <Index />,
-      },
-      {
-        path: "conversations/:convId",
-        element: <Conversation />,
-        loader: conversationLoader,
-        shouldRevalidate: ({ currentParams, nextParams }) => {
-          // prevent revalidating when clicking on the same conversation
-          return currentParams.convId !== nextParams.convId;
-        }
-      },
-      // this takes gemini as reference, the sharing(s) page lies in the same level as the conversation page
-      // and the share detail page is in an standalone route
-      {
-        path: "sharing",
-        element: <Sharing />,
-      },
-    ]
-  },
-  {
-    path: "/share/:shareId",
-    loader: shareLoader,
-    element: <Share />,
-  }
+    {
+        path: "/",
+        id: "root",
+        element: <Root />,
+        errorElement: <ErrorPage />,
+        action: rootAction,
+        children: [
+            {
+                index: true,
+                element: <Index />,
+            },
+            {
+                path: "conversations/:convId",
+                element: <Conversation />,
+                loader: conversationLoader,
+                shouldRevalidate: ({ currentParams, nextParams }) => {
+                    // prevent revalidating when clicking on the same conversation
+                    return currentParams.convId !== nextParams.convId;
+                }
+            },
+            // this takes gemini as reference, the sharing(s) page lies in the same level as the conversation page
+            // and the share detail page is in an standalone route
+            {
+                path: "sharing",
+                element: <Sharing />,
+            },
+        ]
+    },
+    {
+        path: "/share/:shareId",
+        loader: shareLoader,
+        element: <Share />,
+    }
 ]);
 
 function App() {
-  return (
-    <ThemeProvider>
-      <SnackbarProvider>
-        <UserProvider>
-          <ConversationProvider>
-            <WebsocketProvider>
-              <MessageProvider>
-                <RouterProvider router={router} />
-              </MessageProvider>
-            </WebsocketProvider>
-          </ConversationProvider>
-        </UserProvider>
-      </SnackbarProvider>
-    </ThemeProvider>
-  )
+    return (
+        <ThemeProvider>
+            <SnackbarProvider>
+                <UserProvider>
+                    <ConversationProvider>
+                        <WebsocketProvider>
+                            <MessageProvider>
+                                <RouterProvider router={router} />
+                            </MessageProvider>
+                        </WebsocketProvider>
+                    </ConversationProvider>
+                </UserProvider>
+            </SnackbarProvider>
+        </ThemeProvider>
+    )
 }
 
 export default App

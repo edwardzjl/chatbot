@@ -66,5 +66,5 @@ export const UserProvider = ({ children }) => {
 };
 
 UserProvider.propTypes = {
-  children: PropTypes.node.isRequired,
+    children: PropTypes.node.isRequired,
 };

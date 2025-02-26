@@ -36,160 +36,160 @@ import { stringToColor } from "@/commons";
  * @returns {JSX.Element} The rendered ChatMessage component.
  */
 const ChatMessage = ({ convId, message }) => {
-  const { theme } = useContext(ThemeContext);
-  const [markdownTheme, setMarkdownTheme] = useState(darcula);
-  const { username, avatar } = useContext(UserContext);
-  const { dispatch } = useContext(MessageContext);
-  const [copyTooltipTitle, setCopyTooltipTitle] = useState("copy content");
-  const [thumbUpTooltipTitle, setThumbUpTooltipTitle] = useState("good answer");
-  const [thumbDownTooltipTitle, setThumbDownTooltipTitle] = useState("bad answer");
+    const { theme } = useContext(ThemeContext);
+    const [markdownTheme, setMarkdownTheme] = useState(darcula);
+    const { username, avatar } = useContext(UserContext);
+    const { dispatch } = useContext(MessageContext);
+    const [copyTooltipTitle, setCopyTooltipTitle] = useState("copy content");
+    const [thumbUpTooltipTitle, setThumbUpTooltipTitle] = useState("good answer");
+    const [thumbDownTooltipTitle, setThumbDownTooltipTitle] = useState("bad answer");
 
-  // Update markdown theme based on the current theme
-  useEffect(() => {
-    switch (theme) {
-      case "dark":
-        setMarkdownTheme(darcula);
-        break;
-      case "light":
-        setMarkdownTheme(googlecode);
-        break;
-      default: {
-        if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
-          setMarkdownTheme(darcula);
-        } else {
-          setMarkdownTheme(googlecode);
+    // Update markdown theme based on the current theme
+    useEffect(() => {
+        switch (theme) {
+        case "dark":
+            setMarkdownTheme(darcula);
+            break;
+        case "light":
+            setMarkdownTheme(googlecode);
+            break;
+        default: {
+            if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+                setMarkdownTheme(darcula);
+            } else {
+                setMarkdownTheme(googlecode);
+            }
         }
-      }
-    }
-  }, [theme]);
+        }
+    }, [theme]);
 
-  /**
+    /**
    * Handles the copying of message content to the clipboard.
    * Updates the tooltip title to indicate the content has been copied.
    *
    * @param {string} content - The content to be copied to the clipboard.
    */
-  const onCopyClick = (content) => {
-    navigator.clipboard.writeText(content);
-    setCopyTooltipTitle("copied!");
-    setTimeout(() => {
-      setCopyTooltipTitle("copy content");
-    }, 3000);
-  };
+    const onCopyClick = (content) => {
+        navigator.clipboard.writeText(content);
+        setCopyTooltipTitle("copied!");
+        setTimeout(() => {
+            setCopyTooltipTitle("copy content");
+        }, 3000);
+    };
 
-  /**
+    /**
    * Handles the thumbs up action by sending a PUT request to register the feedback.
    * Updates the tooltip and dispatches a message update to the context.
    */
-  const onThumbUpClick = () => {
-    fetch(`/api/conversations/${convId}/messages/${message.id}/thumbup`, {
-      method: "PUT",
-    }).then(() => {
-      setThumbUpTooltipTitle("thanks!");
-      dispatch({
-        type: "updated",
-        message: { ...message, feedback: "thumbup" },
-      });
-    });
-  };
+    const onThumbUpClick = () => {
+        fetch(`/api/conversations/${convId}/messages/${message.id}/thumbup`, {
+            method: "PUT",
+        }).then(() => {
+            setThumbUpTooltipTitle("thanks!");
+            dispatch({
+                type: "updated",
+                message: { ...message, feedback: "thumbup" },
+            });
+        });
+    };
 
-  /**
+    /**
    * Handles the thumbs down action by sending a PUT request to register the feedback.
    * Updates the tooltip and dispatches a message update to the context.
    */
-  const onThumbDownClick = () => {
-    fetch(`/api/conversations/${convId}/messages/${message.id}/thumbdown`, {
-      method: "PUT",
-    }).then(() => {
-      setThumbDownTooltipTitle("thanks!");
-      dispatch({
-        type: "updated",
-        message: { ...message, feedback: "thumbdown" },
-      });
-    });
-  };
+    const onThumbDownClick = () => {
+        fetch(`/api/conversations/${convId}/messages/${message.id}/thumbdown`, {
+            method: "PUT",
+        }).then(() => {
+            setThumbDownTooltipTitle("thanks!");
+            dispatch({
+                type: "updated",
+                message: { ...message, feedback: "thumbdown" },
+            });
+        });
+    };
 
-  /**
+    /**
    * Determines if the message was sent by the current user.
    *
    * @param {Object} message - The message object.
    * @returns {boolean} True if the message was sent by the current user, otherwise false.
    */
-  const myMessage = message.from && message.from.toLowerCase() === username;
+    const myMessage = message.from && message.from.toLowerCase() === username;
 
-  return (
-    <div className={`${styles.messageContainer} ${myMessage ? styles.mine : ""}`}>
-      <div className={styles.messageTitle}>
-        {/* NOTE: className not working on Avatar */}
-        {myMessage ?
-          <Avatar src={avatar} /> :
-          // TODO: give AI an avatar
-          <Avatar sx={{ bgcolor: stringToColor(message.from) }}>
+    return (
+        <div className={`${styles.messageContainer} ${myMessage ? styles.mine : ""}`}>
+            <div className={styles.messageTitle}>
+                {/* NOTE: className not working on Avatar */}
+                {myMessage ?
+                    <Avatar src={avatar} /> :
+                // TODO: give AI an avatar
+                    <Avatar sx={{ bgcolor: stringToColor(message.from) }}>
             AI
-          </Avatar>
-        }
-        <div className={styles.messageTitleName}>{myMessage ? "You" : "AI"}</div>
-      </div>
-      <div className={styles.messageBody}>
-        <Markdown
-          remarkPlugins={[remarkGfm, remarkMath]}
-          rehypePlugins={[rehypeKatex]}
-          components={{
-            code({ inline, className, children, ...props }) {
-              const match = /language-(\w+)/.exec(className || "");
-              return !inline && match ? (
-                <div>
-                  <div className={styles.messageCodeTitle}>
-                    <div>{match[1]}</div>
-                    <Tooltip title={copyTooltipTitle}>
-                      <ContentCopyIcon onClick={() => onCopyClick(children)} />
-                    </Tooltip>
-                  </div>
-                  <SyntaxHighlighter
-                    {...props}
-                    style={markdownTheme}
-                    language={match[1]}
-                    PreTag="div"
-                  >
-                    {/* remove the last line separator, is it necessary? */}
-                    {String(children).replace(/\n$/, "")}
-                  </SyntaxHighlighter>
-                </div>
-              ) : (
-                <code {...props} className={className}>
-                  {children}
-                </code>
-              );
-            },
-          }}
-        >
-          {message.content || ""}
-        </Markdown>
-        {!myMessage && (
-          <div className={styles.messageFeedbacks}>
-            <Tooltip title={copyTooltipTitle}>
-              <ContentCopyIcon onClick={() => onCopyClick(message.content)} />
-            </Tooltip>
-            {message.feedback === "thumbdown" ? undefined : message.feedback === "thumbup" ? <ThumbUpIcon /> :
-              <Tooltip title={thumbUpTooltipTitle}>
-                <ThumbUpOutlined onClick={onThumbUpClick} />
-              </Tooltip>
-            }
-            {message.feedback === "thumbup" ? undefined : message.feedback === "thumbdown" ? <ThumbDownIcon /> :
-              <Tooltip title={thumbDownTooltipTitle}>
-                <ThumbDownOutlined onClick={onThumbDownClick} />
-              </Tooltip>
-            }
-          </div>
-        )}
-      </div>
-    </div>
-  );
+                    </Avatar>
+                }
+                <div className={styles.messageTitleName}>{myMessage ? "You" : "AI"}</div>
+            </div>
+            <div className={styles.messageBody}>
+                <Markdown
+                    remarkPlugins={[remarkGfm, remarkMath]}
+                    rehypePlugins={[rehypeKatex]}
+                    components={{
+                        code({ inline, className, children, ...props }) {
+                            const match = /language-(\w+)/.exec(className || "");
+                            return !inline && match ? (
+                                <div>
+                                    <div className={styles.messageCodeTitle}>
+                                        <div>{match[1]}</div>
+                                        <Tooltip title={copyTooltipTitle}>
+                                            <ContentCopyIcon onClick={() => onCopyClick(children)} />
+                                        </Tooltip>
+                                    </div>
+                                    <SyntaxHighlighter
+                                        {...props}
+                                        style={markdownTheme}
+                                        language={match[1]}
+                                        PreTag="div"
+                                    >
+                                        {/* remove the last line separator, is it necessary? */}
+                                        {String(children).replace(/\n$/, "")}
+                                    </SyntaxHighlighter>
+                                </div>
+                            ) : (
+                                <code {...props} className={className}>
+                                    {children}
+                                </code>
+                            );
+                        },
+                    }}
+                >
+                    {message.content || ""}
+                </Markdown>
+                {!myMessage && (
+                    <div className={styles.messageFeedbacks}>
+                        <Tooltip title={copyTooltipTitle}>
+                            <ContentCopyIcon onClick={() => onCopyClick(message.content)} />
+                        </Tooltip>
+                        {message.feedback === "thumbdown" ? undefined : message.feedback === "thumbup" ? <ThumbUpIcon /> :
+                            <Tooltip title={thumbUpTooltipTitle}>
+                                <ThumbUpOutlined onClick={onThumbUpClick} />
+                            </Tooltip>
+                        }
+                        {message.feedback === "thumbup" ? undefined : message.feedback === "thumbdown" ? <ThumbDownIcon /> :
+                            <Tooltip title={thumbDownTooltipTitle}>
+                                <ThumbDownOutlined onClick={onThumbDownClick} />
+                            </Tooltip>
+                        }
+                    </div>
+                )}
+            </div>
+        </div>
+    );
 };
 
 ChatMessage.propTypes = {
-  convId: PropTypes.string,
-  message: PropTypes.object.isRequired,
+    convId: PropTypes.string,
+    message: PropTypes.object.isRequired,
 };
 
 export default ChatMessage;

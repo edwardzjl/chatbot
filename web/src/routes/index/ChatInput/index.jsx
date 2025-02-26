@@ -26,69 +26,69 @@ import { WebsocketContext } from "@/contexts/websocket";
  * @returns {JSX.Element} The rendered `ChatInput` component.
  */
 const ChatInput = ({ onSubmit }) => {
-  const { ready } = useContext(WebsocketContext);
-  const [input, setInput] = useState("");
-  const inputRef = useRef(null);
+    const { ready } = useContext(WebsocketContext);
+    const [input, setInput] = useState("");
+    const inputRef = useRef(null);
 
-  /**
+    /**
    * Adjusting height of textarea.
    * Ref: <https://blog.muvon.io/frontend/creating-textarea-with-dynamic-height-react>
    */
-  useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.style.height = 'auto';  // Reset height first
-      const { scrollHeight } = inputRef.current;
-      inputRef.current.style.height = `${scrollHeight}px`;  // Set height based on content
-    }
-  }, [input]);
+    useEffect(() => {
+        if (inputRef.current) {
+            inputRef.current.style.height = 'auto';  // Reset height first
+            const { scrollHeight } = inputRef.current;
+            inputRef.current.style.height = `${scrollHeight}px`;  // Set height based on content
+        }
+    }, [input]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!ready) {
-      // TODO: let user know.
-      console.error("Websocket not ready!");
-      return;
-    }
-    onSubmit(input);
-    setInput(""); // Clear the input after submit
-  };
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        if (!ready) {
+            // TODO: let user know.
+            console.error("Websocket not ready!");
+            return;
+        }
+        onSubmit(input);
+        setInput(""); // Clear the input after submit
+    };
 
-  /**
+    /**
    * Handle the keydown event for the textarea.
    * If the user presses "Enter" without any modifier keys, the form is submitted.
    * If modifier keys like "Ctrl", "Shift", or "Alt" are pressed, it allows adding a new line.
    */
-  const handleKeyDown = (e) => {
+    const handleKeyDown = (e) => {
     // TODO: this will trigger in Chinese IME on OSX
-    if (e.key === "Enter") {
-      if (e.ctrlKey || e.shiftKey || e.altKey) {
-        // won't trigger submit here, but only shift key will add a new line
-        return true;
-      }
-      e.preventDefault();
-      handleSubmit(e);
-    }
-  };
+        if (e.key === "Enter") {
+            if (e.ctrlKey || e.shiftKey || e.altKey) {
+                // won't trigger submit here, but only shift key will add a new line
+                return true;
+            }
+            e.preventDefault();
+            handleSubmit(e);
+        }
+    };
 
-  return (
-    <form onSubmit={handleSubmit} className={styles.inputContainer}>
-      <textarea
-        id="input-text"
-        className={styles.inputText}
-        ref={inputRef}
-        autoFocus
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        onKeyDown={handleKeyDown} />
-      <button disabled={!ready} className={styles.inputSubmitButton} type="submit">
-        <SendRoundedIcon sx={{ fontSize: "1.5rem" }} />
-      </button>
-    </form>
-  );
+    return (
+        <form onSubmit={handleSubmit} className={styles.inputContainer}>
+            <textarea
+                id="input-text"
+                className={styles.inputText}
+                ref={inputRef}
+                autoFocus
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown} />
+            <button disabled={!ready} className={styles.inputSubmitButton} type="submit">
+                <SendRoundedIcon sx={{ fontSize: "1.5rem" }} />
+            </button>
+        </form>
+    );
 };
 
 ChatInput.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
+    onSubmit: PropTypes.func.isRequired,
 };
 
 export default ChatInput;
