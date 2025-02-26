@@ -6,17 +6,6 @@
     flex-direction: column;
 }
 
-.sidebar ul {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-}
-
-.sidebar li {
-    list-style: none;
-    width: 100%;
-}
-
 .sidebar a {
     color: unset;
     text-decoration: none;

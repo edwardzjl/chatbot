@@ -30,21 +30,18 @@ const Sidebar = ({ onShareClick, onDeleteClick }) => {
                         [
                             <div key={grp}>
                                 <div className={styles.sidebarDateGroup}>{grp}</div>
-                                <ul>
-                                    {convs.map((conv) => (
-                                        <li key={conv.id}>
-                                            <NavLink
-                                                to={`conversations/${conv.id}`}
-                                                className={({ isActive, isPending }) =>
-                                                    `${styles.sidebarButton} ${isActive ? styles.active : isPending ? styles.pending : ""}`}
-                                            >
-                                                {({ isActive }) => (
-                                                    <ChatTab chat={conv} isActive={isActive} onShareClick={onShareClick} onDeleteClick={onDeleteClick} />
-                                                )}
-                                            </NavLink>
-                                        </li>
-                                    ))}
-                                </ul>
+                                {convs.map((conv) => (
+                                    <NavLink
+                                        key={conv.id}
+                                        to={`conversations/${conv.id}`}
+                                        className={({ isActive, isPending }) =>
+                                            `${styles.sidebarButton} ${isActive ? styles.active : isPending ? styles.pending : ""}`}
+                                    >
+                                        {({ isActive }) => (
+                                            <ChatTab chat={conv} isActive={isActive} onShareClick={onShareClick} onDeleteClick={onDeleteClick} />
+                                        )}
+                                    </NavLink>
+                                ))}
                             </div>
                         ]
                     ))}
