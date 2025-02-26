@@ -45,10 +45,6 @@
     background-color: var(--bg-secondary);
 }
 
-.sidebarButton.active {
-    background-color: var(--bg-secondary);
-}
-
 .sidebarBottom {
     margin-top: auto;
     width: 90%;
