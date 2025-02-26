@@ -15,7 +15,8 @@
     display: flex;
     height: 100%;
     flex-direction: column;
-    overflow: auto;
+    /* overflow-y: auto; */
+    overflow-x: visible;
     scrollbar-color: var(--border-color) transparent;
     scrollbar-width: thin;
 }
