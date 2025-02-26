@@ -69,9 +69,11 @@ Dropdown.propTypes = {
 export const DropdownButton = ({ children, className, ...props }) => {
     const { open, setOpen } = useContext(DropdownContext);
 
-    const toggleOpen = useCallback(() => {
-        // if I stop propagation here the DropdownMenu will not be closed when click on another dropdown menu.
+    const toggleOpen = useCallback((e) => {
+        // if I `stopPropagation` here other DropdownMenu will not be closed when click on this.
         // e.stopPropagation();
+        // However, `preventDefault` works, which is quite unintuitive.
+        e.preventDefault();
         setOpen(!open);
     }, [open, setOpen]);
 
