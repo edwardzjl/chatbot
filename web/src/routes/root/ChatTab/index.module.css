@@ -5,7 +5,10 @@
   line-height: 1.3rem;
   color: var(--text-primary);
   border: none;
-  /* the following 3 lines ellipsis text */
+  text-align: left;
+  /* the following 4 lines ellipsis text */
+  /* See <https://stackoverflow.com/a/17783233/6564721> */
+  width: 200px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
