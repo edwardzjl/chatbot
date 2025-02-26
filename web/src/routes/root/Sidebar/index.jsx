@@ -1,7 +1,7 @@
 import styles from "./index.module.css";
 
 import { useContext } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 
 import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
@@ -31,16 +31,7 @@ const Sidebar = ({ onShareClick, onDeleteClick }) => {
                             <div key={grp}>
                                 <div className={styles.sidebarDateGroup}>{grp}</div>
                                 {convs.map((conv) => (
-                                    <NavLink
-                                        key={conv.id}
-                                        to={`conversations/${conv.id}`}
-                                        className={({ isActive, isPending }) =>
-                                            `${styles.sidebarButton} ${isActive ? styles.active : isPending ? styles.pending : ""}`}
-                                    >
-                                        {({ isActive }) => (
-                                            <ChatTab chat={conv} isActive={isActive} onShareClick={onShareClick} onDeleteClick={onDeleteClick} />
-                                        )}
-                                    </NavLink>
+                                    <ChatTab key={conv.id} chat={conv} onShareClick={onShareClick} onDeleteClick={onDeleteClick} />
                                 ))}
                             </div>
                         ]

@@ -1,6 +1,7 @@
 import styles from "./index.module.css";
 
 import { useContext, useEffect, useState, useRef } from "react";
+import { NavLink } from "react-router-dom";
 import PropTypes from "prop-types";
 import Tooltip from "@mui/material/Tooltip";
 import Icon from "@mui/material/Icon";
@@ -19,10 +20,9 @@ import { ConversationContext } from "@/contexts/conversation";
  * @param {Object} chat
  * @param {string} chat.id
  * @param {string} chat.title
- * @param {boolean} isActive whether this chat is active
  * @returns
  */
-const ChatTab = ({ chat, isActive, onShareClick, onDeleteClick }) => {
+const ChatTab = ({ chat, onShareClick, onDeleteClick }) => {
     const { dispatch } = useContext(ConversationContext);
     const titleRef = useRef(null);
     const [titleEditable, setTitleEditable] = useState("false");
@@ -34,7 +34,7 @@ const ChatTab = ({ chat, isActive, onShareClick, onDeleteClick }) => {
     }, [titleEditable]);
 
     const handleKeyDown = async (e) => {
-    // TODO: this will trigger in Chinese IME on OSX
+        // TODO: this will trigger in Chinese IME on OSX
         if (e.key === "Enter") {
             e.preventDefault();
             await renameChat(titleRef.current.innerText);
@@ -96,7 +96,11 @@ const ChatTab = ({ chat, isActive, onShareClick, onDeleteClick }) => {
     };
 
     return (
-        <>
+        <NavLink
+            to={`conversations/${chat.id}`}
+            className={({ isActive, isPending }) =>
+                `${styles.sidebarButton} ${isActive ? styles.active : isPending ? styles.pending : ""}`}
+        >
             <Tooltip title={titleRef.current?.innerText}>
                 {/* contentEditable moves control out of react, so useState won't work correctly.
                   * I use ref to get the value instead.
@@ -113,53 +117,51 @@ const ChatTab = ({ chat, isActive, onShareClick, onDeleteClick }) => {
                     {chat.title}
                 </span>
             </Tooltip>
-            {isActive && (
-                <Dropdown className={styles.chatOpMenu}>
-                    <DropdownButton className={styles.chatOpMenuIcon}>
-                        <MoreVertIcon />
-                    </DropdownButton>
-                    <DropdownMenu className={styles.chatOpMenuList}>
-                        <li>
-                            <button className={styles.chatOpMenuItem} onClick={flipPin}>
-                                {chat.pinned ?
-                                    <>
-                                        <Icon baseClassName="material-symbols-outlined">keep_off</Icon>
-                                        <span className={styles.chatOpMenuItemText}>Unpin</span>
-                                    </> : <>
-                                        <Icon baseClassName="material-symbols-outlined">keep</Icon>
-                                        <span className={styles.chatOpMenuItemText}>Pin</span>
-                                    </>
-                                }
-                            </button>
-                        </li>
-                        <li>
-                            <button className={styles.chatOpMenuItem} onClick={onSummarizeClick}>
-                                <AutoAwesomeIcon />
-                                <span className={styles.chatOpMenuItemText}>Generate title</span>
-                            </button>
-                        </li>
-                        <li>
-                            <button className={styles.chatOpMenuItem} onClick={onUpdateClick}>
-                                <DriveFileRenameOutlineIcon />
-                                <span className={styles.chatOpMenuItemText}>Change title</span>
-                            </button>
-                        </li>
-                        <li>
-                            <button className={styles.chatOpMenuItem} onClick={() => onShareClick(chat.id, chat.title)}>
-                                <ShareIcon />
-                                <span className={styles.chatOpMenuItemText}>Share</span>
-                            </button>
-                        </li>
-                        <li>
-                            <button className={styles.chatOpMenuItem} onClick={() => onDeleteClick(chat.id, titleRef.current?.innerText)}>
-                                <DeleteOutlineIcon />
-                                <span className={styles.chatOpMenuItemText}>Delete</span>
-                            </button>
-                        </li>
-                    </DropdownMenu>
-                </Dropdown>
-            )}
-        </>
+            <Dropdown className={styles.chatOpMenu}>
+                <DropdownButton className={styles.chatOpMenuIcon}>
+                    <MoreVertIcon />
+                </DropdownButton>
+                <DropdownMenu className={styles.chatOpMenuList}>
+                    <li>
+                        <button className={styles.chatOpMenuItem} onClick={flipPin}>
+                            {chat.pinned ?
+                                <>
+                                    <Icon baseClassName="material-symbols-outlined">keep_off</Icon>
+                                    <span className={styles.chatOpMenuItemText}>Unpin</span>
+                                </> : <>
+                                    <Icon baseClassName="material-symbols-outlined">keep</Icon>
+                                    <span className={styles.chatOpMenuItemText}>Pin</span>
+                                </>
+                            }
+                        </button>
+                    </li>
+                    <li>
+                        <button className={styles.chatOpMenuItem} onClick={onSummarizeClick}>
+                            <AutoAwesomeIcon />
+                            <span className={styles.chatOpMenuItemText}>Generate title</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button className={styles.chatOpMenuItem} onClick={onUpdateClick}>
+                            <DriveFileRenameOutlineIcon />
+                            <span className={styles.chatOpMenuItemText}>Change title</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button className={styles.chatOpMenuItem} onClick={() => onShareClick(chat.id, chat.title)}>
+                            <ShareIcon />
+                            <span className={styles.chatOpMenuItemText}>Share</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button className={styles.chatOpMenuItem} onClick={() => onDeleteClick(chat.id, titleRef.current?.innerText)}>
+                            <DeleteOutlineIcon />
+                            <span className={styles.chatOpMenuItemText}>Delete</span>
+                        </button>
+                    </li>
+                </DropdownMenu>
+            </Dropdown>
+        </NavLink>
     );
 };
 
