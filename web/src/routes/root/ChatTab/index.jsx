@@ -99,8 +99,8 @@ const ChatTab = ({ chat, isActive, onShareClick, onDeleteClick }) => {
         <>
             <Tooltip title={titleRef.current?.innerText}>
                 {/* contentEditable moves control out of react, so useState won't work correctly.
-          * I use ref to get the value instead.
-          */}
+                  * I use ref to get the value instead.
+                */}
                 <span
                     aria-label="chat title"
                     ref={titleRef}
