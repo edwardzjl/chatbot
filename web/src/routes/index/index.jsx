@@ -18,28 +18,28 @@ const Conversation = () => {
 
     const handleSubmit = async (input) => {
         try {
-          const response = await fetch("/api/conversations", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ title: DEFAULT_CONV_TITLE }),
-          });
-          const conversation = await response.json();
-          const message = {
-            id: crypto.randomUUID(),
-            conversation: conversation.id,
-            from: username,
-            content: input,
-            type: "human",
-          };
-          sessionStorage.setItem(`init-msg:${conversation.id}`, JSON.stringify(message));
-          dispatch({ type: "added", conv: conversation });
-          navigate(`/conversations/${conversation.id}`);
+            const response = await fetch("/api/conversations", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ title: DEFAULT_CONV_TITLE }),
+            });
+            const conversation = await response.json();
+            const message = {
+                id: crypto.randomUUID(),
+                conversation: conversation.id,
+                from: username,
+                content: input,
+                type: "human",
+            };
+            sessionStorage.setItem(`init-msg:${conversation.id}`, JSON.stringify(message));
+            dispatch({ type: "added", conv: conversation });
+            navigate(`/conversations/${conversation.id}`);
         } catch (error) {
-          console.error('Error creating conversation:', error);
+            console.error('Error creating conversation:', error);
         }
-      };
+    };
 
     return (
         <section className={styles.chatbox}>

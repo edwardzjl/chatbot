@@ -32,5 +32,5 @@ export const SnackbarProvider = ({ children }) => {
 };
 
 SnackbarProvider.propTypes = {
-  children: PropTypes.node.isRequired,
+    children: PropTypes.node.isRequired,
 };

@@ -67,11 +67,11 @@ const Conversation = () => {
     const navigation = useNavigation();
     const { groupedConvs, dispatch: dispatchConv } = useContext(ConversationContext);
     const { username } = useContext(UserContext);
-    const {ready, send} = useContext(WebsocketContext);
+    const { ready, send } = useContext(WebsocketContext);
     const { messages, dispatch } = useContext(MessageContext);
 
     useEffect(() => {
-        // Update the message context.
+    // Update the message context.
         dispatch({
             type: "replaceAll",
             messages: conversation.messages,
@@ -96,34 +96,34 @@ const Conversation = () => {
     }, [conversation, dispatch, ready, send]);
 
     const sendMessage = async (text) => {
-      if (!ready) {
-          console.error("Websocket not ready!");
-        return;
-      }
-      const message = { id: crypto.randomUUID(), from: username, content: text, type: "human" };
-      const payload = {
-        conversation: conversation.id,
-        ...message,
-      };
-      // append user input to chatlog
-      dispatch({
-        type: "added",
-        message: message,
-      });
-      // update last_message_at of the conversation to re-order conversations
-      // TODO: this seems buggy
-      if (conversation.pinned && groupedConvs.pinned && groupedConvs.pinned[0]?.id !== conversation.id) {
-        dispatchConv({
-          type: "reordered",
-          conv: { id: conversation.id, last_message_at: new Date().toISOString() },
+        if (!ready) {
+            console.error("Websocket not ready!");
+            return;
+        }
+        const message = { id: crypto.randomUUID(), from: username, content: text, type: "human" };
+        const payload = {
+            conversation: conversation.id,
+            ...message,
+        };
+        // append user input to chatlog
+        dispatch({
+            type: "added",
+            message: message,
         });
-      } else if (groupedConvs.Today && groupedConvs.Today[0]?.id !== conversation.id) {
-        dispatchConv({
-          type: "reordered",
-          conv: { id: conversation.id, last_message_at: new Date().toISOString() },
-        });
-      }
-      send(JSON.stringify(payload));
+        // update last_message_at of the conversation to re-order conversations
+        // TODO: this seems buggy
+        if (conversation.pinned && groupedConvs.pinned && groupedConvs.pinned[0]?.id !== conversation.id) {
+            dispatchConv({
+                type: "reordered",
+                conv: { id: conversation.id, last_message_at: new Date().toISOString() },
+            });
+        } else if (groupedConvs.Today && groupedConvs.Today[0]?.id !== conversation.id) {
+            dispatchConv({
+                type: "reordered",
+                conv: { id: conversation.id, last_message_at: new Date().toISOString() },
+            });
+        }
+        send(JSON.stringify(payload));
     };
 
     return (

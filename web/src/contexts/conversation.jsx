@@ -129,57 +129,57 @@ export const ConversationProvider = ({ children }) => {
 };
 
 ConversationProvider.propTypes = {
-  children: PropTypes.node.isRequired,
+    children: PropTypes.node.isRequired,
 };
 
 export const conversationReducer = (groupedConvs, action) => {
     switch (action.type) {
-        case "added": {
-            // NOTE: To save computation, this does not sort nor group the convs.
-            // It simply insert the new conv to the first element of group 'Today'.
-            // So the returnning order matters.
+    case "added": {
+        // NOTE: To save computation, this does not sort nor group the convs.
+        // It simply insert the new conv to the first element of group 'Today'.
+        // So the returnning order matters.
 
-            // action.conv: { id, title, created_at, last_message_at, owner, pinned }
-            const { conv } = action;
+        // action.conv: { id, title, created_at, last_message_at, owner, pinned }
+        const { conv } = action;
 
-            if (!groupedConvs.Today) {
-                return { Today: [conv], ...groupedConvs };
-            } else {
-                const updatedGroupedConvs = { ...groupedConvs };
-                updatedGroupedConvs.Today = [conv, ...updatedGroupedConvs.Today];
-                return updatedGroupedConvs;
+        if (!groupedConvs.Today) {
+            return { Today: [conv], ...groupedConvs };
+        } else {
+            const updatedGroupedConvs = { ...groupedConvs };
+            updatedGroupedConvs.Today = [conv, ...updatedGroupedConvs.Today];
+            return updatedGroupedConvs;
+        }
+    }
+    case "deleted": {
+        const convs = flatConvs(groupedConvs);
+        return groupConvs(convs.filter((conv) => conv.id !== action.convId));
+    }
+    case "renamed": {
+        const convs = flatConvs(groupedConvs);
+        return groupConvs(convs.map((conv) => {
+            if (conv.id === action.convId) {
+                return { ...conv, title: action.title };
             }
-        }
-        case "deleted": {
-            const convs = flatConvs(groupedConvs);
-            return groupConvs(convs.filter((conv) => conv.id !== action.convId));
-        }
-        case "renamed": {
-            const convs = flatConvs(groupedConvs);
-            return groupConvs(convs.map((conv) => {
-                if (conv.id === action.convId) {
-                    return { ...conv, title: action.title };
-                }
-                return conv;
-            }));
-        }
-        case "reordered": {
-            const convs = flatConvs(groupedConvs);
-            const updatedConvs = convs.map((conv) => {
-                if (conv.id === action.conv.id) {
-                    return { ...conv, ...action.conv };
-                }
-                return conv;
-            });
-            const sortedConvs = sortConvs(updatedConvs);
-            return groupConvs(sortedConvs);
-        }
-        case "replaceAll": {
-            return { ...action.groupedConvs };
-        }
-        default: {
-            console.error("Unknown action: ", action);
-            return groupedConvs;
-        }
+            return conv;
+        }));
+    }
+    case "reordered": {
+        const convs = flatConvs(groupedConvs);
+        const updatedConvs = convs.map((conv) => {
+            if (conv.id === action.conv.id) {
+                return { ...conv, ...action.conv };
+            }
+            return conv;
+        });
+        const sortedConvs = sortConvs(updatedConvs);
+        return groupConvs(sortedConvs);
+    }
+    case "replaceAll": {
+        return { ...action.groupedConvs };
+    }
+    default: {
+        console.error("Unknown action: ", action);
+        return groupedConvs;
+    }
     }
 };
