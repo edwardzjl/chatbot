@@ -1,4 +1,6 @@
 .sidebar {
+    width: 20vw;
+    max-height: 100%;
     padding: 10px;
     border: 1px solid rgba(255, 255, 255, .2);
     background-color: var(--bg-primary);
@@ -9,22 +11,6 @@
 .sidebar a {
     color: unset;
     text-decoration: none;
-}
-
-.convList {
-    display: flex;
-    height: 100%;
-    flex-direction: column;
-    overflow: auto;
-    scrollbar-color: var(--border-color) transparent;
-    scrollbar-width: thin;
-}
-
-.sidebarDateGroup {
-    color: var(--text-3);
-    text-align: start;
-    margin: 10px;
-    margin-top: 20px;
 }
 
 .sidebarButton {
@@ -44,6 +30,25 @@
 .sidebarButton:hover {
     background-color: var(--bg-secondary);
 }
+
+.convList {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: visible;
+    scrollbar-color: var(--border-color) transparent;
+    scrollbar-width: thin;
+}
+
+.sidebarDateGroup {
+    color: var(--text-3);
+    text-align: start;
+    margin: 10px;
+    margin-top: 20px;
+}
+
+
 
 .sidebarBottom {
     margin-top: auto;
