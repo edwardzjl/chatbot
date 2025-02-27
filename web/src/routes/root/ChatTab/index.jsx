@@ -58,6 +58,7 @@ const ChatTab = ({ chat, onShareClick, onDeleteClick }) => {
             // TODO: handle error
             // Maybe set snackbar to inform user?
         }
+        titleRef.current.innerText = title;
     };
     const onUpdateClick = () => {
         setTitleEditable("plaintext-only");
