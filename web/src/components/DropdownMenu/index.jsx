@@ -74,14 +74,15 @@ export const DropdownButton = ({ children, className, ...props }) => {
         // e.stopPropagation();
         // However, `preventDefault` works, which is quite unintuitive.
         e.preventDefault();
-        setOpen(!open);
-    }, [open, setOpen]);
+        setOpen(prevOpen => !prevOpen);
+    }, [setOpen]);
 
     return (
         <button
             className={`${styles.dropdownButton} ${className}`}
             onClick={toggleOpen}
             aria-expanded={open}
+            aria-haspopup="true"
             {...props}
         >
             {children}
