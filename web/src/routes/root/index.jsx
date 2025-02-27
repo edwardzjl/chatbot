@@ -1,6 +1,6 @@
 import "./index.css";
 
-import { forwardRef, useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Outlet, redirect, useNavigate } from "react-router-dom";
 
 import Snackbar from "@mui/material/Snackbar";
@@ -17,9 +17,9 @@ import { WebsocketContext } from "@/contexts/websocket";
 
 import Sidebar from "./Sidebar";
 
-const Alert = forwardRef(function Alert(props, ref) {
+const Alert = (props, ref) => {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
-});
+};
 
 
 export async function action({ request }) {
