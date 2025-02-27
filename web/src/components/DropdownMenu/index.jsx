@@ -112,21 +112,39 @@ export const DropdownMenu = ({ children, className, buttonRef, ...props }) => {
     const [isPositionCalculated, setIsPositionCalculated] = useState(false);
 
     useEffect(() => {
-        if (open) {
-            if (buttonRef?.current) {
-                const rect = buttonRef.current.getBoundingClientRect();
-                setMenuPosition({
-                    top: rect.bottom,
-                    left: rect.right,
-                });
-                setIsPositionCalculated(true);
-            } else {
-                setIsPositionCalculated(true);
-            }
-        } else {
+        if (!buttonRef?.current) {
+            // if buttonRef is not provided, or does not exists, do not calculate position
+            setIsPositionCalculated(true);
+            return;
+        }
+        if (!open) {
+            // reset position when dropdown is closed
             setIsPositionCalculated(false);
+            return;
         }
 
+        const rect = buttonRef.current.getBoundingClientRect();
+
+        let leftAnchor = rect.right;
+        let topAnchor = rect.bottom;
+
+        if (dropdownRef.current) {
+            const viewportWidth = window.innerWidth;
+            const menuWidth = dropdownRef.current.offsetWidth;
+            leftAnchor = Math.min(leftAnchor, viewportWidth - menuWidth);
+            leftAnchor = Math.max(leftAnchor, 0);
+
+            const viewportHeight = window.innerHeight;
+            const menuHeight = dropdownRef.current.offsetHeight;
+            topAnchor = Math.min(topAnchor, viewportHeight - menuHeight);
+            topAnchor = Math.max(topAnchor, 0);
+        }
+
+        setMenuPosition({
+            top: topAnchor,
+            left: leftAnchor,
+        });
+        setIsPositionCalculated(true);
     }, [open, buttonRef]);
 
     const menuStyle = buttonRef?.current ? { top: menuPosition.top, left: menuPosition.left } : {};
