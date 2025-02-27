@@ -26,6 +26,7 @@ const ChatTab = ({ chat, onShareClick, onDeleteClick }) => {
     const { dispatch } = useContext(ConversationContext);
     const titleRef = useRef(null);
     const [titleEditable, setTitleEditable] = useState("false");
+    const buttonRef = useRef(null);
 
     useEffect(() => {
         if (titleEditable === "plaintext-only") {
@@ -118,10 +119,10 @@ const ChatTab = ({ chat, onShareClick, onDeleteClick }) => {
                 </span>
             </Tooltip>
             <Dropdown className={styles.chatOpMenu}>
-                <DropdownButton className={styles.chatOpMenuIcon}>
+                <DropdownButton ref={buttonRef} className={styles.chatOpMenuIcon}>
                     <MoreVertIcon />
                 </DropdownButton>
-                <DropdownMenu className={styles.chatOpMenuList}>
+                <DropdownMenu buttonRef={buttonRef} className={styles.chatOpMenuList}>
                     <li>
                         <button className={styles.chatOpMenuItem} onClick={flipPin}>
                             {chat.pinned ?
@@ -171,7 +172,6 @@ ChatTab.propTypes = {
         title: PropTypes.string.isRequired,
         pinned: PropTypes.bool.isRequired,
     }).isRequired,
-    isActive: PropTypes.bool.isRequired,
     onShareClick: PropTypes.func.isRequired,
     onDeleteClick: PropTypes.func.isRequired,
 };

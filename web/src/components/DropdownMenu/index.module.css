@@ -7,7 +7,16 @@
 }
 
 .dropdownMenu {
-    position: absolute;
+    position: fixed;
+    z-index: 1000; /* Add z-index to ensure it's on top */
+    opacity: 0; /* Set initial state to be fully transparent and invisible */
+    pointer-events: none; /* Disable mouse events in initial state to prevent clicking before positioning */
+    transition: opacity 0.15s ease-out; /* Add a transition effect to make the display smoother */
+}
+
+.dropdownMenu.visible {
+    opacity: 1; /* Set to fully opaque and visible */
+    pointer-events: auto; /* Enable mouse events */
 }
 
 .dropdownMenu li {
