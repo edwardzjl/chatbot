@@ -1,6 +1,6 @@
 .sidebarButton {
   height: 2rem;
-  margin: 2px;
+  margin: 2px 0;
   padding: 3px;
   background-color: var(--bg-primary);
   color: var(--text-primary);
@@ -24,17 +24,27 @@
   background-color: var(--bg-secondary);
 }
 
+.titleContainer {
+  flex: 1;
+  height: 100%;
+  padding-left: 1rem;
+  display: flex;
+  justify-content: left;
+  align-items: center;
+  overflow: hidden;
+  cursor: pointer;
+}
+
 .chatTitle {
-  margin-left: 5px;
+  display: inline-block;
   /* line-height should be equal to height */
   height: 1.3rem;
   line-height: 1.3rem;
   color: var(--text-primary);
   border: none;
   text-align: left;
-  /* the following 4 lines ellipsis text */
+  /* the following 3 lines ellipsis text */
   /* See <https://stackoverflow.com/a/17783233/6564721> */
-  width: 200px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
