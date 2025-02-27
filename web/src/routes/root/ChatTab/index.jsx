@@ -60,12 +60,14 @@ const ChatTab = ({ chat, onShareClick, onDeleteClick }) => {
         }
         titleRef.current.innerText = title;
     };
-    const onUpdateClick = () => {
+    const onUpdateClick = (e) => {
+        e.preventDefault();
         setTitleEditable("plaintext-only");
         setTimeout(() => titleRef.current.focus(), 100);
     };
 
-    const onSummarizeClick = async () => {
+    const onSummarizeClick = async (e) => {
+        e.preventDefault();
         try {
             const res = await fetch(`/api/conversations/${chat.id}/summarization`, { method: "POST" });
             const data = await res.json();
@@ -76,7 +78,8 @@ const ChatTab = ({ chat, onShareClick, onDeleteClick }) => {
         }
     }
 
-    const flipPin = async () => {
+    const flipPin = async (e) => {
+        e.preventDefault();
         const resp = await fetch(`/api/conversations/${chat.id}`, {
             method: "PUT",
             headers: {
