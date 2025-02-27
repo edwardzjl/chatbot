@@ -1,7 +1,7 @@
 import styles from "./index.module.css";
 
 import { useContext } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 
 import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
@@ -16,13 +16,14 @@ import ChatTab from "../ChatTab";
 
 const Sidebar = ({ onShareClick, onDeleteClick }) => {
     const { groupedConvs } = useContext(ConversationContext);
+    const navigate = useNavigate();
 
     return (
         <aside className={styles.sidebar}>
-            <Link className={styles.sidebarButton} to="/">
+            <button className={styles.sidebarButton} onClick={() => navigate("/")}>
                 <AddOutlinedIcon />
                 New Chat
-            </Link>
+            </button>
             <nav className={styles.convList}>
                 {groupedConvs && Object.entries(groupedConvs)
                     .filter(([, convs]) => convs && convs.length > 0) // Filter out empty lists
@@ -59,6 +60,5 @@ Sidebar.propTypes = {
     onShareClick: PropTypes.func.isRequired,
     onDeleteClick: PropTypes.func.isRequired,
 };
-
 
 export default Sidebar;

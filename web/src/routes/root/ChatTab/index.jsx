@@ -1,7 +1,7 @@
 import styles from "./index.module.css";
 
 import { useContext, useEffect, useState, useRef } from "react";
-import { NavLink } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import PropTypes from "prop-types";
 import Tooltip from "@mui/material/Tooltip";
 import Icon from "@mui/material/Icon";
@@ -23,6 +23,9 @@ import { ConversationContext } from "@/contexts/conversation";
  * @returns
  */
 const ChatTab = ({ chat, onShareClick, onDeleteClick }) => {
+    const navigate = useNavigate();
+    const params = useParams();
+
     const { dispatch } = useContext(ConversationContext);
     const titleRef = useRef(null);
     const [titleEditable, setTitleEditable] = useState("false");
@@ -101,26 +104,29 @@ const ChatTab = ({ chat, onShareClick, onDeleteClick }) => {
     };
 
     return (
-        <NavLink
-            to={`conversations/${chat.id}`}
-            className={({ isActive, isPending }) =>
-                `${styles.sidebarButton} ${isActive ? styles.active : isPending ? styles.pending : ""}`}
+        <div
+            className={`${styles.sidebarButton} ${params.convId === chat.id ? styles.active : ""}`}
         >
             <Tooltip title={titleRef.current?.innerText}>
-                {/* contentEditable moves control out of react, so useState won't work correctly.
-                  * I use ref to get the value instead.
-                */}
-                <span
-                    aria-label="chat title"
-                    ref={titleRef}
-                    className={styles.chatTitle}
-                    contentEditable={titleEditable}
-                    suppressContentEditableWarning={true}  // TODO: I'm not sure whether I can ignore this warning
-                    onKeyDown={handleKeyDown}
-                    onBlur={() => setTitleEditable("false")}
+                <div
+                    className={styles.titleContainer}
+                    onClick={() => navigate(`/conversations/${chat.id}`)}
                 >
-                    {chat.title}
-                </span>
+                    {/* contentEditable moves control out of react, so useState won't work correctly.
+                      * I use ref to get the value instead.
+                    */}
+                    <span
+                        aria-label="chat title"
+                        ref={titleRef}
+                        className={styles.chatTitle}
+                        contentEditable={titleEditable}
+                        suppressContentEditableWarning={true}  // TODO: I'm not sure whether I can ignore this warning
+                        onKeyDown={handleKeyDown}
+                        onBlur={() => setTitleEditable("false")}
+                    >
+                        {chat.title}
+                    </span>
+                </div>
             </Tooltip>
             <Dropdown className={styles.chatOpMenu}>
                 <DropdownButton ref={buttonRef} className={styles.chatOpMenuIcon}>
@@ -166,7 +172,7 @@ const ChatTab = ({ chat, onShareClick, onDeleteClick }) => {
                     </li>
                 </DropdownMenu>
             </Dropdown>
-        </NavLink>
+        </div>
     );
 };
 
