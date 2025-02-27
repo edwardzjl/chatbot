@@ -44,11 +44,9 @@
 .sidebarDateGroup {
     color: var(--text-3);
     text-align: start;
-    margin: 10px;
+    padding: 10px;
     margin-top: 20px;
 }
-
-
 
 .sidebarBottom {
     margin-top: auto;
