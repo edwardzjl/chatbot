@@ -66,7 +66,7 @@ Dropdown.propTypes = {
  * @param {string} [props.className] - Additional CSS class names to apply to the button.
  * @returns {JSX.Element} The rendered dropdown button.
  */
-export const DropdownButton = ({ children, className, ...props }) => {
+export const DropdownButton = ({ children, className, ref, ...props }) => {
     const { open, setOpen } = useContext(DropdownContext);
 
     const toggleOpen = useCallback((e) => {
@@ -79,10 +79,10 @@ export const DropdownButton = ({ children, className, ...props }) => {
 
     return (
         <button
+            ref={ref} // Attach ref to button
             className={`${styles.dropdownButton} ${className}`}
             onClick={toggleOpen}
             aria-expanded={open}
-            aria-haspopup="true"
             {...props}
         >
             {children}
@@ -93,6 +93,7 @@ export const DropdownButton = ({ children, className, ...props }) => {
 DropdownButton.propTypes = {
     children: PropTypes.node.isRequired,
     className: PropTypes.string,
+    ref: PropTypes.oneOfType([PropTypes.func, PropTypes.shape({ current: PropTypes.instanceOf(Element) })]),
 };
 
 /**
@@ -104,15 +105,41 @@ DropdownButton.propTypes = {
  * @param {string} [props.className] - Additional CSS class names to apply to the menu.
  * @returns {JSX.Element} The rendered dropdown menu.
  */
-export const DropdownMenu = ({ children, className, ...props }) => {
+export const DropdownMenu = ({ children, className, buttonRef, ...props }) => {
     const { open, setOpen } = useContext(DropdownContext);
+    const dropdownRef = useRef(null);
+    const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
+    const [isPositionCalculated, setIsPositionCalculated] = useState(false);
+
+    useEffect(() => {
+        if (open) {
+            if (buttonRef?.current) {
+                const rect = buttonRef.current.getBoundingClientRect();
+                setMenuPosition({
+                    top: rect.bottom,
+                    left: rect.right,
+                });
+                setIsPositionCalculated(true);
+            } else {
+                setIsPositionCalculated(true);
+            }
+        } else {
+            setIsPositionCalculated(false);
+        }
+
+    }, [open, buttonRef]);
+
+    const menuStyle = buttonRef?.current ? { top: menuPosition.top, left: menuPosition.left } : {};
+    const dropdownMenuClassName = `${styles.dropdownMenu} ${!open && styles.hidden} ${className} ${isPositionCalculated ? styles.visible : ''}`;
 
     return (
         <menu
-            className={`${styles.dropdownMenu} ${!open && styles.hidden} ${className}`}
+            ref={dropdownRef}
+            className={dropdownMenuClassName}
             onClick={() => setOpen(false)}
             aria-hidden={!open}
             role="menu"
+            style={menuStyle}
             {...props}
         >
             {children}
@@ -123,4 +150,5 @@ export const DropdownMenu = ({ children, className, ...props }) => {
 DropdownMenu.propTypes = {
     children: PropTypes.node.isRequired,
     className: PropTypes.string,
+    buttonRef: PropTypes.oneOfType([PropTypes.func, PropTypes.shape({ current: PropTypes.instanceOf(Element) })]),
 };
