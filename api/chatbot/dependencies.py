@@ -17,6 +17,7 @@ from chatbot.agent import create_agent
 from chatbot.config import settings
 from chatbot.llm_providers import get_truncation_config
 from chatbot.state import sqlalchemy_ro_session, sqlalchemy_session
+from chatbot.utils import ReasoningChatOpenai
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
@@ -67,7 +68,7 @@ SqlalchemyROSessionDep = Annotated[AsyncSession, Depends(get_sqlalchemy_ro_sessi
 
 @lru_cache
 def get_chat_model() -> ChatOpenAI:
-    return ChatOpenAI(**settings.llm)
+    return ReasoningChatOpenai(**settings.llm)
 
 
 ChatModelDep = Annotated[ChatOpenAI, Depends(get_chat_model)]
