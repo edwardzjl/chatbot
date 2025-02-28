@@ -9,6 +9,7 @@ from langchain_core.callbacks import (
 )
 from langchain_openai import ChatOpenAI
 
+
 def utcnow():
     """
     `datetime.datetime.utcnow()` does not contain timezone information.
@@ -114,7 +115,9 @@ class ReasoningChatOpenai(ChatOpenAI):
         **kwargs: Any,
     ) -> Iterator[ChatGenerationChunk]:
         self.thinking_processor.reset()
-        for chunk in super()._stream(messages, stop=stop, run_manager=run_manager, **kwargs):
+        for chunk in super()._stream(
+            messages, stop=stop, run_manager=run_manager, **kwargs
+        ):
             yield self._process(chunk)
 
     async def _astream(
@@ -125,7 +128,9 @@ class ReasoningChatOpenai(ChatOpenAI):
         **kwargs: Any,
     ) -> AsyncIterator[ChatGenerationChunk]:
         self.thinking_processor.reset()
-        async for chunk in super()._astream(messages, stop=stop, run_manager=run_manager, **kwargs):
+        async for chunk in super()._astream(
+            messages, stop=stop, run_manager=run_manager, **kwargs
+        ):
             yield self._process(chunk)
 
     def _process(self, chunk: ChatGenerationChunk) -> ChatGenerationChunk:
