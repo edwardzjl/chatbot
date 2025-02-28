@@ -22,6 +22,7 @@ import { ThemeContext } from "@/contexts/theme";
 import { MessageContext } from "@/contexts/message";
 import { UserContext } from "@/contexts/user";
 import { stringToColor } from "@/commons";
+import PeekDetails from "@/components/PeekDetails";
 
 
 /**
@@ -64,11 +65,11 @@ const ChatMessage = ({ convId, message }) => {
     }, [theme]);
 
     /**
-   * Handles the copying of message content to the clipboard.
-   * Updates the tooltip title to indicate the content has been copied.
-   *
-   * @param {string} content - The content to be copied to the clipboard.
-   */
+     * Handles the copying of message content to the clipboard.
+     * Updates the tooltip title to indicate the content has been copied.
+     *
+     * @param {string} content - The content to be copied to the clipboard.
+     */
     const onCopyClick = (content) => {
         navigator.clipboard.writeText(content);
         setCopyTooltipTitle("copied!");
@@ -78,9 +79,9 @@ const ChatMessage = ({ convId, message }) => {
     };
 
     /**
-   * Handles the thumbs up action by sending a PUT request to register the feedback.
-   * Updates the tooltip and dispatches a message update to the context.
-   */
+     * Handles the thumbs up action by sending a PUT request to register the feedback.
+     * Updates the tooltip and dispatches a message update to the context.
+     */
     const onThumbUpClick = () => {
         fetch(`/api/conversations/${convId}/messages/${message.id}/thumbup`, {
             method: "PUT",
@@ -94,9 +95,9 @@ const ChatMessage = ({ convId, message }) => {
     };
 
     /**
-   * Handles the thumbs down action by sending a PUT request to register the feedback.
-   * Updates the tooltip and dispatches a message update to the context.
-   */
+     * Handles the thumbs down action by sending a PUT request to register the feedback.
+     * Updates the tooltip and dispatches a message update to the context.
+     */
     const onThumbDownClick = () => {
         fetch(`/api/conversations/${convId}/messages/${message.id}/thumbdown`, {
             method: "PUT",
@@ -110,11 +111,11 @@ const ChatMessage = ({ convId, message }) => {
     };
 
     /**
-   * Determines if the message was sent by the current user.
-   *
-   * @param {Object} message - The message object.
-   * @returns {boolean} True if the message was sent by the current user, otherwise false.
-   */
+     * Determines if the message was sent by the current user.
+     *
+     * @param {Object} message - The message object.
+     * @returns {boolean} True if the message was sent by the current user, otherwise false.
+     */
     const myMessage = message.from && message.from.toLowerCase() === username;
 
     return (
@@ -123,14 +124,20 @@ const ChatMessage = ({ convId, message }) => {
                 {/* NOTE: className not working on Avatar */}
                 {myMessage ?
                     <Avatar src={avatar} /> :
-                // TODO: give AI an avatar
+                    // TODO: give AI an avatar
                     <Avatar sx={{ bgcolor: stringToColor(message.from) }}>
-            AI
+                        AI
                     </Avatar>
                 }
                 <div className={styles.messageTitleName}>{myMessage ? "You" : "AI"}</div>
             </div>
             <div className={styles.messageBody}>
+                {message.additional_kwargs && message.additional_kwargs.thought && (
+                    <PeekDetails
+                        summary="Thoughts"
+                        content={message.additional_kwargs.thought}
+                    />
+                )}
                 <Markdown
                     remarkPlugins={[remarkGfm, remarkMath]}
                     rehypePlugins={[rehypeKatex]}

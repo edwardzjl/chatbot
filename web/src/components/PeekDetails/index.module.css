@@ -1,0 +1,42 @@
+.peekDetails {
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.summaryBar {
+    padding: 10px;
+    background-color: var(--bg-primary);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 5px 5px 0 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.toggleIcon {
+    font-weight: bold;
+    margin-left: 10px;
+}
+
+.content {
+    overflow: hidden;
+    border-radius: 0 05px 5px;
+    padding: 10px;
+    margin: 0;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    scrollbar-color: var(--border-color) transparent;
+    scrollbar-width: thin;
+}
+
+.codeTitle {
+    padding: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    background-color: var(--bg-primary);
+}
