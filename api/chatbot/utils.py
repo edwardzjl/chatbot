@@ -1,6 +1,13 @@
 from datetime import datetime, timezone
-from typing import Literal, TypedDict
+from typing import Any, AsyncIterator, Iterator, Literal, TypedDict
 
+from langchain_core.messages import BaseMessage
+from langchain_core.outputs import ChatGenerationChunk
+from langchain_core.callbacks import (
+    AsyncCallbackManagerForLLMRun,
+    CallbackManagerForLLMRun,
+)
+from langchain_openai import ChatOpenAI
 
 def utcnow():
     """
@@ -94,3 +101,49 @@ class StreamThinkingProcessor:
                     data = self.buffer
                     self.buffer = ""
                     return {"data": data, "type": "thought"}
+
+
+class ReasoningChatOpenai(ChatOpenAI):
+    thinking_processor: StreamThinkingProcessor = StreamThinkingProcessor()
+
+    def _stream(
+        self,
+        messages: list[BaseMessage],
+        stop: list[str] | None = None,
+        run_manager: CallbackManagerForLLMRun | None = None,
+        **kwargs: Any,
+    ) -> Iterator[ChatGenerationChunk]:
+        self.thinking_processor.reset()
+        for chunk in super()._stream(messages, stop=stop, run_manager=run_manager, **kwargs):
+            yield self._process(chunk)
+
+    async def _astream(
+        self,
+        messages: list[BaseMessage],
+        stop: list[str] | None = None,
+        run_manager: AsyncCallbackManagerForLLMRun | None = None,
+        **kwargs: Any,
+    ) -> AsyncIterator[ChatGenerationChunk]:
+        self.thinking_processor.reset()
+        async for chunk in super()._astream(messages, stop=stop, run_manager=run_manager, **kwargs):
+            yield self._process(chunk)
+
+    def _process(self, chunk: ChatGenerationChunk) -> ChatGenerationChunk:
+        token = chunk.message.content
+        if not isinstance(token, str):
+            return chunk
+        message_chunk = self.thinking_processor.on_token(token)
+        if not message_chunk:
+            # If there's `ChatGenerationChunk` but no message_chunk after processing token,
+            # it means the token might be part of the thinking prefix / suffix.
+            chunk.message.content = ""
+            chunk.message.additional_kwargs["raw_output"] = token
+            return chunk
+        if message_chunk["type"] == "text":
+            return chunk
+        else:
+            chunk.message.content = ""
+            chunk.message.additional_kwargs["raw_output"] = token
+            chunk.message.additional_kwargs["text_type"] = "thought"
+            chunk.message.additional_kwargs["thought"] = message_chunk["data"]
+            return chunk
