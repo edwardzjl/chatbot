@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
 
 
@@ -12,10 +12,36 @@ import PropTypes from "prop-types";
 const ChatLog = ({ children, className = "", smoothScroll = true }) => {
     const chatLogRef = useRef(null);
     const messagesEndRef = useRef(null);
+    const [isUserScrolling, setIsUserScrolling] = useState(false);
+    // const [isNearBottom, setIsNearBottom] = useState(true);
 
     const scrollToBottom = useCallback(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: smoothScroll ? "smooth" : "auto" });
-    }, [smoothScroll]);
+        if (!isUserScrolling) {
+            messagesEndRef.current?.scrollIntoView({ behavior: smoothScroll ? "smooth" : "auto" });
+        }
+    }, [smoothScroll, isUserScrolling]);
+
+    useEffect(() => {
+        const container = chatLogRef.current;
+        if (!container) return;
+
+        // let scrollTimer;
+        const handleUserScroll = () => {
+            setIsUserScrolling(true);
+            // checkIfNearBottom();
+
+            // clearTimeout(scrollTimer);
+            // scrollTimer = setTimeout(() => {
+            //     setIsUserScrolling(false);
+            // }, 1000);
+        };
+
+        container.addEventListener('scroll', handleUserScroll);
+        return () => {
+            container.removeEventListener('scroll', handleUserScroll);
+            // clearTimeout(scrollTimer);
+        };
+    }, []);
 
     useEffect(() => {
         if (!window.ResizeObserver) {
@@ -40,6 +66,15 @@ const ChatLog = ({ children, className = "", smoothScroll = true }) => {
         <div ref={chatLogRef} className={className} role="region" aria-label="chat-log">
             {children}
             <div ref={messagesEndRef} />
+            {!isUserScrolling && (
+                <button
+                    className="scroll-to-bottom-btn"
+                    onClick={scrollToBottom}
+                    aria-label="滚动到最新消息"
+                >
+                    ↓
+                </button>
+            )}
         </div>
     );
 };
