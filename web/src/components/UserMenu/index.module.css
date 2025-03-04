@@ -1,0 +1,19 @@
+
+.userInfoMenu {
+    background-color: transparent;
+    border: none;
+}
+
+.userInfoMenuList {
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    position: absolute;
+    right: 2vw;
+    z-index: 1;
+    padding: 0.5rem;
+}
+
+.userInfoMenuUsernameHr {
+    border: 1px solid var(--border-color);
+}
