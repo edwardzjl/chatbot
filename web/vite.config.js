@@ -1,9 +1,33 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { viteStaticCopy } from "vite-plugin-static-copy";
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
+
+// See <https://pyodide.org/en/stable/usage/working-with-bundlers.html#vite>
+const PYODIDE_EXCLUDE = [
+    "!**/*.{md,html}",
+    "!**/*.d.ts",
+    "!**/*.whl",
+    "!**/node_modules",
+];
+
+export function viteStaticCopyPyodide() {
+    const pyodideDir = dirname(fileURLToPath(import.meta.resolve("pyodide")));
+    return viteStaticCopy({
+        targets: [
+            {
+                src: [join(pyodideDir, "*")].concat(PYODIDE_EXCLUDE),
+                dest: "assets",
+            },
+        ],
+    });
+}
 
 // https://vite.dev/config/
 export default defineConfig({
-    plugins: [react()],
+    optimizeDeps: { exclude: ["pyodide"] },
+    plugins: [react(), viteStaticCopyPyodide()],
     server: {
         port: '3000',
         proxy: {
@@ -29,4 +53,4 @@ export default defineConfig({
             'micromark-extension-math': 'micromark-extension-llm-math',
         },
     },
-})
+});

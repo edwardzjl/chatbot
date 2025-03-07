@@ -2,6 +2,7 @@ import styles from "./index.module.css";
 
 import { useContext, useEffect } from "react";
 import { useLoaderData, useNavigation, redirect } from "react-router-dom";
+import { loadPyodide } from "pyodide";
 
 import ChatboxHeader from "@/components/ChatboxHeader";
 import ChatLog from "@/components/ChatLog";
@@ -13,6 +14,7 @@ import { UserContext } from "@/contexts/user";
 import { WebsocketContext } from "@/contexts/websocket";
 
 import ChatInput from "./ChatInput";
+import { asyncRun } from "./workerApi.js";
 
 
 export async function loader({ params }) {
@@ -71,7 +73,7 @@ const Conversation = () => {
     const { messages, dispatch } = useContext(MessageContext);
 
     useEffect(() => {
-    // Update the message context.
+        // Update the message context.
         dispatch({
             type: "replaceAll",
             messages: conversation.messages,
@@ -94,6 +96,41 @@ const Conversation = () => {
         send(JSON.stringify({ additional_kwargs: { require_summarization: true }, ...message }));
         sessionStorage.removeItem(`init-msg:${conversation.id}`);
     }, [conversation, dispatch, ready, send]);
+
+    useEffect(() => {
+        const initPyodide = async () => {
+            const pyodide = await loadPyodide();
+
+            // See <https://pyodide.org/en/stable/usage/file-system.html>
+            // <https://developer.mozilla.org/en-US/docs/Web/API/StorageManager/getDirectory>
+            // <https://developer.mozilla.org/en-US/docs/Web/API/File_System_API/Origin_private_file_system>
+            // quota: <https://developer.mozilla.org/en-US/docs/Web/API/Storage_API/Storage_quotas_and_eviction_criteria>
+            const dirHandle = await navigator.storage.getDirectory();
+            const permissionStatus = await dirHandle.requestPermission({
+                mode: "readwrite",
+            });
+            if (permissionStatus !== "granted") {
+                throw new Error("readwrite access to directory not granted");
+            }
+            // See <https://pyodide.org/en/stable/usage/api/js-api.html#pyodide.mountNativeFS>
+            const nativefs = await pyodide.mountNativeFS("/mount_dir", dirHandle);
+            try {
+                let stdout = "";
+                pyodide.setStdout({ batched: (msg) => stdout += msg });
+                await pyodide.runPythonAsync(`print("Hello from Python!")`);
+                console.log("stdout", stdout);
+            } catch (error) {
+                // TODO: format error message for LLM
+                // <https://pyodide.org/en/stable/usage/type-conversions.html#errors>
+                // the `reformat_exception` does not seems to be what I want
+                // The only useful thing I get for now is the `error.type`
+                console.log("error type", error.type);
+            }
+            await nativefs.syncfs();
+        }
+
+        initPyodide();
+    }, []);
 
     const sendMessage = async (text) => {
         if (!ready) {
@@ -123,7 +160,14 @@ const Conversation = () => {
                 conv: { id: conversation.id, last_message_at: new Date().toISOString() },
             });
         }
-        send(JSON.stringify(payload));
+        // send(JSON.stringify(payload));
+
+        const { result, error } = await asyncRun(text);
+        if (result) {
+            console.log("pyodideWorker result:", result);
+        } else if (error) {
+            console.log("pyodideWorker error:", error);
+        }
     };
 
     return (
