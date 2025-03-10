@@ -1,0 +1,6 @@
+.chatLog {
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    scrollbar-color: var(--border-color) transparent;
+    scrollbar-width: thin;
+}
