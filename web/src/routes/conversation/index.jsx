@@ -129,7 +129,7 @@ const Conversation = () => {
     return (
         <section className={`${styles.chatbox} ${navigation.state === "loading" ? "loading" : ""}`}>
             <ChatboxHeader />
-            <ChatLog className={styles.chatLog}>
+            <ChatLog>
                 {/* We ignore system messages when displaying. */}
                 {conversation && messages?.filter(message => message.from !== "system").map((message, index) => (
                     <ChatMessage key={index} convId={conversation.id} message={message} />

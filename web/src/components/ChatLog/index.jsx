@@ -1,3 +1,5 @@
+import styles from "./index.module.css";
+
 import { useCallback, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 
@@ -9,7 +11,7 @@ import PropTypes from "prop-types";
  * @param {string} [props.className] - Additional CSS classes for the chat log container.
  * @param {boolean} [props.smoothScroll=true] - Whether to enable smooth scrolling.
  */
-const ChatLog = ({ children, className = "", smoothScroll = true }) => {
+const ChatLog = ({ children, smoothScroll = true }) => {
     const chatLogRef = useRef(null);
     const messagesEndRef = useRef(null);
 
@@ -37,7 +39,7 @@ const ChatLog = ({ children, className = "", smoothScroll = true }) => {
     }, [scrollToBottom]);
 
     return (
-        <div ref={chatLogRef} className={className} role="region" aria-label="chat-log">
+        <div ref={chatLogRef} className={styles.chatLog} role="region" aria-label="chat-log">
             {children}
             <div ref={messagesEndRef} />
         </div>
