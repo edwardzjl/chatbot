@@ -4,13 +4,13 @@ import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
 import ChatLog from "./index";
 
 // Mock ResizeObserver
-class ResizeObserverMock {
+class MutationObserverMock {
     observe() { }
     disconnect() { }
 }
 
 beforeEach(() => {
-    vi.stubGlobal('ResizeObserver', ResizeObserverMock)
+    vi.stubGlobal("MutationObserver", MutationObserverMock)
 });
 
 afterEach(() => {
@@ -30,20 +30,20 @@ describe("ChatLog Component", () => {
         expect(screen.getByText("Message 2")).toBeDefined();
     });
 
-    it("scrolls to the bottom when ResizeObserver triggers", () => {
-        const observeMock = vi.spyOn(ResizeObserver.prototype, "observe");
+    it("scrolls to the bottom when MutationObserver triggers", () => {
+        const observeMock = vi.spyOn(MutationObserver.prototype, "observe");
         render(
             <ChatLog>
                 <div>Message</div>
             </ChatLog>
         );
 
-        // Verify that ResizeObserver is observing the container
+        // Verify that MutationObserver is observing the container
         expect(observeMock).toHaveBeenCalled();
     });
 
-    it("handles ResizeObserver not being supported", () => {
-        vi.stubGlobal('ResizeObserver', undefined)
+    it("handles MutationObserver not being supported", () => {
+        vi.stubGlobal("MutationObserver", undefined)
 
         const warnMock = vi.spyOn(console, "warn").mockImplementation(() => { });
 
@@ -53,7 +53,7 @@ describe("ChatLog Component", () => {
             </ChatLog>
         );
 
-        expect(warnMock).toHaveBeenCalledWith("ResizeObserver is not supported in this browser.");
+        expect(warnMock).toHaveBeenCalledWith("MutationObserver is not supported in this browser.");
 
         warnMock.mockRestore();
     });

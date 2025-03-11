@@ -60,7 +60,7 @@ const ChatLog = ({ children, className = "", smoothScroll = true }) => {
 
     useEffect(() => {
         if (!window.MutationObserver) {
-            console.warn("MutationObserver not supported in this browser.");
+            console.warn("MutationObserver is not supported in this browser.");
             return;
         }
 
