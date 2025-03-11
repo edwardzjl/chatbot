@@ -11,13 +11,36 @@ import PropTypes from "prop-types";
  * @param {string} [props.className] - Additional CSS classes for the chat log container.
  * @param {boolean} [props.smoothScroll=true] - Whether to enable smooth scrolling.
  */
-const ChatLog = ({ children, smoothScroll = true }) => {
+const ChatLog = ({ children, className = "", smoothScroll = true }) => {
     const chatLogRef = useRef(null);
     const messagesEndRef = useRef(null);
+    const isNearBottomRef = useRef(true);
 
     const scrollToBottom = useCallback(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: smoothScroll ? "smooth" : "auto" });
     }, [smoothScroll]);
+
+    // Add scroll event handler to detect if user is near bottom
+    useEffect(() => {
+        const handleScroll = () => {
+            if (chatLogRef.current) {
+                const { scrollHeight, scrollTop, clientHeight } = chatLogRef.current;
+                const scrollBottom = scrollHeight - scrollTop - clientHeight;
+                isNearBottomRef.current = scrollBottom < 50; // within 50px of bottom
+            }
+        };
+
+        const chatLogElement = chatLogRef.current;
+        if (chatLogElement) {
+            chatLogElement.addEventListener("scroll", handleScroll);
+        }
+
+        return () => {
+            if (chatLogElement) {
+                chatLogElement.removeEventListener("scroll", handleScroll);
+            }
+        };
+    }, []);
 
     useEffect(() => {
         if (!window.ResizeObserver) {
@@ -26,7 +49,9 @@ const ChatLog = ({ children, smoothScroll = true }) => {
         }
 
         const resizeObserver = new ResizeObserver(() => {
-            scrollToBottom();
+            if (isNearBottomRef.current) {
+                scrollToBottom();
+            }
         });
 
         if (chatLogRef.current) {
@@ -39,7 +64,7 @@ const ChatLog = ({ children, smoothScroll = true }) => {
     }, [scrollToBottom]);
 
     return (
-        <div ref={chatLogRef} className={styles.chatLog} role="region" aria-label="chat-log">
+        <div ref={chatLogRef} className={`${styles.chatLog} ${className}`} role="region" aria-label="chat-log">
             {children}
             <div ref={messagesEndRef} />
         </div>
