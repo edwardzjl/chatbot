@@ -1,4 +1,5 @@
 .chatLog {
+    position: relative;  /* provide context for absolute children */
     overflow-y: auto;
     scroll-behavior: smooth;
     scrollbar-color: var(--border-color) transparent;
