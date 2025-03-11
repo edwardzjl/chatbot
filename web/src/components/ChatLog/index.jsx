@@ -17,10 +17,22 @@ const ChatLog = ({ children, className = "", smoothScroll = true }) => {
     const messagesEndRef = useRef(null);
     const isNearBottomRef = useRef(true);
     const [showScrollButton, setShowScrollButton] = useState(false);
+    const scrollTimeoutRef = useRef(null);
 
     const scrollToBottom = useCallback(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: smoothScroll ? "smooth" : "auto" });
     }, [smoothScroll]);
+
+    // Debounced scroll to avoid too many scroll operations during typing
+    const debouncedScrollToBottom = useCallback(() => {
+        if (scrollTimeoutRef.current) {
+            clearTimeout(scrollTimeoutRef.current);
+        }
+
+        scrollTimeoutRef.current = setTimeout(() => {
+            scrollToBottom();
+        }, 50); // Small delay to batch scroll events
+    }, [scrollToBottom]);
 
     // Add scroll event handler to detect if user is near bottom
     useEffect(() => {
@@ -47,25 +59,62 @@ const ChatLog = ({ children, className = "", smoothScroll = true }) => {
     }, []);
 
     useEffect(() => {
-        if (!window.ResizeObserver) {
-            console.warn("ResizeObserver is not supported in this browser.");
+        if (!window.MutationObserver) {
+            console.warn("MutationObserver not supported in this browser.");
             return;
         }
 
-        const resizeObserver = new ResizeObserver(() => {
-            if (isNearBottomRef.current) {
-                scrollToBottom();
+        // Create a mutation observer to detect content changes including text changes
+        const mutationObserver = new MutationObserver((mutations) => {
+            if (!isNearBottomRef.current) {
+                return;
+            }
+
+            let shouldScroll = false;
+
+            for (const mutation of mutations) {
+                // Check for character data changes (typing)
+                if (mutation.type === "characterData") {
+                    shouldScroll = true;
+                    break;
+                }
+                // Check for added nodes (new messages)
+                if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
+                    shouldScroll = true;
+                    break;
+                }
+                // Check for attribute changes that might affect layout
+                if (mutation.type === "attributes") {
+                    shouldScroll = true;
+                    break;
+                }
+            }
+
+            if (shouldScroll) {
+                debouncedScrollToBottom();
             }
         });
 
+        // Use MutationObserver to monitor changes in the chatLog DOM.
+        // Primarily focus on text content changes (characterData) of child nodes to respond to dynamic message updates in real-time.
+        // Additionally, observe child node lists (childList) and attributes (attributes) to ensure comprehensive capture of DOM modifications.
+        // subtree: true ensures observation coverage extends to all descendant nodes, accommodating nested message structures.
         if (chatLogRef.current) {
-            resizeObserver.observe(chatLogRef.current);
+            mutationObserver.observe(chatLogRef.current, {
+                childList: true,  // Observe changes to the child nodes (additions, removals, reorderings)
+                characterData: true,  // Observe changes to the text content (e.g., nodeValue of text nodes)
+                attributes: true,  // Observe changes to attributes (e.g., class, src)
+                subtree: true,  // Recursively observe changes in all descendant nodes
+            });
         }
 
         return () => {
-            resizeObserver.disconnect();
+            mutationObserver.disconnect();
+            if (scrollTimeoutRef.current) {
+                clearTimeout(scrollTimeoutRef.current);
+            }
         };
-    }, [scrollToBottom]);
+    }, [debouncedScrollToBottom]);
 
     return (
         <>
