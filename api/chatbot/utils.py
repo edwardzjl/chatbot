@@ -203,6 +203,5 @@ class ReasoningChatOpenai(ChatOpenAI):
             return chunk
         else:
             chunk.message.content = ""
-            chunk.message.additional_kwargs["text_type"] = "thought"
             chunk.message.additional_kwargs["thought"] = message_chunk["data"]
             return chunk
