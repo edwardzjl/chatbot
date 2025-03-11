@@ -40,6 +40,10 @@
     overflow-wrap: break-word;
 }
 
+.messageBody code {
+    white-space: normal;
+}
+
 .messageBody:hover .messageFeedbacks {
     opacity: 0.9;
     transition: opacity 1s;
