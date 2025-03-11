@@ -1,12 +1,14 @@
 from datetime import datetime, timezone
 from typing import Any, AsyncIterator, Iterator, Literal, TypedDict
 
-from langchain_core.messages import BaseMessage
-from langchain_core.outputs import ChatGenerationChunk
 from langchain_core.callbacks import (
     AsyncCallbackManagerForLLMRun,
     CallbackManagerForLLMRun,
 )
+from langchain_core.language_models.base import LanguageModelInput
+from langchain_core.messages import AIMessage, BaseMessage
+from langchain_core.outputs import ChatGenerationChunk
+from langchain_core.prompt_values import ChatPromptValue, PromptValue, StringPromptValue
 from langchain_openai import ChatOpenAI
 
 
@@ -158,6 +160,21 @@ class StreamThinkingProcessor:
                     self.buffer = ""  # Clear buffer.
                     return {"data": data, "type": "thought"}
 
+    def restore(self, message: BaseMessage) -> BaseMessage:
+        """Restores the original content of a message that was processed by the thinking processor.
+        NOTE: this function has side effects. It modifies the message in place.
+        """
+        if (raw_output := message.additional_kwargs.get("raw_output")) is not None:
+            message.content = raw_output
+        elif (thought := message.additional_kwargs.get("thought")) is not None:
+            # Should not happen because I always set raw_output.
+            # Keeping it for completeness.
+            prefix = "" if self.default_thinking else self.thinking_signature
+            message.content = (
+                f"{prefix}{thought}{self.stop_thinking_signature}{message.content}"
+            )
+        return message
+
 
 class ReasoningChatOpenai(ChatOpenAI):
     thinking_processor: StreamThinkingProcessor = StreamThinkingProcessor()
@@ -188,12 +205,26 @@ class ReasoningChatOpenai(ChatOpenAI):
         ):
             yield self._process(chunk)
 
+    def _convert_input(self, input: LanguageModelInput) -> PromptValue:
+        pv = super()._convert_input(input)
+        if isinstance(pv, StringPromptValue):
+            # I don't know what to do with string prompt
+            return pv
+        assert isinstance(pv, ChatPromptValue)
+        for message in pv.messages:
+            if not isinstance(message, AIMessage):
+                continue
+            self.thinking_processor.restore(message)
+        return pv
+
     def _process(self, chunk: ChatGenerationChunk) -> ChatGenerationChunk:
         token = chunk.message.content
         if not isinstance(token, str):
             return chunk
         message_chunk = self.thinking_processor.on_token(token)
-        chunk.message.additional_kwargs["raw_output"] = token  # record the raw output before we determine the type
+        chunk.message.additional_kwargs["raw_output"] = (
+            token  # record the raw output before we determine the type
+        )
         if not message_chunk:
             # If there's `ChatGenerationChunk` but no message_chunk after processing token,
             # it means the token might be part of the thinking prefix / suffix.
