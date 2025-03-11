@@ -193,17 +193,16 @@ class ReasoningChatOpenai(ChatOpenAI):
         if not isinstance(token, str):
             return chunk
         message_chunk = self.thinking_processor.on_token(token)
+        chunk.message.additional_kwargs["raw_output"] = token  # record the raw output before we determine the type
         if not message_chunk:
             # If there's `ChatGenerationChunk` but no message_chunk after processing token,
             # it means the token might be part of the thinking prefix / suffix.
             chunk.message.content = ""
-            chunk.message.additional_kwargs["raw_output"] = token
             return chunk
         if message_chunk["type"] == "text":
             return chunk
         else:
             chunk.message.content = ""
-            chunk.message.additional_kwargs["raw_output"] = token
             chunk.message.additional_kwargs["text_type"] = "thought"
             chunk.message.additional_kwargs["thought"] = message_chunk["data"]
             return chunk
