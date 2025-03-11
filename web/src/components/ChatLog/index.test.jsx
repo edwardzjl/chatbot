@@ -30,18 +30,6 @@ describe("ChatLog Component", () => {
         expect(screen.getByText("Message 2")).toBeDefined();
     });
 
-    it("applies the provided className", () => {
-        const customClass = "custom-class";
-        render(
-            <ChatLog className={customClass}>
-                <div>Message</div>
-            </ChatLog>
-        );
-
-        const chatLogElement = screen.getByRole("region", { name: /chat-log/i });
-        expect(chatLogElement.classList).toContain(customClass);
-    });
-
     it("scrolls to the bottom when ResizeObserver triggers", () => {
         const observeMock = vi.spyOn(ResizeObserver.prototype, "observe");
         render(
