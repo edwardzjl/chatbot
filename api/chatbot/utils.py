@@ -200,6 +200,8 @@ class ReasoningChatOpenai(ChatOpenAI):
             chunk.message.content = ""
             return chunk
         if message_chunk["type"] == "text":
+            # Even it's a text, the content might be modified by the thinking processor.
+            chunk.message.content = message_chunk["data"]
             return chunk
         else:
             chunk.message.content = ""
