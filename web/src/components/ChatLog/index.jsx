@@ -1,8 +1,9 @@
 import styles from "./index.module.css";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
 
+import VerticalAlignBottomIcon from "@mui/icons-material/VerticalAlignBottom";
 
 /**
  * ChatLog is a container for ChatMessage that will automatically scroll to the bottom when window size changes.
@@ -15,6 +16,7 @@ const ChatLog = ({ children, className = "", smoothScroll = true }) => {
     const chatLogRef = useRef(null);
     const messagesEndRef = useRef(null);
     const isNearBottomRef = useRef(true);
+    const [showScrollButton, setShowScrollButton] = useState(false);
 
     const scrollToBottom = useCallback(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: smoothScroll ? "smooth" : "auto" });
@@ -26,7 +28,9 @@ const ChatLog = ({ children, className = "", smoothScroll = true }) => {
             if (chatLogRef.current) {
                 const { scrollHeight, scrollTop, clientHeight } = chatLogRef.current;
                 const scrollBottom = scrollHeight - scrollTop - clientHeight;
-                isNearBottomRef.current = scrollBottom < 50; // within 50px of bottom
+                const isNearBottom = scrollBottom < 50; // within 50px of bottom
+                isNearBottomRef.current = isNearBottom;
+                setShowScrollButton(!isNearBottom);
             }
         };
 
@@ -64,10 +68,22 @@ const ChatLog = ({ children, className = "", smoothScroll = true }) => {
     }, [scrollToBottom]);
 
     return (
-        <div ref={chatLogRef} className={`${styles.chatLog} ${className}`} role="region" aria-label="chat-log">
-            {children}
-            <div ref={messagesEndRef} />
-        </div>
+        <>
+            <div ref={chatLogRef} className={`${styles.chatLog} ${className}`} role="region" aria-label="chat-log">
+                {children}
+                <div ref={messagesEndRef} />
+            </div>
+            {showScrollButton && (
+                <button
+                    className={styles.scrollButton}
+                    onClick={scrollToBottom}
+                    aria-label="Scroll to bottom"
+                    title="Scroll to bottom"
+                >
+                    <VerticalAlignBottomIcon />
+                </button>
+            )}
+        </>
     );
 };
 
