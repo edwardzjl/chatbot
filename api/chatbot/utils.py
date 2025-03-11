@@ -23,84 +23,139 @@ class MessageChunk(TypedDict):
 
 
 class StreamThinkingProcessor:
+    """Processes a stream of tokens to identify and separate "thinking" sections
+    from regular text based on start and stop thinking signatures.
+
+    The class maintains a state to track whether it is currently in a "thinking" state
+    and uses buffers to handle partial signature matches in the token stream.
+    """
+
     def __init__(
         self,
+        default_thinking: bool = False,
         thinking_signature: str = "<think>",
         stop_thinking_signature: str = "</think>",
     ) -> None:
+        """Initializes the StreamThinkingProcessor.
+
+        Args:
+            default_thinking (bool): If True, the processor starts in "thinking" mode.
+                                     If False, it starts in "text" mode, processing text until
+                                     the thinking_signature is encountered.
+            thinking_signature (str): The string signature that indicates the start of a "thinking" section.
+            stop_thinking_signature (str): The string signature that indicates the end of a "thinking" section.
+        """
         self.thinking_signature = thinking_signature
         self.stop_thinking_signature = stop_thinking_signature
+        self.default_thinking = default_thinking
         self.reset()
 
     def reset(self) -> None:
-        self.thinking = False
+        """Resets the processor to its initial state, as defined by default_thinking.
+        Clears internal buffers and sets the thinking state to default.
+        """
+        self.thinking = self.default_thinking
         self.maybe_start_thinking = False
         self.maybe_stop_thinking = False
         self.buffer = ""
 
     def on_token(self, token: str) -> MessageChunk | None:
-        if not self.thinking:
-            if not self.maybe_start_thinking:
+        """Processes a single token from the stream.
+
+        This method checks the token against the thinking and stop thinking signatures
+        to determine if the processor should enter or exit "thinking" mode.
+        It returns a MessageChunk dictionary indicating the type of content ("text" or "thought")
+        and the data to be processed further.
+
+        Args:
+            token (str): The token to process.
+
+        Returns:
+            MessageChunk | None: A dictionary with "data" and "type" keys, or None if no chunk is ready to be returned
+                                    (e.g., when buffering for signature detection).
+        """
+        if not self.thinking:  # Currently in "text" mode.
+            if (
+                not self.maybe_start_thinking
+            ):  # Not currently looking for thinking start signature.
                 if token.startswith(self.thinking_signature):
+                    # Token starts with the thinking signature. Enter "thinking" mode.
                     self.thinking = True
                     remaining = token.removeprefix(self.thinking_signature)
                     if remaining:
+                        # If the token contains data after the signature, return it as a "thought" chunk.
                         return {"data": remaining, "type": "thought"}
                 elif self.thinking_signature.startswith(token):
+                    # Token is a prefix of the thinking signature. Start buffering.
                     self.maybe_start_thinking = True
                     self.buffer = token
                 else:
-                    # Not a crucial token at all, just return it.
+                    # Regular text token, not related to thinking signatures. Return as "text" chunk.
                     return {"data": token, "type": "text"}
-            else:  # maybe_start_thinking
-                self.buffer += token
-                # buffer may be longer than thinking_signature
-                if self.buffer.startswith(self.thinking_signature):
+            else:  # `self.maybe_start_thinking is True`:  Currently buffering to detect thinking start signature.
+                self.buffer += token  # Append current token to the buffer.
+                if self.buffer.startswith(
+                    self.thinking_signature
+                ):  # buffer may be longer than thinking_signature
+                    # Buffer now starts with the thinking signature. Enter "thinking" mode.
                     self.thinking = True
-                    self.maybe_start_thinking = False
+                    self.maybe_start_thinking = (
+                        False  # Stop looking for start signature.
+                    )
                     remaining = self.buffer.removeprefix(self.thinking_signature)
                     if remaining:
+                        # If buffer contains data after the signature, return it as "thought" chunk.
                         return {"data": remaining, "type": "thought"}
                 elif self.thinking_signature.startswith(self.buffer):
-                    # Not reached `self.thinking_signature` yet.
-                    return
+                    # Buffer is still a prefix of the thinking signature. Continue buffering.
+                    return None  # No chunk to return yet, still buffering.
                 else:
-                    # maybe_start_thinking but buffer is not a thinking_signature
-                    # return buffer and reset
-                    self.maybe_start_thinking = False
-                    data = self.buffer
-                    self.buffer = ""
+                    # Buffer is no longer related to thinking signature. It was just regular text.
+                    self.maybe_start_thinking = (
+                        False  # Stop looking for start signature.
+                    )
+                    data = self.buffer  # Return the buffered data as "text" chunk.
+                    self.buffer = ""  # Clear buffer.
                     return {"data": data, "type": "text"}
-        else:  # thinking
-            if not self.maybe_stop_thinking:
+        else:  # `self.thinking is True`: Currently in "thinking" mode.
+            if (
+                not self.maybe_stop_thinking
+            ):  # Not currently looking for thinking stop signature.
                 if token.startswith(self.stop_thinking_signature):
-                    self.reset()
+                    # Token starts with the stop thinking signature. Exit "thinking" mode.
+                    self.reset()  # Reset state for next thinking section detection.
+                    self.thinking = False  # NOTE!: ENSURE we exit thinking mode, regardless of default_thinking
                     remaining = token.removeprefix(self.stop_thinking_signature)
                     if remaining:
+                        # If the token contains data after the signature, return it as a "text" chunk.
                         return {"data": remaining, "type": "text"}
                 elif self.stop_thinking_signature.startswith(token):
+                    # Token is a prefix of the stop thinking signature. Start buffering.
                     self.maybe_stop_thinking = True
                     self.buffer = token
                 else:
-                    # Not a crucial token at all, just return it.
+                    # Regular thought token, not related to stop thinking signature. Return as "thought" chunk.
                     return {"data": token, "type": "thought"}
-            else:  # maybe_stop_thinking
-                self.buffer += token
-                # buffer may be longer than stop_thinking_signature
-                if self.buffer.startswith(self.stop_thinking_signature):
+            else:  # self.maybe_stop_thinking is True: Currently buffering to detect thinking stop signature.
+                self.buffer += token  # Append current token to buffer.
+                if self.buffer.startswith(
+                    self.stop_thinking_signature
+                ):  # buffer may be longer than stop_thinking_signature
+                    # Buffer now starts with stop thinking signature. Exit "thinking" mode.
                     remaining = self.buffer.removeprefix(self.stop_thinking_signature)
-                    self.reset()
+                    self.reset()  # Reset state for next thinking section detection.
+                    self.thinking = False  # NOTE!: ENSURE we exit thinking mode, regardless of default_thinking
                     if remaining:
+                        # If buffer contains data after the signature, return it as "text" chunk.
                         return {"data": remaining, "type": "text"}
                 elif self.stop_thinking_signature.startswith(self.buffer):
-                    # Not reached `self.stop_thinking_signature` yet.
-                    return
+                    # Buffer is still a prefix of the stop thinking signature. Continue buffering.
+                    return None  # No chunk to return yet, still buffering.
                 else:
-                    # maybe_stop_thinking but buffer is not a stop_thinking_signature
-                    # return buffer and reset
-                    self.maybe_stop_thinking = False
-                    data = self.buffer
-                    self.buffer = ""
+                    # Buffer is no longer related to stop thinking signature. It was just a thought.
+                    self.maybe_stop_thinking = False  # Stop looking for stop signature.
+                    data = self.buffer  # Return the buffered data as "thought" chunk.
+                    self.buffer = ""  # Clear buffer.
                     return {"data": data, "type": "thought"}
 
 
