@@ -1,7 +1,9 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { afterEach, describe, it, expect, vi } from "vitest";
 
-import { ThemeProvider, ThemeContext } from "./theme";
+import { ThemeContext } from "./index";
+import { ThemeProvider } from "./provider";
+
 
 const getItemSpy = vi.spyOn(Storage.prototype, 'getItem')
 const setItemSpy = vi.spyOn(Storage.prototype, 'setItem')

@@ -1,11 +1,8 @@
-import { createContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 
+import { ThemeContext } from "./index";
 
-export const ThemeContext = createContext({
-    theme: "",
-    setTheme: () => { },
-});
 
 /**
  * Retrieves the current theme from localStorage.
