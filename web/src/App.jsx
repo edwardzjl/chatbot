@@ -19,7 +19,7 @@ import ErrorPage from "@/routes/error";
 import { SnackbarProvider } from "@/contexts/snackbar";
 import { ThemeProvider } from "@/contexts/theme";
 import { UserProvider } from "@/contexts/user";
-import { ConversationProvider } from "@/contexts/conversation";
+import { ConversationProvider } from "@/contexts/conversation/provider";
 import { MessageProvider } from "@/contexts/message";
 import { WebsocketProvider } from "@/contexts/websocket";
 
