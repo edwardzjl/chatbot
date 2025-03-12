@@ -23,9 +23,6 @@ async def thumbup(
     session: SqlalchemyROSessionDep,
     agent: AgentDep,
 ) -> None:
-    """Using message index as the uuid is in the message body which is json dumped into redis,
-    and is impossible to filter on.
-    Also separate thumbup and thumbdown into two endpoints to make it more RESTful."""
     conv: ORMConversation = await session.get(ORMConversation, conversation_id)
     if conv.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
@@ -55,9 +52,6 @@ async def thumbdown(
     session: SqlalchemyROSessionDep,
     agent: AgentDep,
 ) -> None:
-    """Using message index as the uuid is in the message body which is json dumped into redis,
-    and is impossible to filter on.
-    Also separate thumbup and thumbdown into two endpoints to make it more RESTful."""
     conv: ORMConversation = await session.get(ORMConversation, conversation_id)
     if conv.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
