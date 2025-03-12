@@ -13,7 +13,7 @@ import Root from "@/routes/root";
 import Index from "@/routes/index";
 import Conversation from "@/routes/conversation";
 import Sharing from "@/routes/sharing";
-import Share, { loader as shareLoader } from "@/routes/share";
+import Share from "@/routes/share";
 import ErrorPage from "@/routes/error";
 
 import { SnackbarProvider } from "@/contexts/snackbar/provider";
@@ -55,7 +55,7 @@ const router = createBrowserRouter([
     },
     {
         path: "/share/:shareId",
-        loader: shareLoader,
+        loader: Share.loader,
         element: <Share />,
     }
 ]);
