@@ -16,7 +16,7 @@ import Sharing from "@/routes/sharing";
 import Share, { loader as shareLoader } from "@/routes/share";
 import ErrorPage from "@/routes/error";
 
-import { SnackbarProvider } from "@/contexts/snackbar";
+import { SnackbarProvider } from "@/contexts/snackbar/provider";
 import { ThemeProvider } from "@/contexts/theme";
 import { UserProvider } from "@/contexts/user";
 import { ConversationProvider } from "@/contexts/conversation/provider";
