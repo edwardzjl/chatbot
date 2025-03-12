@@ -11,7 +11,7 @@ import {
 
 import Root, { action as rootAction } from "@/routes/root";
 import Index from "@/routes/index";
-import Conversation, { loader as conversationLoader } from "@/routes/conversation";
+import Conversation from "@/routes/conversation";
 import Sharing from "@/routes/sharing";
 import Share, { loader as shareLoader } from "@/routes/share";
 import ErrorPage from "@/routes/error";
@@ -39,7 +39,7 @@ const router = createBrowserRouter([
             {
                 path: "conversations/:convId",
                 element: <Conversation />,
-                loader: conversationLoader,
+                loader: Conversation.loader,
                 shouldRevalidate: ({ currentParams, nextParams }) => {
                     // prevent revalidating when clicking on the same conversation
                     return currentParams.convId !== nextParams.convId;

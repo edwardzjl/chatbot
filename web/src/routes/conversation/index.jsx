@@ -1,7 +1,7 @@
 import styles from "./index.module.css";
 
 import { useContext, useEffect } from "react";
-import { useLoaderData, useNavigation, redirect } from "react-router-dom";
+import { redirect, useLoaderData, useNavigation } from "react-router-dom";
 
 import ChatboxHeader from "@/components/ChatboxHeader";
 import ChatLog from "@/components/ChatLog";
@@ -15,7 +15,7 @@ import { WebsocketContext } from "@/contexts/websocket";
 import ChatInput from "./ChatInput";
 
 
-export async function loader({ params }) {
+async function loader({ params }) {
     const resp = await fetch(`/api/conversations/${params.convId}`, {});
     if (!resp.ok) {
         return redirect("/");
@@ -144,3 +144,4 @@ const Conversation = () => {
 }
 
 export default Conversation;
+Conversation.loader = loader;
