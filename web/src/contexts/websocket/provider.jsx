@@ -1,15 +1,8 @@
-import { createContext, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
 
+import { WebsocketContext } from "./index";
 
-/**
- * ready, data, send
- */
-export const WebsocketContext = createContext({
-    ready: false,
-    data: null,
-    send: () => { }
-});
 
 export const WebsocketProvider = ({ children }) => {
     const [isReady, setIsReady] = useState(false);
