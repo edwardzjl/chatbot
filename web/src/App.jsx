@@ -18,7 +18,7 @@ import ErrorPage from "@/routes/error";
 
 import { SnackbarProvider } from "@/contexts/snackbar/provider";
 import { ThemeProvider } from "@/contexts/theme/provider";
-import { UserProvider } from "@/contexts/user";
+import { UserProvider } from "@/contexts/user/provider";
 import { ConversationProvider } from "@/contexts/conversation/provider";
 import { MessageProvider } from "@/contexts/message/provider";
 import { WebsocketProvider } from "@/contexts/websocket";

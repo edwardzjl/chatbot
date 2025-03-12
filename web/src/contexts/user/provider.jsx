@@ -1,16 +1,9 @@
-import { createContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import sha256 from "js-sha256";
 import PropTypes from "prop-types";
 
-import generateName from "@/names";
+import { UserContext } from "./index";
 
-
-export const UserContext = createContext({
-    userid: generateName(),
-    username: generateName(),
-    email: "",
-    avatar: "https://www.gravatar.com/avatar/?d=identicon",
-});
 
 export const UserProvider = ({ children }) => {
     const [userid, setUserid] = useState("");
