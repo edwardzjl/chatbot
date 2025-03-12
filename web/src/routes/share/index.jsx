@@ -8,7 +8,7 @@ import ChatMessage from "@/components/ChatMessage";
 import { ThemeContext } from "@/contexts/theme";
 
 
-export async function loader({ params }) {
+async function loader({ params }) {
     const resp = await fetch(`/api/shares/${params.shareId}`, {});
     if (!resp.ok) {
         console.error("Failed to fetch share");
@@ -62,3 +62,4 @@ const Share = () => {
 };
 
 export default Share;
+Share.loader = loader;
