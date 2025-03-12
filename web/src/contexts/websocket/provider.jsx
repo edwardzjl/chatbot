@@ -6,7 +6,7 @@ import { WebsocketContext } from "./index";
 
 export const WebsocketProvider = ({ children }) => {
     const [isReady, setIsReady] = useState(false);
-    const [val, setVal] = useState(null);
+    const [messageHandlers, setMessageHandlers] = useState([]);
 
     const ws = useRef(null);
 
@@ -32,7 +32,13 @@ export const WebsocketProvider = ({ children }) => {
                 ws.current.close();
             };
             ws.current.onmessage = (event) => {
-                setVal(event.data);
+                messageHandlers.forEach(handler => {
+                    try {
+                        handler(event.data);
+                    } catch (error) {
+                        console.error("Error in message handler", error);
+                    }
+                })
             };
         }
         conn();
@@ -44,14 +50,24 @@ export const WebsocketProvider = ({ children }) => {
                 ws.current.close();
             }
         };
+    }, [messageHandlers]);
+
+    const registerMessageHandler = useCallback((handler) => {
+        setMessageHandlers(prev => [...prev, handler]);
+        return handler; // Return for unregistration reference
+    }, []);
+
+    const unregisterMessageHandler = useCallback((handler) => {
+        setMessageHandlers(prev => prev.filter(h => h !== handler));
     }, []);
 
     return (
         <WebsocketContext.Provider
             value={{
                 ready: isReady,
-                data: val,
                 send: useCallback((...args) => ws.current?.send(...args), []),
+                registerMessageHandler,
+                unregisterMessageHandler,
             }}
         >
             {children}

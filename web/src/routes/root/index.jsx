@@ -1,6 +1,6 @@
 import "./index.css";
 
-import { useContext, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { Outlet, redirect, useNavigate } from "react-router-dom";
 
 import Snackbar from "@mui/material/Snackbar";
@@ -35,7 +35,7 @@ const Root = () => {
     const { theme } = useContext(ThemeContext);
     const { snackbar, setSnackbar } = useContext(SnackbarContext);
     const { dispatch } = useContext(MessageContext);
-    const { data } = useContext(WebsocketContext);
+    const { registerMessageHandler, unregisterMessageHandler } = useContext(WebsocketContext);
 
     const shareDialogRef = useRef();
     const sharedDialogRef = useRef();
@@ -46,7 +46,7 @@ const Root = () => {
 
     const navigate = useNavigate();
 
-    useEffect(() => {
+    const handleWebSocketMessage = useCallback((data) => {
         if (data === null || data === undefined) {
             return;
         }
@@ -86,7 +86,17 @@ const Root = () => {
         } catch (error) {
             console.error("Unhandled error: Payload may not be a valid JSON.", { Data: data, errorDetails: error });
         }
-    }, [data, dispatch, dispatchConv, setSnackbar]);
+    }, [dispatch, dispatchConv, setSnackbar]);
+
+    useEffect(() => {
+        // Register the message handler when component mounts
+        registerMessageHandler(handleWebSocketMessage);
+        
+        // Unregister when component unmounts
+        return () => {
+            unregisterMessageHandler(handleWebSocketMessage);
+        };
+    }, [registerMessageHandler, unregisterMessageHandler, handleWebSocketMessage]);
 
     const onShareClick = (id, title) => {
         setTargetConv({ id, title });

@@ -6,6 +6,7 @@ import { createContext } from "react";
  */
 export const WebsocketContext = createContext({
     ready: false,
-    data: null,
-    send: () => { }
+    send: () => { },
+    registerMessageHandler: () => { },
+    unregisterMessageHandler: () => { },
 });
