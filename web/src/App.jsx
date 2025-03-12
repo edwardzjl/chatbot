@@ -20,7 +20,7 @@ import { SnackbarProvider } from "@/contexts/snackbar";
 import { ThemeProvider } from "@/contexts/theme";
 import { UserProvider } from "@/contexts/user";
 import { ConversationProvider } from "@/contexts/conversation/provider";
-import { MessageProvider } from "@/contexts/message";
+import { MessageProvider } from "@/contexts/message/provider";
 import { WebsocketProvider } from "@/contexts/websocket";
 
 
