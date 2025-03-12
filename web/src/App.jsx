@@ -21,7 +21,7 @@ import { ThemeProvider } from "@/contexts/theme/provider";
 import { UserProvider } from "@/contexts/user/provider";
 import { ConversationProvider } from "@/contexts/conversation/provider";
 import { MessageProvider } from "@/contexts/message/provider";
-import { WebsocketProvider } from "@/contexts/websocket";
+import { WebsocketProvider } from "@/contexts/websocket/provider";
 
 
 const router = createBrowserRouter([
