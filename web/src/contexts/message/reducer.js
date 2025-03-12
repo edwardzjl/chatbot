@@ -1,32 +1,3 @@
-import { createContext, useReducer } from "react";
-import PropTypes from "prop-types";
-
-
-/**
- * messages, dispatch
- */
-export const MessageContext = createContext({
-    messages: [],
-    dispatch: () => { },
-});
-
-export const MessageProvider = ({ children }) => {
-    const [messages, dispatch] = useReducer(
-        messagesReducer,
-        /** @type {[{id: string, title: string?, messages: Array, active: boolean}]} */
-        []
-    );
-
-    return (
-        <MessageContext.Provider value={{ messages, dispatch }}>
-            {children}
-        </MessageContext.Provider>
-    );
-};
-
-MessageProvider.propTypes = {
-    children: PropTypes.node.isRequired,
-};
 
 export const messagesReducer = (messages, action) => {
     switch (action.type) {
