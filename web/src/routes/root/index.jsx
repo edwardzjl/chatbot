@@ -22,7 +22,7 @@ const Alert = (props, ref) => {
 };
 
 
-export async function action({ request }) {
+async function action({ request }) {
     if (request.method === "POST") {
         const conversation = await request.json();
         return redirect(`/conversations/${conversation.id}`);
@@ -210,3 +210,4 @@ const Root = () => {
 }
 
 export default Root;
+Root.action = action;

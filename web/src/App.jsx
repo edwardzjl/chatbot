@@ -9,7 +9,7 @@ import {
     RouterProvider,
 } from "react-router-dom";
 
-import Root, { action as rootAction } from "@/routes/root";
+import Root from "@/routes/root";
 import Index from "@/routes/index";
 import Conversation from "@/routes/conversation";
 import Sharing from "@/routes/sharing";
@@ -30,7 +30,7 @@ const router = createBrowserRouter([
         id: "root",
         element: <Root />,
         errorElement: <ErrorPage />,
-        action: rootAction,
+        action: Root.action,
         children: [
             {
                 index: true,
