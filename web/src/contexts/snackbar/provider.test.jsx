@@ -2,7 +2,9 @@ import { useContext } from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect } from 'vitest';
 
-import { SnackbarProvider, SnackbarContext } from "./snackbar";
+import { SnackbarContext } from "./index";
+import { SnackbarProvider } from "./provider";
+
 
 // Test component to consume the context
 const TestComponent = () => {

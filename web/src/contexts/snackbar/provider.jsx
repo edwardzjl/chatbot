@@ -1,15 +1,8 @@
-import { createContext, useState } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
 
+import { SnackbarContext } from "./index";
 
-export const SnackbarContext = createContext({
-    snackbar: {
-        open: false,
-        severity: "info",
-        message: "",
-    },
-    setSnackbar: () => { },
-});
 
 export const SnackbarProvider = ({ children }) => {
     /**
