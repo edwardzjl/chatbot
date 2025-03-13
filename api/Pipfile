@@ -31,4 +31,4 @@ pre-commit = "*"
 psycopg = {extras = ["c"], version = "*"}
 
 [requires]
-python_version = "3.12"
+python_version = "3.13"
