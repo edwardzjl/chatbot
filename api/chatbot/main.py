@@ -1,5 +1,6 @@
 """Main entrypoint for the app."""
 
+import logging
 import re
 from contextlib import asynccontextmanager
 
@@ -10,7 +11,6 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
-from loguru import logger
 from prometheus_client import make_asgi_app
 from sqlalchemy.exc import NoResultFound
 from starlette.routing import Mount
@@ -24,6 +24,9 @@ from chatbot.routers.message import router as message_router
 from chatbot.routers.share import router as share_router
 from chatbot.schemas import UserProfile
 from chatbot.state import sqlalchemy_engine
+
+
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
@@ -109,7 +112,7 @@ def custom_404_handler(request: Request, _):
 @app.exception_handler(Exception)
 def exception_handler(request: Request, exc: Exception):
     """Global exception handler."""
-    logger.exception("Unhandled error during request {}", request)
+    logger.exception("Unhandled error during request %s", request)
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={"detail": "server error"},

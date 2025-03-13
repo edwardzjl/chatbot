@@ -1,12 +1,15 @@
 from __future__ import annotations
 
+import logging
 from functools import partial, lru_cache
 from typing import Any, Callable
 from urllib.parse import urljoin
 
 import requests
 from langchain_core.messages.utils import convert_to_openai_messages
-from loguru import logger
+
+
+logger = logging.getLogger(__name__)
 
 
 # TODO: we can support async here, but I'm not explicitly depending on `aiohttp` yet.
@@ -59,7 +62,7 @@ def get_model_info(base_url: str, model_name: str) -> dict[str, Any]:
                 model_info["info"] = info
                 return model_info
     except requests.RequestException:
-        logger.warning("Error fetching model info for {} from {}", model_name, base_url)
+        logger.warning("Error fetching model info for %s from %s", model_name, base_url)
         raise
 
 
@@ -99,7 +102,7 @@ def get_truncation_config(
         return max_tokens, token_counter
     except Exception:
         logger.exception(
-            "Error while fetching truncation config for model '{}' from provider '{}'. Falling back to message count truncation.",
+            "Error while fetching truncation config for model '%s' from provider '%s'. Falling back to message count truncation.",
             model_name,
             base_url,
         )
@@ -174,20 +177,20 @@ def get_num_tokens_func(base_url: str, model_name: str) -> Callable[[list], int]
         case "llamacpp":
             # llama.cpp (b4367) only supports tokenize text, not chat messages.
             logger.warning(
-                "Tokenization not supported for {} (llamacpp provider).", model_name
+                "Tokenization not supported for %s (llamacpp provider).", model_name
             )
             return None
         case "sglang":
             # SGLang (0.4.0) does not have a dedicated endpoint for tokenization.
             logger.warning(
-                "Tokenization not supported for {} (sglang provider).", model_name
+                "Tokenization not supported for %s (sglang provider).", model_name
             )
             return None
         case _:
             # TODO: Check more servers.
             # NOTE: TGI(3.0.1) falls into this category, as the 'owned_by' of TGI services to be model id and is not customizable.
             logger.warning(
-                "Tokenization function fallback for {} (unknown provider).", model_name
+                "Tokenization function fallback for %s (unknown provider).", model_name
             )
             return partial(get_num_tokens_tgi, base_url, model_name)
 
@@ -220,7 +223,7 @@ def get_num_tokens_vllm(base_url: str, model_name: str, messages: list) -> int:
         return resp.json()["count"]
     except requests.RequestException:
         logger.error(
-            "Error tokenizing messages for {} at {}, fallback to message count.",
+            "Error tokenizing messages for %s at %s, fallback to message count.",
             model_name,
             base_url,
         )
@@ -252,7 +255,7 @@ def get_num_tokens_tgi(base_url: str, model_name: str, messages: list) -> int:
         return len(resp.json()["tokenize_response"])
     except requests.RequestException:
         logger.error(
-            "Error tokenizing messages for {} at {}, fallback to message count.",
+            "Error tokenizing messages for %s at %s, fallback to message count.",
             model_name,
             base_url,
         )
