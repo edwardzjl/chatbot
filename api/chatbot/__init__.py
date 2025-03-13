@@ -1,8 +1,5 @@
 import logging
 import os
-import sys
-
-from loguru import logger
 
 from chatbot.main import app
 
@@ -10,8 +7,11 @@ __all__ = ["app"]
 
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 
-logger.remove()
-logger.add(sys.stdout, level=LOG_LEVEL)
+logging.basicConfig(
+    level=LOG_LEVEL,
+    format="datetime=%(asctime)s level=%(levelname)s filename=%(filename)s module=%(module)s name=%(name)s lineno=%(lineno)s message=%(message)s",
+    datefmt="%Y-%m-%dT%H:%M:%S%z",
+)
 
 
 class EndpointFilter(logging.Filter):

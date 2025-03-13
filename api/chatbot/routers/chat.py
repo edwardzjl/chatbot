@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import (
     APIRouter,
     WebSocket,
@@ -5,7 +7,6 @@ from fastapi import (
     WebSocketException,
 )
 from langchain_core.messages import AIMessage, BaseMessage, trim_messages
-from loguru import logger
 
 from chatbot.dependencies import AgentDep, SmrChainDep, UserIdHeaderDep
 from chatbot.metrics import connected_clients
@@ -19,6 +20,9 @@ from chatbot.schemas import (
 )
 from chatbot.state import sqlalchemy_session
 from chatbot.utils import utcnow
+
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/api/chat",
@@ -74,7 +78,7 @@ async def chat(
                     # Our internal events are not supposed to be exposed to the user.
                     continue
 
-                logger.trace("event: {}", event)
+                logger.debug("event: %s", event)
                 evt: str = event["event"]
                 if evt == "on_chat_model_start":
                     # Send an empty non-chunk message to start the streaming.
@@ -142,4 +146,4 @@ async def chat(
             connected_clients.dec()
             return
         except Exception as e:  # noqa: BLE001
-            logger.exception("Something goes wrong: {}", e)
+            logger.exception("Something goes wrong: %s", e)

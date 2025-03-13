@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import datetime
+import logging
 from typing import TYPE_CHECKING, Callable
 
 from langchain_core.messages import BaseMessage, SystemMessage, trim_messages
 from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import END, START, MessagesState, StateGraph
-from loguru import logger
 
 from chatbot.safety import create_hazard_classifier, hazard_categories
 
@@ -14,6 +14,9 @@ if TYPE_CHECKING:
     from langchain_core.language_models import BaseChatModel
     from langgraph.checkpoint.base import BaseCheckpointSaver
     from langgraph.graph.graph import CompiledGraph
+
+
+logger = logging.getLogger(__name__)
 
 
 def create_agent(

@@ -10,9 +10,6 @@ langchain-core = ">=0.3.0,<1.0.0"
 langchain-openai = ">=0.2.0,<1.0.0"
 langgraph = ">=0.2.0,<1.0.0"
 langgraph-checkpoint-postgres = ">=2.0.0,<3.0.0"
-loguru = ">=0.7,<1.0"
-colorama = {version = "*", sys_platform = "== 'win32'"}
-win32-setctime = {version = "*", sys_platform = "== 'win32'"}
 prometheus-client = ">=0.20.0,<1.0.0"
 # psycopg 3.2.0 introduced a bug with extras such as "binary" or "c" which is fixed in 3.2.1
 # See <https://github.com/psycopg/psycopg/issues/853>
