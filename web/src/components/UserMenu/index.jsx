@@ -36,7 +36,7 @@ const UserMenu = () => {
                 <hr className={styles.userInfoMenuUsernameHr} />
                 <li>
                     <button
-                        className={styles.themeMenuItem}
+                        className={styles.userInfoMenuItem}
                         onClick={handleLogout}
                         aria-label="Logout"
                     >

@@ -17,3 +17,14 @@
 .userInfoMenuUsernameHr {
     border: 1px solid var(--border-color);
 }
+
+.userInfoMenuItem {
+    width: 100%;
+    margin: 2px;
+    background-color: transparent;
+    /* must add transparent border or the button will shake on hover */
+    border: 1px solid transparent;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+}
