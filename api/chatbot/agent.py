@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, UTC
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING, Callable, Literal
 
 from langchain_core.messages import BaseMessage, SystemMessage, trim_messages
 from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import END, START, MessagesState, StateGraph
+from langgraph.prebuilt import ToolNode
 
 from chatbot.safety import create_hazard_classifier, hazard_categories
 
@@ -28,6 +29,7 @@ def create_agent(
         Callable[[list[BaseMessage]], int] | Callable[[BaseMessage], int] | None
     ) = None,
     max_tokens: int = 20,
+    tools: list = None,
 ) -> CompiledGraph:
     if token_counter is None:
         if hasattr(chat_model, "get_num_tokens_from_messages"):
@@ -37,11 +39,15 @@ def create_agent(
                 "Could not get token counter function from chat model, will truncate messages by message count. This may lead to context overflow."
             )
             token_counter = len
+
     if max_tokens is None:
         raise ValueError("`None` passed as `max_tokens` which is not allowed")
-
     # leave 0.2 for new tokens
     _max_tokens = int(max_tokens * 0.8)
+
+    if tools:
+        chat_model = chat_model.bind_tools(tools)
+    tool_node = ToolNode(tools) if tools else None
 
     hazard_classifier = None
     if safety_model is not None:
@@ -91,6 +97,7 @@ Current date: {date}
 
         bound = prompt | chat_model
 
+        # I don't want this hint message to be persisted, so I'm not adding it to the state.
         hint_message = None
         if hazard := state["messages"][-1].additional_kwargs.get("hazard"):
             hint_message = SystemMessage(
@@ -125,12 +132,26 @@ Please respond with care and professionalism. Avoid engaging with harmful or une
         )
         return {"messages": [messages]}
 
+    # I cannot use `END` as the literal hint, as:
+    #  > Type arguments for "Literal" must be None, a literal value (int, bool, str, or bytes), or an enum value.
+    # As `END` is just an intern string of "__end__" (See `langgraph.constants`), So I use "__end__" here.
+    def should_continue(state: MessagesState) -> Literal["tools", "__end__"]:
+        messages = state["messages"]
+        last_message = messages[-1]
+        if last_message.tool_calls:
+            return "tools"
+        return END
+
     builder = StateGraph(MessagesState)
     builder.add_node(input_guard)
     builder.add_node(chatbot)
-
     builder.add_edge(START, "input_guard")
     builder.add_edge("input_guard", "chatbot")
-    builder.add_edge("chatbot", END)
+    if tool_node:
+        builder.add_node(tool_node)
+        builder.add_conditional_edges("chatbot", should_continue)
+        builder.add_edge("tools", "chatbot")
+    else:
+        builder.add_edge("chatbot", END)
 
     return builder.compile(checkpointer=checkpointer)
