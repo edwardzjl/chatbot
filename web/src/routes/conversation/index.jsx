@@ -12,6 +12,8 @@ import { MessageContext } from "@/contexts/message";
 import { UserContext } from "@/contexts/user";
 import { WebsocketContext } from "@/contexts/websocket";
 
+import { toLocalISOString } from "@/commons";
+
 import ChatInput from "./ChatInput";
 
 
@@ -103,7 +105,14 @@ const Conversation = () => {
             console.error("Websocket not ready!");
             return;
         }
-        const message = { id: crypto.randomUUID(), from: username, content: text, type: "human" };
+        const sent_at = toLocalISOString(new Date());
+        const message = {
+            id: crypto.randomUUID(),
+            from: username,
+            content: text,
+            type: "human",
+            sent_at: sent_at,
+        };
         const payload = {
             conversation: conversation.id,
             ...message,
@@ -118,12 +127,12 @@ const Conversation = () => {
         if (conversation.pinned && groupedConvs.pinned && groupedConvs.pinned[0]?.id !== conversation.id) {
             dispatchConv({
                 type: "reordered",
-                conv: { id: conversation.id, last_message_at: new Date().toISOString() },
+                conv: { id: conversation.id, last_message_at: sent_at },
             });
         } else if (groupedConvs.Today && groupedConvs.Today[0]?.id !== conversation.id) {
             dispatchConv({
                 type: "reordered",
-                conv: { id: conversation.id, last_message_at: new Date().toISOString() },
+                conv: { id: conversation.id, last_message_at: sent_at },
             });
         }
         send(JSON.stringify(payload));

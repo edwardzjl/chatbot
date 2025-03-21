@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { UserContext } from "@/contexts/user";
 import { ConversationContext } from "@/contexts/conversation";
 import ChatboxHeader from "@/components/ChatboxHeader";
-import { DEFAULT_CONV_TITLE } from "@/commons";
+import { toLocalISOString, DEFAULT_CONV_TITLE } from "@/commons";
 
 import ChatInput from "./ChatInput";
 
@@ -26,12 +26,14 @@ const Conversation = () => {
                 body: JSON.stringify({ title: DEFAULT_CONV_TITLE }),
             });
             const conversation = await response.json();
+            const sent_at = toLocalISOString(new Date());
             const message = {
                 id: crypto.randomUUID(),
                 conversation: conversation.id,
                 from: username,
                 content: input,
                 type: "human",
+                sent_at: sent_at,
             };
             sessionStorage.setItem(`init-msg:${conversation.id}`, JSON.stringify(message));
             dispatch({ type: "added", conv: conversation });
