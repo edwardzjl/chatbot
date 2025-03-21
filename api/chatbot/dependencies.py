@@ -17,6 +17,7 @@ from chatbot.agent import create_agent
 from chatbot.config import settings
 from chatbot.llm_providers import get_truncation_config
 from chatbot.state import sqlalchemy_ro_session, sqlalchemy_session
+from chatbot.tools.weather.openmeteo import WeatherTool
 from chatbot.utils import ReasoningChatOpenai
 
 if TYPE_CHECKING:
@@ -103,6 +104,7 @@ async def get_agent(
             checkpointer=checkpointer,
             token_counter=token_counter,
             max_tokens=max_tokens,
+            tools=[WeatherTool()],
         )
 
 
