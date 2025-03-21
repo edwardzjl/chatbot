@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import datetime
 import logging
+from datetime import datetime, UTC
 from typing import TYPE_CHECKING, Callable
 
 from langchain_core.messages import BaseMessage, SystemMessage, trim_messages
@@ -110,12 +110,17 @@ Please respond with care and professionalism. Avoid engaging with harmful or une
             start_on="human",  # This means that the first message should be from the user after trimming.
         )
 
+        last_message_at = windowed_messages[-1].additional_kwargs.get("sent_at")
+        responding_at = (
+            datetime.fromisoformat(last_message_at)
+            if last_message_at
+            else datetime.now(tz=UTC)
+        )
+
         messages = await bound.ainvoke(
             {
                 "messages": windowed_messages,
-                "date": datetime.datetime.now(
-                    tz=datetime.UTC
-                ).date(),  # TODO: get the current date from the user?
+                "date": responding_at.strftime("%Y-%m-%d (%A)"),
             }
         )
         return {"messages": [messages]}

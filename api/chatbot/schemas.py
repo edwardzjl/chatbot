@@ -24,6 +24,7 @@ class ChatMessage(BaseModel):
     """A transient field to determine conversation id."""
     content: str | list[str | dict] | None = None
     type: str
+    sent_at: datetime | None = Field(default_factory=utcnow)
     additional_kwargs: dict[str, Any] | None = None
 
     @staticmethod
@@ -35,6 +36,7 @@ class ChatMessage(BaseModel):
 
         msg_class = message_class_map.get(msg_type, ChatMessage)
 
+        sent_at = additional_kwargs.pop("sent_at", None)
         kwargs = {
             "parent_id": additional_kwargs.pop("parent_id", None),
             "id": lc_message.id or str(uuid4()),
@@ -42,6 +44,7 @@ class ChatMessage(BaseModel):
             "from": lc_message.name,
             "content": lc_message.content,
             "type": msg_type,
+            "sent_at": datetime.fromisoformat(sent_at) if sent_at else None,
             "additional_kwargs": additional_kwargs,
         }
 
@@ -56,6 +59,8 @@ class ChatMessage(BaseModel):
             "type": self.type,
             "session_id": self.conversation,
         }
+        if self.sent_at:
+            additional_kwargs["sent_at"] = self.sent_at.isoformat()
         if self.parent_id:
             additional_kwargs["parent_id"] = self.parent_id
         if hasattr(self, "feedback"):
