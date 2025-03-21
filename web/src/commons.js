@@ -1,4 +1,24 @@
 
+/**
+ * Get ISO 8601 string of the input date in local timezone.
+ */
+export const toLocalISOString = (date) => {
+    const isoString = date.toISOString();
+    const offset = -date.getTimezoneOffset(); // offset in minutes
+    if (offset === 0) {
+        return isoString;
+    }
+
+    const offsetHours = Math.abs(Math.floor(offset / 60));
+    const offsetMinutes = Math.abs(offset % 60);
+    const offsetSign = offset >= 0 ? "+" : "-";
+  
+    return isoString.slice(0, -1) + offsetSign +
+      String(offsetHours).padStart(2, "0") +
+      ":" +
+      String(offsetMinutes).padStart(2, "0");
+};
+
 export const getFirstLetters = (str) => {
     if (!str) {
         return "";
