@@ -69,9 +69,12 @@ const Conversation = () => {
     const { username } = useContext(UserContext);
     const { ready, send } = useContext(WebsocketContext);
     const { messages, dispatch } = useContext(MessageContext);
+    // Only rendering messages of the following types
+    const rendering_messages = new Set(["human", "ai"]);
+
 
     useEffect(() => {
-    // Update the message context.
+        // Update the message context.
         dispatch({
             type: "replaceAll",
             messages: conversation.messages,
@@ -131,7 +134,7 @@ const Conversation = () => {
             <ChatboxHeader />
             <ChatLog>
                 {/* We ignore system messages when displaying. */}
-                {conversation && messages?.filter(message => message.from !== "system").map((message, index) => (
+                {conversation && messages?.filter(message => rendering_messages.has(message.type)).map((message, index) => (
                     <ChatMessage key={index} convId={conversation.id} message={message} />
                 ))}
             </ChatLog>
