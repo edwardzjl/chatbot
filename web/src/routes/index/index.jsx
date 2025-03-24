@@ -3,12 +3,13 @@ import styles from './index.module.css';
 import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 
+import ChatboxHeader from "@/components/ChatboxHeader";
+import ChatInput from "@/components/ChatInput";
+
 import { UserContext } from "@/contexts/user";
 import { ConversationContext } from "@/contexts/conversation";
-import ChatboxHeader from "@/components/ChatboxHeader";
-import { toLocalISOString, DEFAULT_CONV_TITLE } from "@/commons";
 
-import ChatInput from "./ChatInput";
+import { toLocalISOString, DEFAULT_CONV_TITLE } from "@/commons";
 
 
 const Conversation = () => {

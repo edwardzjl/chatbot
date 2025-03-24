@@ -48,8 +48,8 @@ const ChatInput = ({ onSubmit }) => {
     const inputRef = useRef(null);
 
     /**
-   * Focus on input when convId changes.
-   */
+     * Focus on input when convId changes.
+     */
     useEffect(() => {
         if (params.convId) {
             inputRef.current.focus();
@@ -57,9 +57,9 @@ const ChatInput = ({ onSubmit }) => {
     }, [params]);
 
     /**
-   * Adjusting height of textarea.
-   * Ref: <https://blog.muvon.io/frontend/creating-textarea-with-dynamic-height-react>
-   */
+     * Adjusting height of textarea.
+     * Ref: <https://blog.muvon.io/frontend/creating-textarea-with-dynamic-height-react>
+     */
     useEffect(() => {
         if (inputRef.current) {
             inputRef.current.style.height = "0px";
