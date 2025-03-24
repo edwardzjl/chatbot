@@ -432,12 +432,12 @@
         },
         "langchain-core": {
             "hashes": [
-                "sha256:a39b8446495d1ea97311aa726478c0a13ef1d77cb7644350bad6d9d3c0141a0c",
-                "sha256:fe560d644c102c3f5dcfb44eb5295e26d22deab259fdd084f6b1b55a0350b77c"
+                "sha256:975a3daabf8e8d583749b3c553cc412d0527d935dfe820317431b475fa0c585a",
+                "sha256:ef7c78202e6fd9df79fe8128c828d08a95d3878cf4aec282580baf358a3f2ec5"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.9' and python_version < '4.0'",
-            "version": "==0.3.45"
+            "version": "==0.3.47"
         },
         "langchain-openai": {
             "hashes": [
@@ -467,12 +467,12 @@
         },
         "langgraph-checkpoint-postgres": {
             "hashes": [
-                "sha256:c4bcbf760e866a9f960c7845b197bc4bf713305ddccc7308cc534f4c643ca49f",
-                "sha256:d21f4ce458f4b39124def89e87895c294c18fcc168e64734b8a75a17556b79c8"
+                "sha256:62c08a21e9cd677469ca8f7bd94df782d8d9099cfe60e90ab828e479d62861e1",
+                "sha256:a4ccff1b07685774af58e6057b8516bd50cf7fa6df1271c2ec26b345f0dac2ed"
             ],
             "index": "pypi",
             "markers": "python_full_version >= '3.9.0' and python_full_version < '4.0.0'",
-            "version": "==2.0.18"
+            "version": "==2.0.19"
         },
         "langgraph-prebuilt": {
             "hashes": [
@@ -492,11 +492,11 @@
         },
         "langsmith": {
             "hashes": [
-                "sha256:b4fcd78926cdf310a882081ead95541fce911636fcffbb0d087fa1974994c4c7",
-                "sha256:eb0304b477189106f60758ddd3b55fb09a18be5cb2d586d76ffcaeb5170d2807"
+                "sha256:18ff2d8f2e77b375485e4fb3d0dbf7b30fabbd438c7347c3534470e9b7d187b8",
+                "sha256:7ad65ec26084312a039885ef625ae72a69ad089818b64bacf7ce6daff672353a"
             ],
             "markers": "python_version >= '3.9' and python_version < '4.0'",
-            "version": "==0.3.15"
+            "version": "==0.3.18"
         },
         "markupsafe": {
             "hashes": [
