@@ -6,6 +6,7 @@ import { redirect, useLoaderData, useNavigation } from "react-router-dom";
 import ChatboxHeader from "@/components/ChatboxHeader";
 import ChatLog from "@/components/ChatLog";
 import ChatMessage from "@/components/ChatMessage";
+import ChatInput from "@/components/ChatInput";
 
 import { ConversationContext } from "@/contexts/conversation";
 import { MessageContext } from "@/contexts/message";
@@ -13,8 +14,6 @@ import { UserContext } from "@/contexts/user";
 import { WebsocketContext } from "@/contexts/websocket";
 
 import { toLocalISOString } from "@/commons";
-
-import ChatInput from "./ChatInput";
 
 
 async function loader({ params }) {
