@@ -22,7 +22,7 @@
 
 .content {
     overflow: hidden;
-    border-radius: 0 05px 5px;
+    border-radius: 0 0 5px 5px;
     padding: 10px;
     margin: 0;
     overflow-y: auto;
