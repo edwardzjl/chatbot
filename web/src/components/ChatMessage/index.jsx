@@ -23,6 +23,7 @@ import { ThemeContext } from "@/contexts/theme";
 import { UserContext } from "@/contexts/user";
 
 import PeekDetails from "@/components/PeekDetails";
+import PreviewImage from "@/components/PreviewImage";
 
 import { stringToColor } from "@/commons";
 
@@ -151,6 +152,25 @@ const ChatMessage = ({ convId, message }) => {
                 >
                     {message.content || ""}
                 </Markdown>
+                {message.attachments &&
+                    <div className={styles.attachments}>
+                        {message.attachments.map((attachment, index) => (
+                            <div
+                                key={index}
+                                className={styles.attachment}
+                            >
+                                {/* These are blob urls, which does not support request params. */}
+                                <PreviewImage
+                                    className={styles.preview}
+                                    srcSet={attachment.localUrl || attachment.url}
+                                    src={attachment.localUrl || attachment.url}
+                                    alt={attachment.name}
+                                    loading="lazy"
+                                />
+                            </div>))
+                        }
+                    </div>
+                }
                 {!myMessage && (
                     <div className={styles.messageFeedbacks}>
                         <Tooltip title={copyTooltipTitle}>
