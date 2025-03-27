@@ -74,12 +74,20 @@ describe("ChatInput", () => {
         const onSubmit = vi.fn();
         renderWithContext(<ChatInput onSubmit={onSubmit} />);
         const textarea = screen.getByRole("textbox");
+        const testMessage = "Test message";
 
         // Simulate typing and pressing "Enter"
-        fireEvent.change(textarea, { target: { value: "Test message" } });
+        fireEvent.change(textarea, { target: { value: testMessage } });
         fireEvent.keyDown(textarea, { key: "Enter", code: "Enter", charCode: 13 });
 
-        await waitFor(() => expect(onSubmit).toHaveBeenCalledWith("Test message"));
+        await waitFor(() => {
+            expect(onSubmit).toHaveBeenCalledTimes(1);
+            const submittedMessage = onSubmit.mock.calls[0][0]; // get the first argument passed to `onSubmit`
+            expect(submittedMessage).toHaveProperty('id');
+            expect(submittedMessage).toHaveProperty('content', testMessage);
+            expect(submittedMessage).toHaveProperty('type', 'human');
+            expect(submittedMessage).toHaveProperty('sent_at');
+        });
     });
 
     it('should not submit the input when "Enter" is pressed with modifiers (Ctrl, Shift, Alt)', async () => {
