@@ -9,7 +9,7 @@ import ChatInput from "@/components/ChatInput";
 import { UserContext } from "@/contexts/user";
 import { ConversationContext } from "@/contexts/conversation";
 
-import { toLocalISOString, DEFAULT_CONV_TITLE } from "@/commons";
+import { DEFAULT_CONV_TITLE } from "@/commons";
 
 
 const Conversation = () => {
@@ -17,7 +17,7 @@ const Conversation = () => {
     const { dispatch } = useContext(ConversationContext);
     const navigate = useNavigate();
 
-    const handleSubmit = async (input) => {
+    const handleSubmit = async (message) => {
         const response = await fetch("/api/conversations", {
             method: "POST",
             headers: {
@@ -26,16 +26,12 @@ const Conversation = () => {
             body: JSON.stringify({ title: DEFAULT_CONV_TITLE }),
         });
         const conversation = await response.json();
-        const sent_at = toLocalISOString(new Date());
-        const message = {
-            id: crypto.randomUUID(),
+        const payload = {
             conversation: conversation.id,
             from: username,
-            content: input,
-            type: "human",
-            sent_at: sent_at,
+            ...message,
         };
-        sessionStorage.setItem(`init-msg:${conversation.id}`, JSON.stringify(message));
+        sessionStorage.setItem(`init-msg:${conversation.id}`, JSON.stringify(payload));
         dispatch({ type: "added", conv: conversation });
         navigate(`/conversations/${conversation.id}`);
     };

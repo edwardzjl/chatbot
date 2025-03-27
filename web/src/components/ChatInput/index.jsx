@@ -8,6 +8,7 @@ import SendRoundedIcon from '@mui/icons-material/SendRounded';
 import { SnackbarContext } from "@/contexts/snackbar";
 import { WebsocketContext } from "@/contexts/websocket";
 
+import { toLocalISOString } from "@/commons";
 
 /**
  * ChatInput Component
@@ -20,7 +21,7 @@ import { WebsocketContext } from "@/contexts/websocket";
  * Props:
  * @param {Object} props - The props object.
  * @param {Function} props.onSubmit - Callback function to handle the submission of user input.
- *                                     Receives the input string as an argument.
+ *                                     Receives the message as an argument.
  *                                     Should directly throw an error if the submission fails.
  *
  * Features:
@@ -74,8 +75,15 @@ const ChatInput = ({ onSubmit }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        const message = {
+            id: crypto.randomUUID(),
+            content: input,
+            type: "human",
+            sent_at: toLocalISOString(new Date()),
+        };
         try {
-            await onSubmit(input);
+            await onSubmit(message);
             setInput("");
         } catch (error) {
             console.error("Error sending message", error);

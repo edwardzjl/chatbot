@@ -13,8 +13,6 @@ import { MessageContext } from "@/contexts/message";
 import { UserContext } from "@/contexts/user";
 import { WebsocketContext } from "@/contexts/websocket";
 
-import { toLocalISOString } from "@/commons";
-
 
 async function loader({ params }) {
     const resp = await fetch(`/api/conversations/${params.convId}`, {});
@@ -125,17 +123,10 @@ const Conversation = () => {
 
     }, [conversation, dispatch, send]);
 
-    const sendMessage = async (text) => {
-        const sent_at = toLocalISOString(new Date());
-        const message = {
-            id: crypto.randomUUID(),
-            from: username,
-            content: text,
-            type: "human",
-            sent_at: sent_at,
-        };
+    const sendMessage = async (message) => {
         const payload = {
             conversation: conversation.id,
+            from: username,
             ...message,
         };
         // `send` may throw an `InvalidStateError` if `WebSocket.readyState` is `CONNECTING`.
@@ -144,19 +135,19 @@ const Conversation = () => {
         // append user input to chatlog
         dispatch({
             type: "added",
-            message: message,
+            message: payload,
         });
         // update last_message_at of the conversation to re-order conversations
         // TODO: this seems buggy
         if (conversation.pinned && groupedConvs.pinned && groupedConvs.pinned[0]?.id !== conversation.id) {
             dispatchConv({
                 type: "reordered",
-                conv: { id: conversation.id, last_message_at: sent_at },
+                conv: { id: conversation.id, last_message_at: message.sent_at },
             });
         } else if (groupedConvs.Today && groupedConvs.Today[0]?.id !== conversation.id) {
             dispatchConv({
                 type: "reordered",
-                conv: { id: conversation.id, last_message_at: sent_at },
+                conv: { id: conversation.id, last_message_at: message.sent_at },
             });
         }
     };
