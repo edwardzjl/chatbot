@@ -135,7 +135,8 @@ class Conversation(BaseModel):
 class ConversationDetail(Conversation):
     """Conversation with messages."""
 
-    messages: list[ChatMessage] = []
+    # TODO: This sucks. If we only return ChatMessage, fields in the child classes will be lost.
+    messages: list[HumanChatMessage | AIChatMessage] = []
 
 
 class CreateConversation(BaseModel):
