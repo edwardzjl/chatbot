@@ -45,7 +45,7 @@ class Settings(BaseSettings):
     s3_access_key: str | None = None
     s3_secret_key: str | None = None
     s3_secure: bool = True
-    s3_bucket: str
+    s3_bucket: str = "chatbot"
 
     @model_validator(mode="after")
     def set_default_standby_url(self) -> Self:
