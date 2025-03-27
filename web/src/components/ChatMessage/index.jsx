@@ -42,8 +42,7 @@ const ChatMessage = ({ convId, message }) => {
     const { username, avatar } = useContext(UserContext);
     const { dispatch } = useContext(MessageContext);
     const [copyTooltipTitle, setCopyTooltipTitle] = useState("copy content");
-    const [thumbUpTooltipTitle, setThumbUpTooltipTitle] = useState("good answer");
-    const [thumbDownTooltipTitle, setThumbDownTooltipTitle] = useState("bad answer");
+    const [feedbackTooltipTitles, setFeedbackTooltipTitles] = useState({ thumbup: "I like it!", thumbdown: "Not so good" });
 
     // Update markdown theme based on the current theme
     useEffect(() => {
@@ -79,35 +78,24 @@ const ChatMessage = ({ convId, message }) => {
     };
 
     /**
-     * Handles the thumbs up action by sending a PUT request to register the feedback.
+     * Handles the thumbs up/down feedback action by sending a PUT request to register the feedback.
      * Updates the tooltip and dispatches a message update to the context.
+     *
+     * @param {string} feedback - "thumbup" or "thumbdown"
      */
-    const onThumbUpClick = () => {
-        fetch(`/api/conversations/${convId}/messages/${message.id}/thumbup`, {
-            method: "PUT",
-        }).then(() => {
-            setThumbUpTooltipTitle("thanks!");
+    const onFeedback = async (feedback) => {
+        try {
+            await fetch(`/api/conversations/${convId}/messages/${message.id}/${feedback}`, {
+                method: "PUT",
+            });
             dispatch({
                 type: "updated",
-                message: { ...message, feedback: "thumbup" },
+                message: { ...message, feedback: feedback },
             });
-        });
-    };
-
-    /**
-     * Handles the thumbs down action by sending a PUT request to register the feedback.
-     * Updates the tooltip and dispatches a message update to the context.
-     */
-    const onThumbDownClick = () => {
-        fetch(`/api/conversations/${convId}/messages/${message.id}/thumbdown`, {
-            method: "PUT",
-        }).then(() => {
-            setThumbDownTooltipTitle("thanks!");
-            dispatch({
-                type: "updated",
-                message: { ...message, feedback: "thumbdown" },
-            });
-        });
+            setFeedbackTooltipTitles((prev) => ({ ...prev, [feedback]: "thanks!" }));
+        } catch (error) {
+            console.error(error);
+        }
     };
 
     /**
@@ -179,14 +167,14 @@ const ChatMessage = ({ convId, message }) => {
                         </Tooltip>
                         {message.feedback !== "thumbdown" && (
                             message.feedback === "thumbup" ? <ThumbUpIcon /> :
-                                <Tooltip title={thumbUpTooltipTitle}>
-                                    <ThumbUpOutlined onClick={onThumbUpClick} />
+                                <Tooltip title={feedbackTooltipTitles.thumbup}>
+                                    <ThumbUpOutlined onClick={() => onFeedback("thumbup")} />
                                 </Tooltip>
                         )}
                         {message.feedback !== "thumbup" && (
                             message.feedback === "thumbdown" ? <ThumbDownIcon /> :
-                                <Tooltip title={thumbDownTooltipTitle}>
-                                    <ThumbDownOutlined onClick={onThumbDownClick} />
+                                <Tooltip title={feedbackTooltipTitles.thumbdown}>
+                                    <ThumbDownOutlined onClick={() => onFeedback("thumbdown")} />
                                 </Tooltip>
                         )}
                     </div>
