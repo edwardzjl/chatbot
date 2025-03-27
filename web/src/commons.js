@@ -12,11 +12,11 @@ export const toLocalISOString = (date) => {
     const offsetHours = Math.abs(Math.floor(offset / 60));
     const offsetMinutes = Math.abs(offset % 60);
     const offsetSign = offset >= 0 ? "+" : "-";
-  
+
     return isoString.slice(0, -1) + offsetSign +
-      String(offsetHours).padStart(2, "0") +
-      ":" +
-      String(offsetMinutes).padStart(2, "0");
+        String(offsetHours).padStart(2, "0") +
+        ":" +
+        String(offsetMinutes).padStart(2, "0");
 };
 
 export const getFirstLetters = (str) => {
