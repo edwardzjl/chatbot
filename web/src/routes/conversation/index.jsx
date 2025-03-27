@@ -68,7 +68,7 @@ const Conversation = () => {
     const navigation = useNavigation();
     const { groupedConvs, dispatch: dispatchConv } = useContext(ConversationContext);
     const { username } = useContext(UserContext);
-    const { ready, send } = useContext(WebsocketContext);
+    const { send } = useContext(WebsocketContext);
     const { messages, dispatch } = useContext(MessageContext);
     // Only rendering messages of the following types
     const rendering_messages = new Set(["human", "ai"]);
@@ -80,30 +80,52 @@ const Conversation = () => {
             type: "replaceAll",
             messages: conversation.messages,
         });
-        if (!ready) {
-            console.error("Websocket not ready!");
+        if (conversation.messages && conversation.messages.length > 0) {
+            // Already has messages, no need to check for init message.
             return;
         }
 
-        const initMsg = sessionStorage.getItem(`init-msg:${conversation.id}`);
+        // Check if there's an init message to send.
+        const initMsgKey = `init-msg:${conversation.id}`;
+        const initMsg = sessionStorage.getItem(initMsgKey);
         if (initMsg === undefined || initMsg === null) {
             return;
         }
-        const message = JSON.parse(initMsg);
-        dispatch({
-            type: "added",
-            message: message,
-        });
+
         // Send the init message if there's any.
-        send(JSON.stringify({ additional_kwargs: { require_summarization: true }, ...message }));
-        sessionStorage.removeItem(`init-msg:${conversation.id}`);
-    }, [conversation, dispatch, ready, send]);
+        const message = JSON.parse(initMsg);
+        const attemptSend = async () => {
+            const MAX_RETRIES = 5;
+            const interval = 500;  // milliseconds
+            let retries = 0;
+
+            while (retries < MAX_RETRIES) {
+                try {
+                    send(JSON.stringify({ additional_kwargs: { require_summarization: true }, ...message }));
+                    sessionStorage.removeItem(initMsgKey);
+                    dispatch({
+                        type: "added",
+                        message: message,
+                    });
+                    break;
+                } catch (error) {
+                    if (error.name === "InvalidStateError") {
+                        console.warn(`WebSocket not ready, retrying in 0.5 second... (${retries + 1}/${MAX_RETRIES})`);
+                        retries++;
+                        await new Promise(resolve => setTimeout(resolve, interval));
+                    } else {
+                        console.error("Error sending init message:", error);
+                        break;
+                    }
+                }
+            }
+        }
+
+        attemptSend();
+
+    }, [conversation, dispatch, send]);
 
     const sendMessage = async (text) => {
-        if (!ready) {
-            console.error("Websocket not ready!");
-            return;
-        }
         const sent_at = toLocalISOString(new Date());
         const message = {
             id: crypto.randomUUID(),
@@ -116,6 +138,9 @@ const Conversation = () => {
             conversation: conversation.id,
             ...message,
         };
+        // `send` may throw an `InvalidStateError` if `WebSocket.readyState` is `CONNECTING`.
+        // See <https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/send>
+        send(JSON.stringify(payload));
         // append user input to chatlog
         dispatch({
             type: "added",
@@ -134,7 +159,6 @@ const Conversation = () => {
                 conv: { id: conversation.id, last_message_at: sent_at },
             });
         }
-        send(JSON.stringify(payload));
     };
 
     return (
