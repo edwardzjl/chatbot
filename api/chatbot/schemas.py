@@ -3,13 +3,23 @@ from __future__ import annotations
 from copy import deepcopy
 
 from datetime import datetime
-from typing import Any, Literal, Type
+from typing import Any, Literal, NotRequired, Type, TypedDict
 from uuid import UUID, uuid4
 
 from langchain_core.messages import BaseMessage, _message_from_dict
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from chatbot.utils import utcnow
+
+
+# LESSON 1: AVOID using Pydantic model for attributes of `additional_kwargs`.
+#   It will be a Pydantic model instance upon initialization but a plain dictionary after deserialization.
+#   This type inconsistency can lead to significant issues when you try to use it.
+# LESSON 2: NamedTuple will raise an exception when encountering unexpected keyword arguments.
+class Attachment(TypedDict):
+    url: str
+    mimetype: NotRequired[str | None] = None
+    size: NotRequired[int] = 0
 
 
 class ChatMessage(BaseModel):
@@ -23,6 +33,7 @@ class ChatMessage(BaseModel):
     from_: str | None = Field(None, alias="from")
     """A transient field to determine conversation id."""
     content: str | list[str | dict] | None = None
+    attachments: list[Attachment] | None = None
     type: str
     sent_at: datetime | None = Field(default_factory=utcnow)
     additional_kwargs: dict[str, Any] | None = None
@@ -51,6 +62,9 @@ class ChatMessage(BaseModel):
         if feedback := additional_kwargs.pop("feedback", None):
             kwargs["feedback"] = feedback
 
+        if attachments := additional_kwargs.pop("attachments", None):
+            kwargs["attachments"] = attachments
+
         return msg_class(**kwargs)
 
     def to_lc(self) -> BaseMessage:
@@ -65,6 +79,8 @@ class ChatMessage(BaseModel):
             additional_kwargs["parent_id"] = self.parent_id
         if hasattr(self, "feedback"):
             additional_kwargs["feedback"] = self.feedback
+        if self.attachments:
+            additional_kwargs["attachments"] = self.attachments
 
         kwargs = {
             "id": self.id,

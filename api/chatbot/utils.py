@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timezone
 from typing import Any, AsyncIterator, Iterator, Literal, TypedDict
 
@@ -10,6 +11,9 @@ from langchain_core.messages import AIMessage, BaseMessage
 from langchain_core.outputs import ChatGenerationChunk
 from langchain_openai import ChatOpenAI
 from langchain_openai.chat_models.base import _convert_message_to_dict
+
+
+logger = logging.getLogger(__name__)
 
 
 def utcnow():
@@ -161,9 +165,64 @@ class StreamThinkingProcessor:
                     return {"data": data, "type": "thought"}
 
 
+def convert_attachments(content, attachments: list) -> list:
+    """Convert and append the attachments into content to be compatible with OpenAI's Chat API."""
+
+    if isinstance(content, str):
+        content = [{"type": "text", "text": content}]
+
+    if not isinstance(content, list):
+        logger.warning(
+            "The content is not a string or list. Skipping the attachments conversion."
+        )
+        return content
+
+    mimetype_map = {
+        "image/": "image_url",
+        "video/": "video_url",
+    }
+
+    def process_attachment(attachment: dict[str, Any]) -> dict[str, str] | None:
+        mimetype: str = attachment.get("mimetype")
+        if not mimetype:
+            logger.warning(
+                "Attachment %s does not have a mimetype. Skipping.", attachment
+            )
+            return None
+
+        url = attachment.get("url")
+        if not url:
+            logger.warning("Attachment %s does not have a URL. Skipping.", attachment)
+            return None
+
+        for prefix, content_type in mimetype_map.items():
+            if mimetype.startswith(prefix):
+                return {"type": content_type, content_type: {"url": url}}
+
+        logger.warning(
+            "Skipping unsupported attachment. Mimetype: %s, URL: %s", mimetype, url
+        )
+        return None
+
+    processed_attachments = filter(
+        None, (process_attachment(attachment) for attachment in attachments)
+    )
+    content.extend(processed_attachments)
+
+    return content
+
+
 def _convert_message_to_dict_patch(message: BaseMessage) -> dict:
     """Converts a BaseMessage to a dictionary, with additional handling for AIMessage raw_output.
-    This is a hack to work around the 'thought' part extracted by `StreamThinkingProcessor`.
+    This is a hack to work around the 'thought' part extracted by `StreamThinkingProcessor`,
+    and attribute dis-alignment when submitting multimodal messages.
+
+    OpenAI's Chat API expects the content to be a list of dictionaries, where each dictionary
+    represents a modality. While in my app, the content is always a string, and I put other things like
+    attachments in the `additional_kwargs` attribute.
+
+    This has to be done here, during converting the `BaseMessage` object to dict, before sending to the LLM.
+    Or langchain could somehow persist the patched message and destroy my app.
     """
     res = _convert_message_to_dict(message)
     if (
@@ -171,6 +230,9 @@ def _convert_message_to_dict_patch(message: BaseMessage) -> dict:
         and (raw_output := message.additional_kwargs.get("raw_output")) is not None
     ):
         res["content"] = raw_output
+
+    if attachments := message.additional_kwargs.get("attachments"):
+        res["content"] = convert_attachments(res["content"], attachments)
     return res
 
 
