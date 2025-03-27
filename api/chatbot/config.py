@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from pydantic import Field, PostgresDsn, model_validator
+from pydantic import BaseModel, Field, PostgresDsn, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing_extensions import Self
 
@@ -28,6 +28,14 @@ def remove_postgresql_variants(dsn: str) -> str:
     return re.sub(pattern, "postgresql", dsn)
 
 
+class S3Settings(BaseModel):
+    endpoint: str = "play.min.io"
+    access_key: str | None = None
+    secret_key: str | None = None
+    secure: bool = True
+    bucket: str = "chatbot"  # TODO: this default value is for easy testing
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_nested_delimiter="__")
 
@@ -41,6 +49,8 @@ class Settings(BaseSettings):
     """Standby database url. Read Only. If present must be a valid postgresql connection string.
     Defaults to `postgres_primary_url`.
     """
+
+    s3: S3Settings = Field(default_factory=S3Settings)
 
     @model_validator(mode="after")
     def set_default_standby_url(self) -> Self:

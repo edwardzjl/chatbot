@@ -20,6 +20,7 @@ from chatbot.dependencies import EmailHeaderDep, UserIdHeaderDep, UsernameHeader
 from chatbot.models import Base
 from chatbot.routers.chat import router as chat_router
 from chatbot.routers.conversation import router as conversation_router
+from chatbot.routers.files import router as files_router
 from chatbot.routers.message import router as message_router
 from chatbot.routers.share import router as share_router
 from chatbot.schemas import UserProfile
@@ -62,6 +63,7 @@ app.include_router(chat_router)
 app.include_router(conversation_router)
 app.include_router(message_router)
 app.include_router(share_router)
+app.include_router(files_router)
 
 
 @app.get("/api/healthz")

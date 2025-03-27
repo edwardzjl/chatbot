@@ -11,6 +11,7 @@ from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from langgraph.graph.graph import CompiledGraph
 from langgraph.types import StateSnapshot
+from minio import Minio
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from chatbot.agent import create_agent
@@ -147,3 +148,17 @@ def get_smry_chain(chat_model: ChatModelDep) -> Runnable:
 
 
 SmrChainDep = Annotated[Runnable, Depends(get_smry_chain)]
+
+
+@lru_cache
+def get_s3_client() -> Minio:
+    client = Minio(
+        endpoint=settings.s3.endpoint,
+        access_key=settings.s3.access_key,
+        secret_key=settings.s3.secret_key,
+        secure=settings.s3.secure,
+    )
+    return client
+
+
+S3ClientDep = Annotated[Minio, Depends(get_s3_client)]
