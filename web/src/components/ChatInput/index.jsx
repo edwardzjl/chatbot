@@ -5,6 +5,7 @@ import { useParams } from "react-router";
 import PropTypes from "prop-types";
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
 
+import { SnackbarContext } from "@/contexts/snackbar";
 import { WebsocketContext } from "@/contexts/websocket";
 
 
@@ -29,6 +30,7 @@ import { WebsocketContext } from "@/contexts/websocket";
  *
  * Contexts:
  * - Uses the `WebsocketContext` to determine the readiness state (`ready`) of the WebSocket.
+ * - Uses the `SnackbarContext` to display notification messages.
  *
  * Hooks:
  * - `useState` for managing the input text.
@@ -43,6 +45,7 @@ import { WebsocketContext } from "@/contexts/websocket";
 const ChatInput = ({ onSubmit }) => {
     const params = useParams();
     const { ready } = useContext(WebsocketContext);
+    const { setSnackbar } = useContext(SnackbarContext);
 
     const [input, setInput] = useState("");
     const inputRef = useRef(null);
@@ -71,8 +74,12 @@ const ChatInput = ({ onSubmit }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!ready) {
-            // TODO: let user know.
             console.error("Websocket not ready!");
+            setSnackbar({
+                open: true,
+                severity: "warning",
+                message: "WebSocket 连接未就绪，请稍后再试。",
+            });
             return;
         }
         onSubmit(input);
@@ -80,7 +87,7 @@ const ChatInput = ({ onSubmit }) => {
     };
 
     const handleKeyDown = async (e) => {
-    // TODO: this will trigger in Chinese IME on OSX
+        // TODO: this will trigger in Chinese IME on OSX
         if (e.key === "Enter") {
             if (e.ctrlKey || e.shiftKey || e.altKey) {
                 // won't trigger submit here, but only shift key will add a new line
