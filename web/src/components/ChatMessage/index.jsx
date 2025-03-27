@@ -18,11 +18,14 @@ import ThumbUpOutlined from "@mui/icons-material/ThumbUpOutlined";
 import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import ThumbDownOutlined from "@mui/icons-material/ThumbDownOutlined";
 
-import { ThemeContext } from "@/contexts/theme";
 import { MessageContext } from "@/contexts/message";
+import { SnackbarContext } from "@/contexts/snackbar";
+import { ThemeContext } from "@/contexts/theme";
 import { UserContext } from "@/contexts/user";
-import { stringToColor } from "@/commons";
+
 import PeekDetails from "@/components/PeekDetails";
+
+import { stringToColor } from "@/commons";
 
 
 /**
@@ -40,6 +43,7 @@ const ChatMessage = ({ convId, message }) => {
     const { theme } = useContext(ThemeContext);
     const [markdownTheme, setMarkdownTheme] = useState(darcula);
     const { username, avatar } = useContext(UserContext);
+    const { setSnackbar } = useContext(SnackbarContext);
     const { dispatch } = useContext(MessageContext);
     const [copyTooltipTitle, setCopyTooltipTitle] = useState("copy content");
     const [feedbackTooltipTitles, setFeedbackTooltipTitles] = useState({ thumbup: "I like it!", thumbdown: "Not so good" });
@@ -95,6 +99,11 @@ const ChatMessage = ({ convId, message }) => {
             setFeedbackTooltipTitles((prev) => ({ ...prev, [feedback]: "thanks!" }));
         } catch (error) {
             console.error(error);
+            setSnackbar({
+                open: true,
+                severity: "error",
+                message: "An error occurred, please try again later.",
+            });
         }
     };
 
