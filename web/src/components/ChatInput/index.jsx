@@ -21,6 +21,7 @@ import { WebsocketContext } from "@/contexts/websocket";
  * @param {Object} props - The props object.
  * @param {Function} props.onSubmit - Callback function to handle the submission of user input.
  *                                     Receives the input string as an argument.
+ *                                     Should directly throw an error if the submission fails.
  *
  * Features:
  * - Dynamically adjusts the textarea height based on its content.
@@ -73,17 +74,20 @@ const ChatInput = ({ onSubmit }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!ready) {
-            console.error("Websocket not ready!");
+        try {
+            await onSubmit(input);
+            setInput("");
+        } catch (error) {
+            console.error("Error sending message", error);
+            const errormsg = (error.name === "InvalidStateError")
+                ? "Connection not ready, please try again later."
+                : "An error occurred, please try again later.";
             setSnackbar({
                 open: true,
-                severity: "warning",
-                message: "WebSocket 连接未就绪，请稍后再试。",
+                severity: "error",
+                message: errormsg,
             });
-            return;
         }
-        onSubmit(input);
-        setInput("");
     };
 
     const handleKeyDown = async (e) => {

@@ -18,30 +18,26 @@ const Conversation = () => {
     const navigate = useNavigate();
 
     const handleSubmit = async (input) => {
-        try {
-            const response = await fetch("/api/conversations", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ title: DEFAULT_CONV_TITLE }),
-            });
-            const conversation = await response.json();
-            const sent_at = toLocalISOString(new Date());
-            const message = {
-                id: crypto.randomUUID(),
-                conversation: conversation.id,
-                from: username,
-                content: input,
-                type: "human",
-                sent_at: sent_at,
-            };
-            sessionStorage.setItem(`init-msg:${conversation.id}`, JSON.stringify(message));
-            dispatch({ type: "added", conv: conversation });
-            navigate(`/conversations/${conversation.id}`);
-        } catch (error) {
-            console.error('Error creating conversation:', error);
-        }
+        const response = await fetch("/api/conversations", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ title: DEFAULT_CONV_TITLE }),
+        });
+        const conversation = await response.json();
+        const sent_at = toLocalISOString(new Date());
+        const message = {
+            id: crypto.randomUUID(),
+            conversation: conversation.id,
+            from: username,
+            content: input,
+            type: "human",
+            sent_at: sent_at,
+        };
+        sessionStorage.setItem(`init-msg:${conversation.id}`, JSON.stringify(message));
+        dispatch({ type: "added", conv: conversation });
+        navigate(`/conversations/${conversation.id}`);
     };
 
     return (
