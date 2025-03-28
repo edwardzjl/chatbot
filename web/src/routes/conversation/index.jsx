@@ -1,7 +1,8 @@
 import styles from "./index.module.css";
 
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { redirect, useLoaderData, useNavigation } from "react-router-dom";
+// import { loadPyodide } from "pyodide";
 
 import ChatboxHeader from "@/components/ChatboxHeader";
 import ChatLog from "@/components/ChatLog";
@@ -13,6 +14,9 @@ import { MessageContext } from "@/contexts/message";
 import { UserContext } from "@/contexts/user";
 import { WebsocketContext } from "@/contexts/websocket";
 
+import { workerManager } from "@/pybox/manager.js";
+// import { asyncRun } from "./workerApi.js";
+
 
 async function loader({ params }) {
     const resp = await fetch(`/api/conversations/${params.convId}`, {});
@@ -22,6 +26,8 @@ async function loader({ params }) {
     const conversation = await resp.json();
     return { conversation };
 }
+
+const HEARTBEAT_INTERVAL = 5000; // Send heartbeat every 5 seconds
 
 /**
  * Conversation Component
@@ -70,6 +76,9 @@ const Conversation = () => {
     const { messages, dispatch } = useContext(MessageContext);
     // Only rendering messages of the following types
     const rendering_messages = new Set(["human", "ai"]);
+
+    const [pybox, setPybox] = useState(null);
+    const heartbeatIntervalRef = useRef(null);
 
 
     useEffect(() => {
@@ -123,6 +132,58 @@ const Conversation = () => {
 
     }, [conversation, dispatch, send]);
 
+
+    useEffect(() => {
+        if (conversation.id) {
+            workerManager.getWorkerForConversation(conversation.id).then(setPybox);
+
+            // Start heartbeat when component mounts and has a conversation ID
+            heartbeatIntervalRef.current = setInterval(() => {
+                workerManager.sendHeartbeat(conversation.id);
+            }, HEARTBEAT_INTERVAL);
+        }
+
+        return () => {
+            // Stop heartbeat when component unmounts
+            clearInterval(heartbeatIntervalRef.current);
+        };
+    }, [conversation.id]);
+
+    // useEffect(() => {
+    //     const initPyodide = async () => {
+    //         const pyodide = await loadPyodide();
+
+    //         // See <https://pyodide.org/en/stable/usage/file-system.html>
+    //         // <https://developer.mozilla.org/en-US/docs/Web/API/StorageManager/getDirectory>
+    //         // <https://developer.mozilla.org/en-US/docs/Web/API/File_System_API/Origin_private_file_system>
+    //         // quota: <https://developer.mozilla.org/en-US/docs/Web/API/Storage_API/Storage_quotas_and_eviction_criteria>
+    //         const dirHandle = await navigator.storage.getDirectory();
+    //         const permissionStatus = await dirHandle.requestPermission({
+    //             mode: "readwrite",
+    //         });
+    //         if (permissionStatus !== "granted") {
+    //             throw new Error("readwrite access to directory not granted");
+    //         }
+    //         // See <https://pyodide.org/en/stable/usage/api/js-api.html#pyodide.mountNativeFS>
+    //         const nativefs = await pyodide.mountNativeFS("/mount_dir", dirHandle);
+    //         try {
+    //             let stdout = "";
+    //             pyodide.setStdout({ batched: (msg) => stdout += msg });
+    //             await pyodide.runPythonAsync(`print("Hello from Python!")`);
+    //             console.log("stdout", stdout);
+    //         } catch (error) {
+    //             // TODO: format error message for LLM
+    //             // <https://pyodide.org/en/stable/usage/type-conversions.html#errors>
+    //             // the `reformat_exception` does not seems to be what I want
+    //             // The only useful thing I get for now is the `error.type`
+    //             console.log("error type", error.type);
+    //         }
+    //         await nativefs.syncfs();
+    //     }
+
+    //     initPyodide();
+    // }, []);
+
     const sendMessage = async (message) => {
         const payload = {
             conversation: conversation.id,
@@ -149,6 +210,25 @@ const Conversation = () => {
                 type: "reordered",
                 conv: { id: conversation.id, last_message_at: message.sent_at },
             });
+        }
+
+
+        // TODO: experiment only, run the content in pyodide directly
+        if (!pybox) {
+            workerManager.getWorkerForConversation(conversation.id).then(setPybox);
+        }
+
+        try {
+            const response = await workerManager.runPython(conversation.id, message.content);
+            if (response.result) {
+                console.log("pyodideWorker result:", response.result);
+                // TODO: 处理结果并更新聊天记录
+            } else if (response.error) {
+                console.error("pyodideWorker error:", response.error);
+                // TODO: 处理错误并显示给用户
+            }
+        } catch (error) {
+            console.error("Error running Python code:", error);
         }
     };
 
