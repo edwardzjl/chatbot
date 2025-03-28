@@ -15,7 +15,7 @@ from chatbot.utils import utcnow
 # LESSON 1: AVOID using Pydantic model for attributes of `additional_kwargs`.
 #   It will be a Pydantic model instance upon initialization but a plain dictionary after deserialization.
 #   This type inconsistency can lead to significant issues when you try to use it.
-# LESSION 2: NamedTuple will raise an exception when encountering unexpected keyword arguments.
+# LESSON 2: NamedTuple will raise an exception when encountering unexpected keyword arguments.
 class Attachment(TypedDict):
     url: str
     mimetype: NotRequired[str | None] = None
