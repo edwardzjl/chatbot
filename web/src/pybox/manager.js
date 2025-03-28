@@ -5,14 +5,18 @@ export class WorkerManager {
         this.MAX_WORKERS = maxWorkers;
         this.workers = new Map();
         this.workerUrl = new URL("./webworker.mjs", import.meta.url).href + "?worker&url";
+        console.log(this.workerUrl)
         this.lastUsedTime = new Map();
         this.initialize();
     }
 
     async createWorker() {
+        console.log("creating worker")
         const worker = new Worker(this.workerUrl, { type: "module" });
+        console.log("worker created")
         return new Promise((resolve) => {
             worker.onmessage = (event) => {
+                console.log(event)
                 if (event.data?.type === "pyodide_ready") {
                     resolve(worker);
                 }
@@ -22,12 +26,19 @@ export class WorkerManager {
     }
 
     async getWorker(workerId) {
+        console.log("getting worker")
         let worker = this.workers.get(workerId);
+        if (worker) {
+            console.log(`Worker found: ${workerId}`);
+        }
         if (!worker && this.workers.size < this.MAX_WORKERS) {
             worker = await this.createWorker();
+            console.log("worker really created", worker)
             if (worker) {
                 this.workers.set(workerId, worker);
                 console.log(`Worker created: ${workerId}`);
+            } else {
+                console.warn(`Failed to create worker: ${workerId}`);
             }
         } else if (!worker) {
             console.warn(`Maximum worker limit reached, cannot create worker: ${workerId}`);

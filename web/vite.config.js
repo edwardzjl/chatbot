@@ -14,6 +14,7 @@ const PYODIDE_EXCLUDE = [
 
 export function viteStaticCopyPyodide() {
     const pyodideDir = dirname(fileURLToPath(import.meta.resolve("pyodide")));
+    console.log(pyodideDir)
     return viteStaticCopy({
         targets: [
             {

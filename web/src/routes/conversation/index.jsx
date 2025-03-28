@@ -14,7 +14,7 @@ import { MessageContext } from "@/contexts/message";
 import { UserContext } from "@/contexts/user";
 import { WebsocketContext } from "@/contexts/websocket";
 
-import { workerManager } from "@/pybox/manager.js";
+import { workerManager } from "@/pybox/manager";
 // import { asyncRun } from "./workerApi.js";
 
 
@@ -135,7 +135,8 @@ const Conversation = () => {
 
     useEffect(() => {
         if (conversation.id) {
-            workerManager.getWorkerForConversation(conversation.id).then(setPybox);
+            console.log("getting worker", conversation.id);
+            workerManager.getWorker(conversation.id).then(setPybox);
 
             // Start heartbeat when component mounts and has a conversation ID
             heartbeatIntervalRef.current = setInterval(() => {
@@ -185,37 +186,37 @@ const Conversation = () => {
     // }, []);
 
     const sendMessage = async (message) => {
-        const payload = {
-            conversation: conversation.id,
-            from: username,
-            ...message,
-        };
-        // `send` may throw an `InvalidStateError` if `WebSocket.readyState` is `CONNECTING`.
-        // See <https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/send>
-        send(JSON.stringify(payload));
-        // append user input to chatlog
-        dispatch({
-            type: "added",
-            message: payload,
-        });
-        // update last_message_at of the conversation to re-order conversations
-        // TODO: this seems buggy
-        if (conversation.pinned && groupedConvs.pinned && groupedConvs.pinned[0]?.id !== conversation.id) {
-            dispatchConv({
-                type: "reordered",
-                conv: { id: conversation.id, last_message_at: message.sent_at },
-            });
-        } else if (groupedConvs.Today && groupedConvs.Today[0]?.id !== conversation.id) {
-            dispatchConv({
-                type: "reordered",
-                conv: { id: conversation.id, last_message_at: message.sent_at },
-            });
-        }
+        // const payload = {
+        //     conversation: conversation.id,
+        //     from: username,
+        //     ...message,
+        // };
+        // // `send` may throw an `InvalidStateError` if `WebSocket.readyState` is `CONNECTING`.
+        // // See <https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/send>
+        // send(JSON.stringify(payload));
+        // // append user input to chatlog
+        // dispatch({
+        //     type: "added",
+        //     message: payload,
+        // });
+        // // update last_message_at of the conversation to re-order conversations
+        // // TODO: this seems buggy
+        // if (conversation.pinned && groupedConvs.pinned && groupedConvs.pinned[0]?.id !== conversation.id) {
+        //     dispatchConv({
+        //         type: "reordered",
+        //         conv: { id: conversation.id, last_message_at: message.sent_at },
+        //     });
+        // } else if (groupedConvs.Today && groupedConvs.Today[0]?.id !== conversation.id) {
+        //     dispatchConv({
+        //         type: "reordered",
+        //         conv: { id: conversation.id, last_message_at: message.sent_at },
+        //     });
+        // }
 
 
         // TODO: experiment only, run the content in pyodide directly
         if (!pybox) {
-            workerManager.getWorkerForConversation(conversation.id).then(setPybox);
+            workerManager.getWorker(conversation.id).then(setPybox);
         }
 
         try {

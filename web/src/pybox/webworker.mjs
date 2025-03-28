@@ -8,7 +8,7 @@ self.onmessage = async (event) => {
     if (type === "init") {
         try {
             pyodide = await loadPyodide();
-            pyodide.setStdout({ batched: (msg) => stdout += msg });
+            // pyodide.setStdout({ batched: (msg) => stdout += msg });
             self.postMessage({ type: "pyodide_ready" });
         } catch (error) {
             console.error("Error loading Pyodide in worker:", error);

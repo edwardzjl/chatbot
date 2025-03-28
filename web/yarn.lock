@@ -2151,7 +2151,7 @@ __metadata:
     material-icons: "npm:^1.13.14"
     micromark-extension-llm-math: "npm:^3.1.0"
     normalize.css: "npm:^8.0.1"
-    pyodide: "npm:^0.27.3"
+    pyodide: "npm:^0.27.4"
     react: "npm:^19.0.0"
     react-dom: "npm:^19.0.0"
     react-markdown: "npm:^10.1.0"
@@ -5592,12 +5592,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pyodide@npm:^0.27.3":
-  version: 0.27.3
-  resolution: "pyodide@npm:0.27.3"
+"pyodide@npm:^0.27.4":
+  version: 0.27.4
+  resolution: "pyodide@npm:0.27.4"
   dependencies:
     ws: "npm:^8.5.0"
-  checksum: 10c0/5395b9f18bf4bb3bcdf888d90574b12e675a028d211055e8b77ef7a17bd5bbec91effbdca835ea9f43c98060ea00386d5e41729eb75e8ba4d971970b8c9f2689
+  checksum: 10c0/edc801eaa6d89881ec0d7d6c3bc16855ca7bf6d5e77e9bda9f93993323b9ffa3b2c5f466fd137fb20693a83834916dc42b5ee049293f4ae3662744be46e8f8e8
   languageName: node
   linkType: hard
 
