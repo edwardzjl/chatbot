@@ -125,7 +125,10 @@ const ChatMessage = ({ convId, message }) => {
                                     <div className={styles.messageCodeTitle}>
                                         <div>{match[1]}</div>
                                         <Tooltip title={copyTooltipTitle}>
-                                            <ContentCopyIcon onClick={() => onCopyClick(children)} />
+                                            <ContentCopyIcon
+                                                aria-label="Copy code snippet to clipboard"
+                                                onClick={() => onCopyClick(children)}
+                                            />
                                         </Tooltip>
                                     </div>
                                     <SyntaxHighlighter
@@ -151,18 +154,27 @@ const ChatMessage = ({ convId, message }) => {
                 {!myMessage && (
                     <div className={styles.messageFeedbacks}>
                         <Tooltip title={copyTooltipTitle}>
-                            <ContentCopyIcon onClick={() => onCopyClick(message.content)} />
+                            <ContentCopyIcon
+                                aria-label="Copy message content to clipboard"
+                                onClick={() => onCopyClick(message.content)}
+                            />
                         </Tooltip>
                         {message.feedback !== "thumbdown" && (
                             message.feedback === "thumbup" ? <ThumbUpIcon /> :
                                 <Tooltip title={feedbackTooltipTitles.thumbup}>
-                                    <ThumbUpOutlined onClick={() => onFeedback("thumbup")} />
+                                    <ThumbUpOutlined
+                                        aria-label="Mark this answer as good"
+                                        onClick={() => onFeedback("thumbup")}
+                                    />
                                 </Tooltip>
                         )}
                         {message.feedback !== "thumbup" && (
                             message.feedback === "thumbdown" ? <ThumbDownIcon /> :
                                 <Tooltip title={feedbackTooltipTitles.thumbdown}>
-                                    <ThumbDownOutlined onClick={() => onFeedback("thumbdown")} />
+                                    <ThumbDownOutlined
+                                        aria-label="Mark this answer as bad"
+                                        onClick={() => onFeedback("thumbdown")}
+                                    />
                                 </Tooltip>
                         )}
                     </div>
