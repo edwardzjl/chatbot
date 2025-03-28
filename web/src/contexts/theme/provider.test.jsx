@@ -5,8 +5,8 @@ import { ThemeContext } from "./index";
 import { ThemeProvider } from "./provider";
 
 
-const getItemSpy = vi.spyOn(Storage.prototype, 'getItem')
-const setItemSpy = vi.spyOn(Storage.prototype, 'setItem')
+const getItemSpy = vi.spyOn(Storage.prototype, "getItem")
+const setItemSpy = vi.spyOn(Storage.prototype, "setItem")
 
 afterEach(() => {
     getItemSpy.mockClear() // clear call history
@@ -32,7 +32,7 @@ describe("ThemeProvider", () => {
     });
 
     it("renders correctly with theme from localStorage", () => {
-        getItemSpy.mockReturnValue('dark');
+        getItemSpy.mockReturnValue("dark");
 
         render(
             <ThemeProvider>
@@ -47,7 +47,7 @@ describe("ThemeProvider", () => {
     });
 
     it("sets the theme and updates localStorage", () => {
-        getItemSpy.mockReturnValue('light');
+        getItemSpy.mockReturnValue("light");
 
         render(
             <ThemeProvider>
