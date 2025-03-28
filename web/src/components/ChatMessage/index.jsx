@@ -1,12 +1,11 @@
 import styles from './index.module.css';
 
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import Markdown from "react-markdown";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
-import { darcula, googlecode } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import PropTypes from "prop-types";
 
 import Avatar from "@mui/material/Avatar";
@@ -40,32 +39,12 @@ import { stringToColor } from "@/commons";
  * @returns {JSX.Element} The rendered ChatMessage component.
  */
 const ChatMessage = ({ convId, message }) => {
-    const { theme } = useContext(ThemeContext);
-    const [markdownTheme, setMarkdownTheme] = useState(darcula);
+    const { codeTheme } = useContext(ThemeContext);
     const { username, avatar } = useContext(UserContext);
     const { setSnackbar } = useContext(SnackbarContext);
     const { dispatch } = useContext(MessageContext);
     const [copyTooltipTitle, setCopyTooltipTitle] = useState("copy content");
     const [feedbackTooltipTitles, setFeedbackTooltipTitles] = useState({ thumbup: "I like it!", thumbdown: "Not so good" });
-
-    // Update markdown theme based on the current theme
-    useEffect(() => {
-        switch (theme) {
-        case "dark":
-            setMarkdownTheme(darcula);
-            break;
-        case "light":
-            setMarkdownTheme(googlecode);
-            break;
-        default: {
-            if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
-                setMarkdownTheme(darcula);
-            } else {
-                setMarkdownTheme(googlecode);
-            }
-        }
-        }
-    }, [theme]);
 
     /**
      * Handles the copying of message content to the clipboard.
@@ -151,7 +130,7 @@ const ChatMessage = ({ convId, message }) => {
                                     </div>
                                     <SyntaxHighlighter
                                         {...props}
-                                        style={markdownTheme}
+                                        style={codeTheme}
                                         language={match[1]}
                                         PreTag="div"
                                     >
