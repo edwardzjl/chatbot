@@ -41,6 +41,11 @@ class Settings(BaseSettings):
     """Standby database url. Read Only. If present must be a valid postgresql connection string.
     Defaults to `postgres_primary_url`.
     """
+    s3_endpoint: str = "play.min.io"
+    s3_access_key: str | None = None
+    s3_secret_key: str | None = None
+    s3_secure: bool = True
+    s3_bucket: str = "chatbot"
 
     @model_validator(mode="after")
     def set_default_standby_url(self) -> Self:

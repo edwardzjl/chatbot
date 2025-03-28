@@ -33,14 +33,14 @@ describe("ChatInput", () => {
     it("should disable the submit button when WebSocket is not ready", () => {
         mockWebSocketContext.ready = false;
         renderWithContext(<ChatInput onSubmit={vi.fn()} />);
-        const submitButton = screen.getByRole("button");
+        const submitButton = screen.getByRole("button", { name: /send message/i });
         expect(submitButton.disabled).toBe(true);  // Native DOM property check for disabled
     });
 
     it("should enable the submit button when WebSocket is ready", () => {
         mockWebSocketContext.ready = true;
         renderWithContext(<ChatInput onSubmit={vi.fn()} />);
-        const submitButton = screen.getByRole("button");
+        const submitButton = screen.getByRole("button", { name: /send message/i });
         expect(submitButton.disabled).toBe(false);  // Native DOM property check for disabled
     });
 

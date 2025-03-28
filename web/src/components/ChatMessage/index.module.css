@@ -69,6 +69,36 @@
     background-color: var(--bg-primary);
 }
 
+.attachments {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+.attachment {
+    position: relative;
+    display: inline-block;
+    margin: 2px;
+    padding: 6px;
+    border-radius: 5px;
+    background-color: var(--bg-primary);
+    text-align: center;
+    /* ensure children won't overflow this
+     * (e.g. loading spinner, with its background color)
+     */
+    overflow: hidden;
+}
+
+.preview {
+    /* 16:10 */
+    width: 120px;
+    height: 75px;
+    object-fit: cover;
+    border-radius: 5px;
+    display: block;
+    margin: 0 auto;
+}
+
 .messageFeedbacks {
     margin-left: auto;
 }

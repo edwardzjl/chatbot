@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timezone
 from typing import Any, AsyncIterator, Iterator, Literal, TypedDict
 
@@ -10,6 +11,9 @@ from langchain_core.messages import AIMessage, BaseMessage
 from langchain_core.outputs import ChatGenerationChunk
 from langchain_openai import ChatOpenAI
 from langchain_openai.chat_models.base import _convert_message_to_dict
+
+
+logger = logging.getLogger(__name__)
 
 
 def utcnow():
@@ -161,9 +165,49 @@ class StreamThinkingProcessor:
                     return {"data": data, "type": "thought"}
 
 
+def patch_modalities(message: BaseMessage) -> dict:
+    """Patch the multimodal content of a message to be compatible with OpenAI's Chat API."""
+    if attachments := message.additional_kwargs.get("attachments"):
+        content = (
+            message.content if isinstance(message.content, list) else [message.content]
+        )
+
+        for attachment in attachments:
+            mimetype = attachment["mimetype"]
+            if not mimetype:
+                logger.warning(
+                    "Attachment %s does not have a mimetype. Skipping.", attachment
+                )
+            elif mimetype.startswith("image/"):
+                content.append(
+                    {"type": "image_url", "image_url": {"url": attachment["url"]}},
+                )
+            elif mimetype.startswith("video/"):
+                content.append(
+                    {"type": "video_url", "video_url": {"url": attachment["url"]}},
+                )
+            else:
+                logger.warning(
+                    "Attachment %s has an unsupported mimetype %s. Skipping.",
+                    attachment,
+                    mimetype,
+                )
+        return content
+    else:
+        return message.content
+
+
 def _convert_message_to_dict_patch(message: BaseMessage) -> dict:
     """Converts a BaseMessage to a dictionary, with additional handling for AIMessage raw_output.
-    This is a hack to work around the 'thought' part extracted by `StreamThinkingProcessor`.
+    This is a hack to work around the 'thought' part extracted by `StreamThinkingProcessor`,
+    and attribute dis-alignment when submitting multimodal messages.
+
+    OpenAI's Chat API expects the content to be a list of dictionaries, where each dictionary
+    represents a modality. While in my app, the content is always a string, and I put other things like
+    attachments in the `additional_kwargs` attribute.
+
+    This has to be done here, during converting the `BaseMessage` object to dict, before sending to the LLM.
+    Or langchain could somehow persist the patched message and destroy my app.
     """
     res = _convert_message_to_dict(message)
     if (
@@ -171,6 +215,7 @@ def _convert_message_to_dict_patch(message: BaseMessage) -> dict:
         and (raw_output := message.additional_kwargs.get("raw_output")) is not None
     ):
         res["content"] = raw_output
+    res["content"] = patch_modalities(message)
     return res
 
 
