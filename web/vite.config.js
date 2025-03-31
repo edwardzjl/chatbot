@@ -28,5 +28,6 @@ export default defineConfig({
             '@/': '/src/',
             'micromark-extension-math': 'micromark-extension-llm-math',
         },
+        conditions: ['mui-modern', 'module', 'browser', 'development|production']
     },
 })
