@@ -276,8 +276,15 @@ class ReasoningChatOpenai(ChatOpenAI):
         if stop is not None:
             kwargs["stop"] = stop
 
+        dict_messages = [_convert_message_to_dict_patch(m) for m in messages]
+
+        if (
+            limit_mm_per_prompt := self.metadata.get("limit_mm_per_prompt")
+        ) is not None:
+            dict_messages = _limit_mm_input(dict_messages, limit_mm_per_prompt)
+
         return {
-            "messages": [_convert_message_to_dict_patch(m) for m in messages],
+            "messages": dict_messages,
             **self._default_params,
             **kwargs,
         }
@@ -303,3 +310,53 @@ class ReasoningChatOpenai(ChatOpenAI):
             chunk.message.content = ""
             chunk.message.additional_kwargs["thought"] = message_chunk["data"]
             return chunk
+
+
+def _limit_mm_input(messages: list[dict], limit_mm_per_prompt) -> list[dict]:
+    if not messages:  # fast return
+        return messages
+
+    def parse_limit(key: str) -> int:
+        value = limit_mm_per_prompt.get(key, 1)
+        try:
+            return int(value)
+        except (ValueError, TypeError):
+            logging.error(
+                "Invalid value for '%s' in limit_mm_per_prompt: %s, using default 1",
+                key,
+                value,
+            )
+            return 1
+
+    limit_image_per_prompt = parse_limit("image")
+    limit_video_per_prompt = parse_limit("video")
+
+    current_images = 0
+    current_videos = 0
+
+    # The goal is to keep the latest multimodal content in the messages.
+    # So I reversly iterate the messages and filter out the multimodal content
+    for message in reversed(messages):
+        content = message["content"]
+        if not isinstance(content, list):
+            continue
+
+        # Same here, I want to keep the latest multimodal content in the message.
+        for i in range(len(content) - 1, -1, -1):
+            part = content[i]
+            if not isinstance(part, dict):
+                continue
+
+            part_type = part.get("type")
+            if part_type == "image_url":
+                if current_images < limit_image_per_prompt:
+                    current_images += 1
+                else:
+                    del content[i]
+            elif part_type == "video_url":
+                if current_videos < limit_video_per_prompt:
+                    current_videos += 1
+                else:
+                    del content[i]
+
+    return messages
