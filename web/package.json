@@ -20,6 +20,7 @@
     "material-icons": "^1.13.14",
     "micromark-extension-llm-math": "^3.1.0",
     "normalize.css": "^8.0.1",
+    "open-props": "^1.7.14",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-markdown": "^10.1.0",
