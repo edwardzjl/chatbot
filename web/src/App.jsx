@@ -10,6 +10,7 @@ import Root from "@/routes/root";
 import Share from "@/routes/share";
 import Sharing from "@/routes/sharing";
 
+import { ConfigProvider } from "@/contexts/config/provider";
 import { ConversationProvider } from "@/contexts/conversation/provider";
 import { MessageProvider } from "@/contexts/message/provider";
 import { SnackbarProvider } from "@/contexts/snackbar/provider";
@@ -58,15 +59,17 @@ function App() {
     return (
         <ThemeProvider>
             <SnackbarProvider>
-                <UserProvider>
-                    <ConversationProvider>
-                        <WebsocketProvider>
-                            <MessageProvider>
-                                <RouterProvider router={router} />
-                            </MessageProvider>
-                        </WebsocketProvider>
-                    </ConversationProvider>
-                </UserProvider>
+                <ConfigProvider>
+                    <UserProvider>
+                        <ConversationProvider>
+                            <WebsocketProvider>
+                                <MessageProvider>
+                                    <RouterProvider router={router} />
+                                </MessageProvider>
+                            </WebsocketProvider>
+                        </ConversationProvider>
+                    </UserProvider>
+                </ConfigProvider>
             </SnackbarProvider>
         </ThemeProvider>
     )

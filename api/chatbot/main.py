@@ -84,6 +84,13 @@ def userinfo(
     )
 
 
+@app.get("/api/models")
+def models_info() -> list[dict]:
+    masked = settings.llm.copy()
+    masked.pop("api_key", None)
+    return [masked]
+
+
 app.mount(
     "/", StaticFiles(directory="static", html=True, check_dir=False), name="static"
 )
