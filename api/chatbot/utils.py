@@ -279,7 +279,7 @@ class ReasoningChatOpenai(ChatOpenAI):
         dict_messages = [_convert_message_to_dict_patch(m) for m in messages]
 
         if (
-            limit_mm_per_prompt := self.metadata.get("limit_mm_per_prompt")
+            limit_mm_per_prompt := (self.metadata or {}).get("limit_mm_per_prompt")
         ) is not None:
             dict_messages = _limit_mm_input(dict_messages, limit_mm_per_prompt)
 
