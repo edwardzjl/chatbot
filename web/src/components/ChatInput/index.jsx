@@ -11,6 +11,7 @@ import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 
 import PreviewImage from "@/components/PreviewImage";
 
+import { ConfigContext } from "@/contexts/config";
 import { SnackbarContext } from "@/contexts/snackbar";
 import { WebsocketContext } from "@/contexts/websocket";
 
@@ -59,6 +60,7 @@ const ChatInput = ({ onSubmit }) => {
     const params = useParams();
     const { ready } = useContext(WebsocketContext);
     const { setSnackbar } = useContext(SnackbarContext);
+    const { models } = useContext(ConfigContext);
 
     const [input, setInput] = useState("");
     const inputRef = useRef(null);
@@ -137,6 +139,35 @@ const ChatInput = ({ onSubmit }) => {
 
     const handleFileChange = async (event) => {
         const selectedFiles = Array.from(event.target.files);
+
+        const limits = models[0]?.metadata?.limit_mm_per_prompt || {};
+
+        // Note the `type` and `mimetype` fields are not the same.
+        const mediaTypes = [
+            {
+                type: "image",
+                current: attachments.filter(a => a.mimetype.startsWith("image/")),
+                selected: selectedFiles.filter(a => a.type.startsWith("image/")),
+            },
+            {
+                type: "video",
+                current: attachments.filter(a => a.mimetype.startsWith("video/")),
+                selected: selectedFiles.filter(a => a.type.startsWith("video/")),
+            }
+        ];
+
+        for (const { type, current, selected } of mediaTypes) {
+            const limit = Number(limits[type]);
+            if (limit < current.length + selected.length) {
+                const suffix = limit === 1 ? "" : "s";
+                setSnackbar({
+                    open: true,
+                    severity: "error",
+                    message: `You can upload up to ${limits[type]} ${type}${suffix} per input.`,
+                });
+                return;
+            }
+        }
 
         // `localUrl` is a temporary URL that can be used before upload finished or re-rendering.
         // Usually I need to use like:
