@@ -94,15 +94,16 @@ async def chat(
                     await websocket.send_text(msg.model_dump_json())
                 if evt == "on_chat_model_end":
                     msg: AIMessage = event["data"]["output"]
-                    if msg.usage_metadata is not None:
+                    if (usage_metadata := msg.usage_metadata) is not None:
+                        model_name = msg.response_metadata.get("model_name")
                         input_tokens.labels(
                             user_id=userid,
-                            model_name=msg.response_metadata["model_name"],
-                        ).inc(msg.usage_metadata["input_tokens"])
+                            model_name=model_name,
+                        ).inc(usage_metadata["input_tokens"])
                         output_tokens.labels(
                             user_id=userid,
-                            model_name=msg.response_metadata["model_name"],
-                        ).inc(msg.usage_metadata["output_tokens"])
+                            model_name=model_name,
+                        ).inc(usage_metadata["output_tokens"])
 
             conv.last_message_at = utcnow()
             async with sqlalchemy_session() as session:
