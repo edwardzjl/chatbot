@@ -91,7 +91,7 @@ async def get_agent(
     chat_model: ChatModelDep,
     safety_model: SafetyModelDep,
 ) -> AsyncGenerator[CompiledGraph, None]:
-    max_tokens, token_counter = get_truncation_config(
+    context_length, token_counter = get_truncation_config(
         settings.llm["base_url"], settings.llm["model_name"]
     )
 
@@ -103,7 +103,7 @@ async def get_agent(
             safety_model=safety_model,
             checkpointer=checkpointer,
             token_counter=token_counter,
-            max_tokens=max_tokens,
+            context_length=context_length,
         )
 
 

@@ -28,7 +28,7 @@ def create_agent(
     token_counter: (
         Callable[[list[BaseMessage]], int] | Callable[[BaseMessage], int] | None
     ) = None,
-    max_tokens: int = 20,
+    context_length: int = 20,
     tools: list = None,
 ) -> CompiledGraph:
     if token_counter is None:
@@ -40,10 +40,15 @@ def create_agent(
             )
             token_counter = len
 
-    if max_tokens is None:
-        raise ValueError("`None` passed as `max_tokens` which is not allowed")
-    # leave 0.2 for new tokens
-    _max_tokens = int(max_tokens * 0.8)
+    if context_length is None:
+        raise ValueError("`None` passed as `context_length` which is not allowed")
+
+    try:
+        # `ChatOpenAI.max_tokens` is actually `max_completion_tokens` i.e. Maximum number of tokens to generate.
+        max_input_tokens = context_length - chat_model.max_tokens
+    except AttributeError:
+        # Otherwise, leave 0.2 for new tokens
+        max_input_tokens = int(context_length * 0.8)
 
     if tools:
         chat_model = chat_model.bind_tools(tools)
@@ -110,10 +115,11 @@ Please respond with care and professionalism. Avoid engaging with harmful or une
         all_messages = (
             state["messages"] + hint_message if hint_message else state["messages"]
         )
+
         windowed_messages: list[BaseMessage] = trim_messages(
             all_messages,
             token_counter=token_counter,
-            max_tokens=_max_tokens,
+            max_tokens=max_input_tokens,
             start_on="human",  # This means that the first message should be from the user after trimming.
         )
 
