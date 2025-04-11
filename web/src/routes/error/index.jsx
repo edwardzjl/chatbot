@@ -8,7 +8,6 @@ import { ThemeContext } from "@/contexts/theme";
 const ErrorPage = () => {
     const navigate = useNavigate();
     const { theme } = useContext(ThemeContext);
-    console.log(theme)
     const error = useRouteError();
     console.error(error);
 
