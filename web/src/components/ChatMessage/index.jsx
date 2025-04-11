@@ -16,6 +16,7 @@ import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import ThumbUpOutlined from "@mui/icons-material/ThumbUpOutlined";
 import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import ThumbDownOutlined from "@mui/icons-material/ThumbDownOutlined";
+import ThermostatIcon from "@mui/icons-material/Thermostat";
 
 import { MessageContext } from "@/contexts/message";
 import { SnackbarContext } from "@/contexts/snackbar";
@@ -171,6 +172,19 @@ const ChatMessage = ({ convId, message }) => {
                         }
                     </div>
                 }
+                {/* TODO: This is only a temporary solution to indicate agent is using tools.
+                  * Need further improvements in the future.
+                  */}
+                {message.additional_kwargs && message.additional_kwargs.tool_calls && (
+                    message.additional_kwargs.tool_calls.map((tool_call, index) => {
+                        switch (tool_call.function.name) {
+                        case "weather_forcast":
+                            return <ThermostatIcon key={index} />
+                        default:
+                            return null;
+                        }
+                    })
+                )}
                 {!myMessage && (
                     <div className={styles.messageFeedbacks}>
                         <Tooltip title={copyTooltipTitle}>
