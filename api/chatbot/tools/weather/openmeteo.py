@@ -154,14 +154,14 @@ class WeatherInput(BaseModel):
     past_days: int | None = Field(
         description="Returns data from the past N days. Mutually exclusive with `start_date` and `end_date`",
         strict=True,
-        ge=0,
+        ge=1,
         le=92,
         default=None,
     )
     forecast_days: int | None = Field(
-        description="Forecasts data for the next N days. Mutually exclusive with `start_date` and `end_date`",
+        description="Forecasts data for the next N days (including today). Mutually exclusive with `start_date` and `end_date`",
         strict=True,
-        ge=0,
+        ge=1,
         le=16,
         default=7,
     )
