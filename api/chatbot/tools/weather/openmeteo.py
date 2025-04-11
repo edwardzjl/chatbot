@@ -4,7 +4,7 @@ from asyncio import TimeoutError
 from collections import namedtuple
 from typing import Annotated, Literal
 from typing_extensions import Self
-from urllib.parse import urljoin
+from urllib.parse import urlencode, urljoin
 
 from aiohttp import ClientResponseError
 from aiohttp_client_cache import CachedSession as AsyncCachedSession, SQLiteBackend
@@ -184,6 +184,7 @@ class WeatherTool(BaseTool):
     name: str = "weather_forcast"
     description: str = "Useful for when you need to access weather data."
     args_schema: ArgsSchema | None = WeatherInput
+    response_format: Literal["content", "content_and_artifact"] = "content_and_artifact"
 
     base_url: str = "https://api.open-meteo.com/v1/"
     forcast_url: str = urljoin(base_url, "forecast")
@@ -206,7 +207,7 @@ class WeatherTool(BaseTool):
         location: str,
         run_manager: CallbackManagerForToolRun | None = None,
         **kwargs,
-    ) -> dict:
+    ) -> tuple[dict, dict]:
         geocoding = self._get_geocoding(location)
         params = (
             geocoding._asdict()
@@ -224,7 +225,8 @@ class WeatherTool(BaseTool):
         except HTTPError as http_err:
             raise ToolException(str(http_err))
         else:
-            return self._format_response(data)
+            data = self._format_response(data)
+            return data, {"url": f"{self.forcast_url}?{urlencode(params)}"}
 
     @retry(
         retry=retry_if_exception_type((HTTPError, Timeout)), stop=stop_after_attempt(3)
@@ -260,7 +262,7 @@ class WeatherTool(BaseTool):
         location: str,
         run_manager: AsyncCallbackManagerForToolRun | None = None,
         **kwargs,
-    ) -> dict:
+    ) -> tuple[dict, dict]:
         geocoding = await self._aget_geocoding(location)
         params = (
             geocoding._asdict()
@@ -278,7 +280,8 @@ class WeatherTool(BaseTool):
         except ClientResponseError as http_err:
             raise ToolException(str(http_err))
         else:
-            return self._format_response(data)
+            data = self._format_response(data)
+            return data, {"url": f"{self.forcast_url}?{urlencode(params)}"}
 
     @retry(
         retry=retry_if_exception_type((ClientResponseError, TimeoutError)),
