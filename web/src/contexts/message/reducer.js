@@ -21,7 +21,8 @@ export const messagesReducer = (messages, action) => {
             ...messages.slice(0, match),
             {
                 ...messages[match],
-                content: deepMerge(messages[match].content, action.message.content),
+                // TODO: content can be string or array of objects. Need to consider how to merge
+                content: messages[match].content + action.message.content,
                 additional_kwargs: deepMerge(messages[match].additional_kwargs, action.message.additional_kwargs)
             },
             ...messages.slice(match + 1)
