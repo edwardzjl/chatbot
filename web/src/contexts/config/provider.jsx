@@ -12,7 +12,6 @@ export const ConfigProvider = ({ children }) => {
             const res = await fetch("/api/models");
             if (res.ok) {
                 const data = await res.json();
-                console.log("models", data);
                 setModels(data);
             } else {
                 console.error("error getting config", res);
