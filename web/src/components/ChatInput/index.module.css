@@ -120,6 +120,12 @@
     background-color: var(--bg-primary);
 }
 
+.inputButton:disabled {
+    filter: grayscale(100%) brightness(80%);
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 .submitButton {
     color: var(--text-primary);
     background-color: #0da37f;

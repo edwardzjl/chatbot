@@ -302,7 +302,7 @@ const ChatInput = ({ onSubmit }) => {
                     onKeyDown={handleKeyDown}
                 />
                 <div className={styles.buttonContainer}>
-                    <button className={styles.inputButton} onClick={handleUploadButtonClick} aria-label="upload attachments">
+                    <button disabled className={styles.inputButton} onClick={handleUploadButtonClick} aria-label="upload attachments">
                         <AttachFileIcon />
                     </button>
                     <input
