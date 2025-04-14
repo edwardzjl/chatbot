@@ -1906,7 +1906,7 @@ __metadata:
     material-icons: "npm:^1.13.14"
     micromark-extension-llm-math: "npm:^3.1.0"
     normalize.css: "npm:^8.0.1"
-    open-props: "npm:^1.7.14"
+    open-props: "npm:^1.7.15"
     react: "npm:^19.1.0"
     react-dom: "npm:^19.1.0"
     react-markdown: "npm:^10.1.0"
@@ -4885,10 +4885,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"open-props@npm:^1.7.14":
-  version: 1.7.14
-  resolution: "open-props@npm:1.7.14"
-  checksum: 10c0/9ac359e136533dbd57d70b1e195dbad9c3ffff9b39244ca54221beb0f98250af96587420ff24ac6c177c39a25accda2d927596076991086bf9bb977798fc1c7b
+"open-props@npm:^1.7.15":
+  version: 1.7.15
+  resolution: "open-props@npm:1.7.15"
+  checksum: 10c0/593f108ca9ee2b20aed2d806a4fb1549a6a7ef70373044ae067b402652e409fda72dc6dc7ab0b562ef35cce7201a9331873f9d664d42dead60cf874a0a0a9673
   languageName: node
   linkType: hard
 
