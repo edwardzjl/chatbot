@@ -735,11 +735,11 @@
         },
         "httpcore": {
             "hashes": [
-                "sha256:8551cb62a169ec7162ac7be8d4817d561f60e08eaa485234898414bb5a8a0b4c",
-                "sha256:a3fff8f43dc260d5bd363d9f9cf1830fa3a458b332856f34282de498ed420edd"
+                "sha256:5254cf149bcb5f75e9d1b2b9f729ea4a4b883d1ad7379fc632b727cec23674be",
+                "sha256:86e94505ed24ea06514883fd44d2bc02d90e77e7979c8eb71b90f41d364a1bad"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==1.0.7"
+            "version": "==1.0.8"
         },
         "httptools": {
             "hashes": [
@@ -941,12 +941,12 @@
         },
         "langgraph": {
             "hashes": [
-                "sha256:27cd8126ee4407b9c27a17866d4692e423a1e44286037cf89589004236e13aec",
-                "sha256:abb25c1accb27159882e897518be001ed2b7973564e61f3eaaebd252f91d432b"
+                "sha256:2bfa6d6b04541ddfcb03b56efd1fca6294a1700ff61a52c1582a8bb4f2d55a94",
+                "sha256:6045fbbe9ccc5af3fd7295a86f88e0d2b111243a36290e41248af379009e4cc1"
             ],
             "index": "pypi",
             "markers": "python_full_version >= '3.9.0' and python_version < '4.0'",
-            "version": "==0.3.28"
+            "version": "==0.3.29"
         },
         "langgraph-checkpoint": {
             "hashes": [
