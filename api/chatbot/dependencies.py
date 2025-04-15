@@ -96,7 +96,7 @@ async def get_agent(
     chat_model: ChatModelDep,
     safety_model: SafetyModelDep,
 ) -> AsyncGenerator[CompiledGraph, None]:
-    context_length, token_counter = get_truncation_config(
+    context_length, token_counter = await get_truncation_config(
         settings.llm["base_url"], settings.llm["model_name"]
     )
     if settings.serp_api_key:
