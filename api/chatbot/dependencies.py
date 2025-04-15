@@ -95,6 +95,12 @@ async def get_agent(
     context_length, token_counter = get_truncation_config(
         settings.llm["base_url"], settings.llm["model_name"]
     )
+    if settings.serp_api_key:
+        from chatbot.tools.search.serpapi import SearchTool
+
+        tools = [WeatherTool(), SearchTool(api_key=settings.serp_api_key)]
+    else:
+        tools = [WeatherTool()]
 
     async with AsyncPostgresSaver.from_conn_string(
         settings.psycopg_primary_url
@@ -105,7 +111,7 @@ async def get_agent(
             checkpointer=checkpointer,
             token_counter=token_counter,
             context_length=context_length,
-            tools=[WeatherTool()],
+            tools=tools,
         )
 
 
