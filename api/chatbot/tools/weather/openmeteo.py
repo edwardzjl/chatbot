@@ -2,7 +2,7 @@ import functools
 import logging
 from asyncio import TimeoutError
 from collections import namedtuple
-from typing import Annotated, Literal
+from typing import Annotated, Literal, TypeAlias
 from typing_extensions import Self
 from urllib.parse import urlencode, urljoin
 
@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 # See <https://open-meteo.com/en/docs>
 # Note that there's a the small line:
 # > Every weather variable available in hourly data, is available as current condition as well.
-HourlyParamsType = (
+HourlyParamsType: TypeAlias = (
     list[
         Literal[
             "temperature_2m",
@@ -40,6 +40,7 @@ HourlyParamsType = (
     ]
     | None
 )
+
 hourly_params = """- `temperature_2m`: Air temperature at 2 meters above ground
 - `relative_humidity_2m`: Relative humidity at 2 meters above ground
 - `apparent_temperature`: Apparent temperature is the perceived feels-like temperature combining wind chill factor, relative humidity and solar radiation
@@ -49,7 +50,7 @@ hourly_params = """- `temperature_2m`: Air temperature at 2 meters above ground
 - `visibility`: Viewing distance in meters"""
 
 
-DailyParamsType = (
+DailyParamsType: TypeAlias = (
     list[
         Literal[
             "temperature_2m_max",
