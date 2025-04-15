@@ -3,7 +3,7 @@ from unittest.mock import patch, Mock
 
 import requests
 
-from chatbot.llm_providers import (
+from chatbot.llm.providers import (
     get_model_info,
     get_num_tokens_vllm,
     get_num_tokens_tgi,
