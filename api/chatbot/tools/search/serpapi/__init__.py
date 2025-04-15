@@ -2,7 +2,6 @@ import functools
 import logging
 from typing import Literal
 from typing_extensions import Self
-from urllib.parse import urlencode
 
 from aiohttp import ClientResponseError
 from aiohttp_client_cache import CachedSession as AsyncCachedSession, SQLiteBackend
@@ -60,7 +59,7 @@ class SearchTool(BaseTool):
         n_results: int = 5,
         run_manager: CallbackManagerForToolRun | None = None,
         **kwargs,
-    ) -> tuple[dict, dict]:
+    ) -> tuple[str, dict]:
         params = {
             "engine": self.engine,
             "q": q,
@@ -74,8 +73,8 @@ class SearchTool(BaseTool):
         except HTTPError as http_err:
             raise ToolException(str(http_err))
         else:
-            data = self._format_response(data)
-            return data, {"url": f"{self.base_url}?{urlencode(params)}"}
+            llm_content = self._format_response(data)
+            return llm_content, data
 
     @retry(
         retry=retry_if_exception_type((HTTPError, Timeout)), stop=stop_after_attempt(3)
@@ -92,7 +91,7 @@ class SearchTool(BaseTool):
         n_results: int = 5,
         run_manager: AsyncCallbackManagerForToolRun | None = None,
         **kwargs,
-    ) -> tuple[dict, dict]:
+    ) -> tuple[str, dict]:
         params = {
             "engine": self.engine,
             "q": q,
@@ -106,8 +105,8 @@ class SearchTool(BaseTool):
         except ClientResponseError as http_err:
             raise ToolException(str(http_err))
         else:
-            data = self._format_response(data)
-            return data, {"url": f"{self.base_url}?{urlencode(params)}"}
+            llm_content = self._format_response(data)
+            return llm_content, data
 
     @retry(
         retry=retry_if_exception_type((ClientResponseError, TimeoutError)),
@@ -122,7 +121,7 @@ class SearchTool(BaseTool):
             async with await session.get(self.base_url, params=params) as response:
                 return await response.json()
 
-    def _format_response(self, data):
+    def _format_response(self, data: dict) -> str:
         try:
             model = SearchResult.model_validate(data)
             return model.dump_minimal()
