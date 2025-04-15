@@ -1,6 +1,6 @@
 import unittest
 
-from chatbot.utils import StreamThinkingProcessor
+from chatbot.llm.client import StreamThinkingProcessor
 
 
 class TestStreamThinkingProcessor(unittest.TestCase):

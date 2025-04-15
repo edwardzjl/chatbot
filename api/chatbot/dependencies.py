@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from functools import lru_cache
 from typing import TYPE_CHECKING, Annotated
 
@@ -16,13 +17,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from chatbot.agent import create_agent
 from chatbot.config import settings
-from chatbot.llm_providers import get_truncation_config
+from chatbot.llm.client import ReasoningChatOpenai
+from chatbot.llm.providers import get_truncation_config
 from chatbot.state import sqlalchemy_ro_session, sqlalchemy_session
 from chatbot.tools.weather.openmeteo import WeatherTool
-from chatbot.utils import ReasoningChatOpenai
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
+
+
+logger = logging.getLogger(__name__)
 
 
 def UserIdHeader(alias: str | None = None, **kwargs):
@@ -96,6 +100,7 @@ async def get_agent(
         settings.llm["base_url"], settings.llm["model_name"]
     )
     if settings.serp_api_key:
+        logger.info("Using SerpApi as search tool.")
         from chatbot.tools.search.serpapi import SearchTool
 
         tools = [WeatherTool(), SearchTool(api_key=settings.serp_api_key)]
