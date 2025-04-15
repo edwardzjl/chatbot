@@ -23,7 +23,7 @@ class Attachment(TypedDict):
 
 
 class ChatMessage(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
+    model_config = ConfigDict(validate_by_name=True)
 
     parent_id: str | None = None
     id: str = Field(default_factory=lambda: str(uuid4()))
