@@ -17,6 +17,7 @@ import ThumbUpOutlined from "@mui/icons-material/ThumbUpOutlined";
 import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import ThumbDownOutlined from "@mui/icons-material/ThumbDownOutlined";
 import ThermostatIcon from "@mui/icons-material/Thermostat";
+import TravelExploreIcon from '@mui/icons-material/TravelExplore';
 
 import { MessageContext } from "@/contexts/message";
 import { SnackbarContext } from "@/contexts/snackbar";
@@ -180,6 +181,8 @@ const ChatMessage = ({ convId, message }) => {
                         switch (tool_call.function.name) {
                         case "weather_forcast":
                             return <ThermostatIcon key={index} />
+                        case "search":
+                            return <TravelExploreIcon key={index} />
                         default:
                             return null;
                         }
