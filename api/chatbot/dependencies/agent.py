@@ -8,6 +8,7 @@ from fastapi import Depends
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import Runnable
+from langchain_core.tools import BaseTool
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from langgraph.graph.graph import CompiledGraph
@@ -46,20 +47,25 @@ def get_safaty_model() -> ChatOpenAI | None:
 SafetyModelDep = Annotated[ChatOpenAI, Depends(get_safaty_model)]
 
 
+@lru_cache
+def get_tools() -> list[BaseTool]:
+    if settings.serp_api_key:
+        logger.info("Using SerpApi as search tool.")
+        from chatbot.tools.search.serpapi import SearchTool
+
+        return [WeatherTool(), SearchTool(api_key=settings.serp_api_key)]
+    else:
+        return [WeatherTool()]
+
+
 async def get_agent(
     chat_model: ChatModelDep,
+    tools: Annotated[list[BaseTool], Depends(get_tools)],
     safety_model: SafetyModelDep,
 ) -> AsyncGenerator[CompiledGraph, None]:
     context_length, token_counter = await get_truncation_config(
         settings.llm["base_url"], settings.llm["model_name"]
     )
-    if settings.serp_api_key:
-        logger.info("Using SerpApi as search tool.")
-        from chatbot.tools.search.serpapi import SearchTool
-
-        tools = [WeatherTool(), SearchTool(api_key=settings.serp_api_key)]
-    else:
-        tools = [WeatherTool()]
 
     async with AsyncPostgresSaver.from_conn_string(
         settings.psycopg_primary_url
