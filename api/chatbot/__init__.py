@@ -1,5 +1,7 @@
+import asyncio
 import logging
 import os
+import sys
 
 from chatbot.main import app
 
@@ -12,6 +14,10 @@ logging.basicConfig(
     format="datetime=%(asctime)s level=%(levelname)s filename=%(filename)s module=%(module)s name=%(name)s lineno=%(lineno)s message=%(message)s",
     datefmt="%Y-%m-%dT%H:%M:%S%z",
 )
+
+
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 
 class EndpointFilter(logging.Filter):
