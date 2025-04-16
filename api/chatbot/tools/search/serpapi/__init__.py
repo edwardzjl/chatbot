@@ -3,7 +3,7 @@ import logging
 from typing import Literal
 from typing_extensions import Self
 
-from aiohttp import ClientResponseError
+from aiohttp import ClientTimeout, ClientResponseError
 from aiohttp_client_cache import CachedSession as AsyncCachedSession, SQLiteBackend
 from langchain_core.callbacks import (
     AsyncCallbackManagerForToolRun,
@@ -42,6 +42,8 @@ class SearchTool(BaseTool):
     base_url: str = "https://serpapi.com/search.json"
     engine: str = "google_light"
     api_key: str
+    timeout: int | None = 5
+    """Timeout in seconds for both sync and async requests. Default: 5 seconds."""
     session: CachedSession = CachedSession(
         "serpapi.cache", expire_after=-1, ignored_parameters=["apikey"]
     )
@@ -49,8 +51,12 @@ class SearchTool(BaseTool):
 
     @model_validator(mode="after")
     def patch_request_timeout(self) -> Self:
-        # Monkey patch the session to add a global timeout
-        self.session.request = functools.partial(self.session.request, timeout=5)
+        # Monkey patch the session to add a global 5 seconds timeout
+        # See <https://requests.readthedocs.io/en/latest/user/advanced/#timeouts>
+        if self.timeout:
+            self.session.request = functools.partial(
+                self.session.request, timeout=self.timeout
+            )
         return self
 
     def _run(
@@ -114,9 +120,12 @@ class SearchTool(BaseTool):
     )
     async def _asearch(self, params: dict) -> dict:
         """A request wrapper. Mainly for retrying."""
-        # TODO: The timeout is a bit complicated for aiohttp, using default for now.
+        # <https://docs.aiohttp.org/en/stable/client_quickstart.html#timeouts>
+        timeout = ClientTimeout(total=self.timeout)
         async with AsyncCachedSession(
-            cache=SQLiteBackend("searpapi.async.cache"), raise_for_status=True
+            timeout=timeout,
+            raise_for_status=True,
+            cache=SQLiteBackend("searpapi.async.cache"),
         ) as session:
             async with await session.get(self.base_url, params=params) as response:
                 return await response.json()

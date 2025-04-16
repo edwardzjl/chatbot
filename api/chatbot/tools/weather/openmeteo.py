@@ -6,7 +6,7 @@ from typing import Annotated, Literal, TypeAlias
 from typing_extensions import Self
 from urllib.parse import urlencode, urljoin
 
-from aiohttp import ClientResponseError
+from aiohttp import ClientTimeout, ClientResponseError
 from aiohttp_client_cache import CachedSession as AsyncCachedSession, SQLiteBackend
 from langchain_core.callbacks import (
     AsyncCallbackManagerForToolRun,
@@ -187,11 +187,11 @@ class WeatherTool(BaseTool):
     args_schema: ArgsSchema | None = WeatherInput
     response_format: Literal["content", "content_and_artifact"] = "content_and_artifact"
 
-    base_url: str = "https://api.open-meteo.com/v1/"
-    forcast_url: str = urljoin(base_url, "forecast")
-    geocoding_url: str = "https://geocoding-api.open-meteo.com/v1/search/"
+    base_url: str = "https://api.open-meteo.com"
+    geocoding_base_url: str = "https://geocoding-api.open-meteo.com"
     apikey: str | None = None
-
+    timeout: int | None = 5
+    """Timeout in seconds for both sync and async requests. Default: 5 seconds."""
     session: CachedSession = CachedSession(
         "openmeteo.cache", expire_after=-1, ignored_parameters=["apikey"]
     )
@@ -199,9 +199,21 @@ class WeatherTool(BaseTool):
 
     @model_validator(mode="after")
     def patch_request_timeout(self) -> Self:
-        # Monkey patch the session to add a global timeout
-        self.session.request = functools.partial(self.session.request, timeout=5)
+        # Monkey patch the session to add a global 5 seconds timeout
+        # See <https://requests.readthedocs.io/en/latest/user/advanced/#timeouts>
+        if self.timeout:
+            self.session.request = functools.partial(
+                self.session.request, timeout=self.timeout
+            )
         return self
+
+    @property
+    def forcast_url(self) -> str:
+        return urljoin(self.base_url, "/v1/forecast/")
+
+    @property
+    def geocoding_url(self) -> str:
+        return urljoin(self.geocoding_base_url, "/v1/search/")
 
     def _run(
         self,
@@ -290,11 +302,15 @@ class WeatherTool(BaseTool):
     )
     async def _aforcast(self, params: dict) -> dict:
         """A request wrapper. Mainly for retrying."""
-        # TODO: The timeout is a bit complicated for aiohttp, using default for now.
+        # <https://docs.aiohttp.org/en/stable/client_quickstart.html#timeouts>
+        timeout = ClientTimeout(total=self.timeout)
         async with AsyncCachedSession(
-            cache=SQLiteBackend("openmeteo.async.cache"), raise_for_status=True
+            base_url=self.base_url,
+            timeout=timeout,
+            raise_for_status=True,
+            cache=SQLiteBackend("openmeteo.async.cache"),
         ) as session:
-            async with await session.get(self.forcast_url, params=params) as response:
+            async with await session.get("/v1/forecast/", params=params) as response:
                 return await response.json()
 
     @retry(
@@ -309,12 +325,16 @@ class WeatherTool(BaseTool):
         if self.apikey:
             params["apikey"] = self.apikey
 
-        # The `raise_for_status` should not happen. Wrong location will result in an empty list.
-        # TODO: The timeout is a bit complicated for aiohttp, using default for now.
+        # The `raise_for_status` will not happen theorically. The server will return an empty list if the location is wrong.
+        # <https://docs.aiohttp.org/en/stable/client_quickstart.html#timeouts>
+        timeout = ClientTimeout(total=self.timeout)
         async with AsyncCachedSession(
-            cache=SQLiteBackend("openmeteo.async.cache"), raise_for_status=True
+            base_url=self.geocoding_base_url,
+            timeout=timeout,
+            raise_for_status=True,
+            cache=SQLiteBackend("openmeteo.async.cache"),
         ) as session:
-            async with await session.get(self.geocoding_url, params=params) as response:
+            async with await session.get("/v1/search/", params=params) as response:
                 data = await response.json()
                 if "results" not in data:
                     raise ToolException("Invalid location")
