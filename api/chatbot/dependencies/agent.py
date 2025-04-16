@@ -4,7 +4,7 @@ import logging
 from functools import lru_cache
 from typing import TYPE_CHECKING, Annotated
 
-from fastapi import Depends, Header
+from fastapi import Depends
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import Runnable
@@ -12,14 +12,11 @@ from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from langgraph.graph.graph import CompiledGraph
 from langgraph.types import StateSnapshot
-from minio import Minio
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from chatbot.agent import create_agent
 from chatbot.config import settings
 from chatbot.llm.client import ReasoningChatOpenai
 from chatbot.llm.providers import get_truncation_config
-from chatbot.state import sqlalchemy_ro_session, sqlalchemy_session
 from chatbot.tools.weather.openmeteo import WeatherTool
 
 if TYPE_CHECKING:
@@ -27,49 +24,6 @@ if TYPE_CHECKING:
 
 
 logger = logging.getLogger(__name__)
-
-
-def UserIdHeader(alias: str | None = None, **kwargs):
-    if alias is None:
-        alias = "X-Forwarded-User"
-    return Header(alias=alias, **kwargs)
-
-
-UserIdHeaderDep = Annotated[str | None, UserIdHeader()]
-
-
-def UsernameHeader(alias: str | None = None, **kwargs):
-    if alias is None:
-        alias = "X-Forwarded-Preferred-Username"
-    return Header(alias=alias, **kwargs)
-
-
-UsernameHeaderDep = Annotated[str | None, UsernameHeader()]
-
-
-def EmailHeader(alias: str | None = None, **kwargs):
-    if alias is None:
-        alias = "X-Forwarded-Email"
-    return Header(alias=alias, **kwargs)
-
-
-EmailHeaderDep = Annotated[str | None, EmailHeader()]
-
-
-async def get_sqlalchemy_session() -> AsyncGenerator[AsyncSession, None]:
-    async with sqlalchemy_session() as session:
-        yield session
-
-
-SqlalchemySessionDep = Annotated[AsyncSession, Depends(get_sqlalchemy_session)]
-
-
-async def get_sqlalchemy_ro_session() -> AsyncGenerator[AsyncSession, None]:
-    async with sqlalchemy_ro_session() as session:
-        yield session
-
-
-SqlalchemyROSessionDep = Annotated[AsyncSession, Depends(get_sqlalchemy_ro_session)]
 
 
 @lru_cache
@@ -161,17 +115,3 @@ def get_smry_chain(chat_model: ChatModelDep) -> Runnable:
 
 
 SmrChainDep = Annotated[Runnable, Depends(get_smry_chain)]
-
-
-@lru_cache
-def get_s3_client() -> Minio:
-    client = Minio(
-        endpoint=settings.s3.endpoint,
-        access_key=settings.s3.access_key,
-        secret_key=settings.s3.secret_key,
-        secure=settings.s3.secure,
-    )
-    return client
-
-
-S3ClientDep = Annotated[Minio, Depends(get_s3_client)]
