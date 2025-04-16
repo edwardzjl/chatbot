@@ -9,6 +9,7 @@ from fastapi import (
 from langchain_core.messages import AIMessage, BaseMessage, trim_messages
 
 from chatbot.dependencies import AgentDep, SmrChainDep, UserIdHeaderDep
+from chatbot.dependencies.db import sqlalchemy_session
 from chatbot.metrics import connected_clients
 from chatbot.metrics.llm import input_tokens, output_tokens
 from chatbot.models import Conversation
@@ -18,7 +19,6 @@ from chatbot.schemas import (
     InfoMessage,
     HumanChatMessage,
 )
-from chatbot.state import sqlalchemy_session
 from chatbot.utils import utcnow
 
 
