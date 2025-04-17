@@ -16,6 +16,8 @@ from requests.exceptions import HTTPError, Timeout
 from requests_cache import CachedSession
 from tenacity import retry, retry_if_exception_type, stop_after_attempt
 
+from chatbot.utils import is_public_ip
+
 from .schema import SearchResult
 
 
@@ -76,8 +78,11 @@ class SearchTool(BaseTool):
             "api_key": self.api_key,
         } | kwargs
 
-        if self.geo_tool and "client_ip" in run_manager.metadata:
-            client_ip = run_manager.metadata["client_ip"]
+        if (
+            self.geo_tool
+            and (client_ip := run_manager.metadata.get("client_ip")) is not None
+            and is_public_ip(client_ip)
+        ):
             try:
                 location = self.geo_tool.run(client_ip)
                 params["location"] = location
@@ -118,8 +123,11 @@ class SearchTool(BaseTool):
             "api_key": self.api_key,
         } | kwargs
 
-        if self.geo_tool and "client_ip" in run_manager.metadata:
-            client_ip = run_manager.metadata["client_ip"]
+        if (
+            self.geo_tool
+            and (client_ip := run_manager.metadata.get("client_ip")) is not None
+            and is_public_ip(client_ip)
+        ):
             try:
                 location = await self.geo_tool.arun(client_ip)
                 params["location"] = location
