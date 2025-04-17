@@ -21,6 +21,7 @@ async function loader({ params }) {
 const Share = () => {
     const { share } = useLoaderData();
     const { theme } = useContext(ThemeContext);
+    const rendering_messages = new Set(["human", "ai"]);
 
     const goHome = () => {
         // As the share page is public, I need to refresh the page to perform login when redirecting to the home page.
@@ -51,7 +52,7 @@ const Share = () => {
                     <p>Shared @ {formatTimestamp(share.created_at)}</p>
                 </div>
                 <ChatLog className={styles.chatLog}>
-                    {share?.messages?.map((message, index) => (
+                    {share?.messages?.filter(message => rendering_messages.has(message.type)).map((message, index) => (
                         <ChatMessage key={index} convId={share.id} idx={index} message={message} />
                     ))}
                 </ChatLog>
