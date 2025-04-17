@@ -2,6 +2,7 @@ import functools
 import logging
 from typing import Literal
 from typing_extensions import Self
+from urllib.parse import quote_plus
 
 from aiohttp import ClientTimeout, ClientResponseError
 from aiohttp_client_cache import CachedSession as AsyncCachedSession, SQLiteBackend
@@ -49,6 +50,8 @@ class SearchTool(BaseTool):
     )
     """Synchronous requests session with cache support."""
 
+    geo_tool: BaseTool | None = None
+
     @model_validator(mode="after")
     def patch_request_timeout(self) -> Self:
         # Monkey patch the session to add a global 5 seconds timeout
@@ -73,6 +76,14 @@ class SearchTool(BaseTool):
             "num": n_results,
             "api_key": self.api_key,
         } | kwargs
+
+        if self.geo_tool and "client_ip" in run_manager.metadata:
+            client_ip = run_manager.metadata["client_ip"]
+            try:
+                location = self.geo_tool.run(client_ip)
+                params["location"] = quote_plus(location)
+            except Exception:
+                logger.exception("Failed to get location from IP")
 
         try:
             data = self._search(params)
@@ -105,6 +116,14 @@ class SearchTool(BaseTool):
             "num": n_results,
             "api_key": self.api_key,
         } | kwargs
+
+        if self.geo_tool and "client_ip" in run_manager.metadata:
+            client_ip = run_manager.metadata["client_ip"]
+            try:
+                location = await self.geo_tool.arun(client_ip)
+                params["location"] = quote_plus(location)
+            except Exception:
+                logger.exception("Failed to get location from IP")
 
         try:
             data = await self._asearch(params)

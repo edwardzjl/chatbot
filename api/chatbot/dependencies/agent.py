@@ -50,13 +50,21 @@ SafetyModelDep = Annotated[ChatOpenAI, Depends(get_safaty_model)]
 
 @lru_cache
 def get_tools() -> list[BaseTool]:
+    tools = []
+    tools.append(WeatherTool())
     if settings.serp_api_key:
         logger.info("Using SerpApi as search tool.")
         from chatbot.tools.search.serpapi import SearchTool
 
-        return [WeatherTool(), SearchTool(api_key=settings.serp_api_key)]
-    else:
-        return [WeatherTool()]
+        if settings.ipgeolocation_api_key:
+            logger.info("Using IPGeolocation as geolocation tool.")
+            from chatbot.tools.search.serpapi.geo import GeoLocationTool
+
+            geo_tool = GeoLocationTool(api_key=settings.ipgeolocation_api_key)
+        else:
+            geo_tool = None
+        tools.append(SearchTool(api_key=settings.serp_api_key, geo_tool=geo_tool))
+    return tools
 
 
 @lru_cache
