@@ -45,7 +45,9 @@ class GeoLocationTool(BaseTool):
         return self
 
     @retry(
-        retry=retry_if_exception_type((HTTPError, Timeout)), stop=stop_after_attempt(3)
+        retry=retry_if_exception_type((HTTPError, Timeout)),
+        stop=stop_after_attempt(3),
+        reraise=True,
     )
     def _run(
         self,
@@ -66,6 +68,7 @@ class GeoLocationTool(BaseTool):
     @retry(
         retry=retry_if_exception_type((ClientResponseError, TimeoutError)),
         stop=stop_after_attempt(3),
+        reraise=True,
     )
     async def _arun(
         self,

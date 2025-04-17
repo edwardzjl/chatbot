@@ -94,7 +94,9 @@ class SearchTool(BaseTool):
             return llm_content, data
 
     @retry(
-        retry=retry_if_exception_type((HTTPError, Timeout)), stop=stop_after_attempt(3)
+        retry=retry_if_exception_type((HTTPError, Timeout)),
+        stop=stop_after_attempt(3),
+        reraise=True,
     )
     def _search(self, params: dict) -> dict:
         """A request wrapper. Mainly for retrying."""
@@ -136,6 +138,7 @@ class SearchTool(BaseTool):
     @retry(
         retry=retry_if_exception_type((ClientResponseError, TimeoutError)),
         stop=stop_after_attempt(3),
+        reraise=True,
     )
     async def _asearch(self, params: dict) -> dict:
         """A request wrapper. Mainly for retrying."""
