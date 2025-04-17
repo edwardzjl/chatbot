@@ -61,3 +61,17 @@ export const getCookie = (name) => {
 }
 
 export const DEFAULT_CONV_TITLE = "New Chat";
+
+export const formatTimestamp = (timestamp) => {
+    const ts = new Date(timestamp);
+    const userLocale = navigator.language || "en-US"; // Fallback to "en-US" if not available
+
+    return ts.toLocaleString(userLocale, {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+    });
+};
