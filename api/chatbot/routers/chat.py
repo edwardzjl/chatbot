@@ -55,6 +55,7 @@ async def chat(
             chain_metadata = {
                 "conversation_id": message.conversation,
                 "userid": userid,
+                "client_ip": websocket.client.host,
             }
             async for event in agent.astream_events(
                 input={"messages": [message.to_lc()]},

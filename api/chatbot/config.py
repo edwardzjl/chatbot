@@ -53,6 +53,7 @@ class Settings(BaseSettings):
     s3: S3Settings = Field(default_factory=S3Settings)
 
     serp_api_key: str | None = None
+    ipgeolocation_api_key: str | None = None
 
     @model_validator(mode="after")
     def set_default_standby_url(self) -> Self:
