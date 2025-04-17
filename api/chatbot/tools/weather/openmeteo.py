@@ -242,7 +242,9 @@ class WeatherTool(BaseTool):
             return data, {"url": f"{self.forcast_url}?{urlencode(params)}"}
 
     @retry(
-        retry=retry_if_exception_type((HTTPError, Timeout)), stop=stop_after_attempt(3)
+        retry=retry_if_exception_type((HTTPError, Timeout)),
+        stop=stop_after_attempt(3),
+        reraise=True,
     )
     def _get_geocoding(self, location: str) -> GeoCoding:
         """
@@ -262,7 +264,9 @@ class WeatherTool(BaseTool):
         return GeoCoding(latitude=target["latitude"], longitude=target["longitude"])
 
     @retry(
-        retry=retry_if_exception_type((HTTPError, Timeout)), stop=stop_after_attempt(3)
+        retry=retry_if_exception_type((HTTPError, Timeout)),
+        stop=stop_after_attempt(3),
+        reraise=True,
     )
     def _forcast(self, params: dict) -> dict:
         """A request wrapper. Mainly for retrying."""
@@ -299,6 +303,7 @@ class WeatherTool(BaseTool):
     @retry(
         retry=retry_if_exception_type((ClientResponseError, TimeoutError)),
         stop=stop_after_attempt(3),
+        reraise=True,
     )
     async def _aforcast(self, params: dict) -> dict:
         """A request wrapper. Mainly for retrying."""
@@ -316,6 +321,7 @@ class WeatherTool(BaseTool):
     @retry(
         retry=retry_if_exception_type((ClientResponseError, TimeoutError)),
         stop=stop_after_attempt(3),
+        reraise=True,
     )
     async def _aget_geocoding(self, location: str) -> GeoCoding:
         """
