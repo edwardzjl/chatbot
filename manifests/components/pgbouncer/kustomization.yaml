@@ -25,4 +25,4 @@ secretGenerator:
 
 images:
   - name: bitnami/pgbouncer
-    newTag: 1.24.0
+    newTag: 1.24.1
