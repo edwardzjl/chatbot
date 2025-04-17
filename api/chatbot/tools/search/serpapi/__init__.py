@@ -2,7 +2,6 @@ import functools
 import logging
 from typing import Literal
 from typing_extensions import Self
-from urllib.parse import quote_plus
 
 from aiohttp import ClientTimeout, ClientResponseError
 from aiohttp_client_cache import CachedSession as AsyncCachedSession, SQLiteBackend
@@ -81,7 +80,7 @@ class SearchTool(BaseTool):
             client_ip = run_manager.metadata["client_ip"]
             try:
                 location = self.geo_tool.run(client_ip)
-                params["location"] = quote_plus(location)
+                params["location"] = location
             except Exception:
                 logger.exception("Failed to get location from IP")
 
@@ -123,7 +122,7 @@ class SearchTool(BaseTool):
             client_ip = run_manager.metadata["client_ip"]
             try:
                 location = await self.geo_tool.arun(client_ip)
-                params["location"] = quote_plus(location)
+                params["location"] = location
             except Exception:
                 logger.exception("Failed to get location from IP")
 
