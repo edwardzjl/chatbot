@@ -37,7 +37,7 @@ class SearchResult(BaseModel):
         # if self.answer_box:
         #     return self.answer_box.model_dump_json()
         res = [
-            organic_result.model_dump(include={"title", "snippet"})
+            organic_result.model_dump(include={"title", "snippet", "link"})
             for organic_result in self.organic_results
         ]
         return json.dumps(res, ensure_ascii=False)
