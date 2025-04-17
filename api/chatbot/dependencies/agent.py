@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 from functools import lru_cache
 from typing import TYPE_CHECKING, Annotated
@@ -17,7 +18,7 @@ from langgraph.types import StateSnapshot
 from chatbot.agent import create_agent
 from chatbot.config import settings
 from chatbot.llm.client import ReasoningChatOpenai
-from chatbot.llm.providers import get_truncation_config
+from chatbot.llm.providers import LLMProvider, llm_provider_factory
 from chatbot.tools.weather.openmeteo import WeatherTool
 
 if TYPE_CHECKING:
@@ -58,15 +59,29 @@ def get_tools() -> list[BaseTool]:
         return [WeatherTool()]
 
 
+@lru_cache
+def get_llm_provider() -> LLMProvider:
+    provider = settings.llm.get("metadata", {}).get("provider")
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        # No running loop, safe to use asyncio.run
+        return asyncio.run(llm_provider_factory(settings.llm["base_url"], provider))
+    else:
+        # Already inside a loop: create task and wait
+        return loop.create_task(
+            llm_provider_factory(settings.llm["base_url"], provider)
+        )
+
+
 async def get_agent(
     chat_model: ChatModelDep,
+    llm_provider: Annotated[LLMProvider, Depends(get_llm_provider)],
     tools: Annotated[list[BaseTool], Depends(get_tools)],
     safety_model: SafetyModelDep,
 ) -> AsyncGenerator[CompiledGraph, None]:
-    context_length, token_counter = await get_truncation_config(
-        settings.llm["base_url"], settings.llm["model_name"]
-    )
-
+    context_length = await llm_provider.get_max_tokens(settings.llm["model_name"])
+    token_counter = llm_provider.get_token_counter(settings.llm["model_name"])
     async with AsyncPostgresSaver.from_conn_string(
         settings.psycopg_primary_url
     ) as checkpointer:
