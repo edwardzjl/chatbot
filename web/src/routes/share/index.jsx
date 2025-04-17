@@ -7,6 +7,7 @@ import ChatLog from "@/components/ChatLog";
 import ChatMessage from "@/components/ChatMessage";
 import { ThemeContext } from "@/contexts/theme";
 
+import { formatTimestamp } from "@/commons";
 
 async function loader({ params }) {
     const resp = await fetch(`/api/shares/${params.shareId}`, {});
@@ -28,21 +29,6 @@ const Share = () => {
         // This is why window.location is used instead of useNavigate.
         window.location.href = "/";
     }
-
-    const formatTimestamp = (timestamp) => {
-        const ts = new Date(timestamp);
-        const userLocale = navigator.language || "en-US"; // Fallback to "en-US" if not available
-
-        return ts.toLocaleString(userLocale, {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-        });
-    }
-
 
     return (
         <div className={`${styles.App} theme-${theme}`}>
