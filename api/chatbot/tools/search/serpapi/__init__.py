@@ -11,7 +11,7 @@ from langchain_core.tools.base import ArgsSchema
 from pydantic import BaseModel, Field
 from requests.exceptions import HTTPError
 
-from chatbot.tools.base import HttpTool
+from chatbot.http_client import HttpClient
 from chatbot.utils import is_public_ip
 
 from .schema import SearchResult
@@ -30,7 +30,7 @@ class SearchInput(BaseModel):
     )
 
 
-class SearchTool(HttpTool):
+class SearchTool(BaseTool):
     name: str = "search"
     description: str = "Useful for when you need to search the Internet."
     args_schema: ArgsSchema | None = SearchInput
@@ -40,6 +40,8 @@ class SearchTool(HttpTool):
     base_url: str = "https://serpapi.com/search.json"
     engine: str = "google_light"
     api_key: str
+
+    http_client: HttpClient = HttpClient()
 
     geo_tool: BaseTool | None = None
 
@@ -70,7 +72,7 @@ class SearchTool(HttpTool):
                 logger.exception("Failed to get location from IP")
 
         try:
-            data = self._req(self.base_url, params)
+            data = self.http_client.get(self.base_url, params)
         except HTTPError as http_err:
             raise ToolException(str(http_err))
         else:
@@ -104,7 +106,7 @@ class SearchTool(HttpTool):
                 logger.exception("Failed to get location from IP")
 
         try:
-            data = await self._areq(self.base_url, params)
+            data = await self.http_client.aget(self.base_url, params)
         except ClientResponseError as http_err:
             raise ToolException(str(http_err))
         else:

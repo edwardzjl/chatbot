@@ -3,12 +3,9 @@ from functools import partial
 from typing import Any, Callable, override
 from urllib.parse import urljoin
 
-from aiohttp import ClientTimeout, ClientResponseError
-from aiohttp_client_cache import CachedSession as AsyncCachedSession, SQLiteBackend
 from langchain_core.messages.utils import convert_to_openai_messages
-from requests.exceptions import HTTPError, Timeout
-from requests_cache import CachedSession
-from tenacity import retry, retry_if_exception_type, stop_after_attempt
+
+from chatbot.http_client import HttpClient
 
 from .base import LLMProvider
 
@@ -21,33 +18,12 @@ class TGIProvider(LLMProvider):
     See <https://huggingface.github.io/text-generation-inference/>
     """
 
-    def __init__(self, base_url: str, timeout: int | None = 5):
-        # aiohttp requires base_url to end with a slash
-        self.base_url = base_url if base_url.endswith("/") else base_url + "/"
-        self.timeout = timeout
-        self.session = CachedSession(
-            "llm.provider.tgi.cache", expire_after=-1, ignored_parameters=["api_key"]
-        )
-        # Monkey patch the session to add a global 5 seconds timeout
-        # See <https://requests.readthedocs.io/en/latest/user/advanced/#timeouts>
-        if self.timeout:
-            self.session.request = partial(self.session.request, timeout=self.timeout)
+    def __init__(self, base_url: str, http_client: HttpClient | None = None):
+        self.base_url = base_url
+        self.client = http_client or HttpClient()
 
-    @retry(
-        retry=retry_if_exception_type((ClientResponseError, TimeoutError)),
-        stop=stop_after_attempt(3),
-    )
     async def get_model_info(self) -> dict[str, Any]:
-        timeout = ClientTimeout(total=self.timeout)
-        async with AsyncCachedSession(
-            base_url=self.base_url,
-            timeout=timeout,
-            raise_for_status=True,
-            cache=SQLiteBackend("llm.provider.tgi.async.cache"),
-        ) as session:
-            async with await session.get("/info") as response:
-                data = await response.json()
-            return data
+        return await self.client.aget(urljoin(self.base_url), "/info")
 
     @override
     async def get_max_tokens(self, model_name: str) -> int:
@@ -60,9 +36,6 @@ class TGIProvider(LLMProvider):
 
     # NOTE: this function is used as the `token_counter` parameter of langchain's `langchain_core.messages.utils.trim_messages` function.
     # So it must be a synchronous function.
-    @retry(
-        retry=retry_if_exception_type((HTTPError, Timeout)), stop=stop_after_attempt(3)
-    )
     def token_counter_lc(self, model_name: str, messages: list) -> int:
         """Get the number of tokens for a list of messages.
 
@@ -75,16 +48,11 @@ class TGIProvider(LLMProvider):
         """
         url = urljoin(self.base_url, "/chat_tokenize")
         # use 'prompt' param instead of 'messages' to get the number of tokens in the prompt
-        response = self.session.post(
+        data = self.client.post(
             url,
             json={
                 "model": model_name,
                 "messages": convert_to_openai_messages(messages),
             },
         )
-        response.raise_for_status()
-        return len(response.json()["tokenize_response"])
-
-    def __del__(self):
-        """cleanup"""
-        self.session.close()
+        return len(data["tokenize_response"])

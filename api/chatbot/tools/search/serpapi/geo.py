@@ -4,11 +4,12 @@ from langchain_core.callbacks import (
     AsyncCallbackManagerForToolRun,
     CallbackManagerForToolRun,
 )
+from langchain_core.tools import BaseTool
 
-from chatbot.tools.base import HttpTool
+from chatbot.http_client import HttpClient
 
 
-class GeoLocationTool(HttpTool):
+class GeoLocationTool(BaseTool):
     """Get the geolocation of a given IP address or domain name.
 
     This tool is not for agent usage. It is used internally for other tools (e.g., SearchTool).
@@ -20,6 +21,8 @@ class GeoLocationTool(HttpTool):
 
     base_url: str = "https://api.ipgeolocation.io"
     api_key: str
+
+    http_client: HttpClient = HttpClient()
 
     @property
     def ipgeo_url(self) -> str:
@@ -36,7 +39,7 @@ class GeoLocationTool(HttpTool):
             "apiKey": self.api_key,
             "ip": ip,
         }
-        data = self._req(self.ipgeo_url, params)
+        data = self.http_client.get(self.ipgeo_url, params=params)
         return ", ".join([data["city"], data["state_prov"], data["country_name"]])
 
     async def _arun(
@@ -49,5 +52,5 @@ class GeoLocationTool(HttpTool):
             "apiKey": self.api_key,
             "ip": ip,
         }
-        data = await self._areq(self.ipgeo_url, params)
+        data = await self.http_client.aget(self.ipgeo_url, params=params)
         return ", ".join([data["city"], data["state_prov"], data["country_name"]])
