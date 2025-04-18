@@ -65,10 +65,16 @@ def get_tools(
             logger.info("Using IPGeolocation as geolocation tool.")
             from chatbot.tools.search.serpapi.geo import GeoLocationTool
 
-            geo_tool = GeoLocationTool(api_key=settings.ipgeolocation_api_key)
+            geo_tool = GeoLocationTool(
+                api_key=settings.ipgeolocation_api_key, asession=session
+            )
         else:
             geo_tool = None
-        tools.append(SearchTool(api_key=settings.serp_api_key, geo_tool=geo_tool))
+        tools.append(
+            SearchTool(
+                api_key=settings.serp_api_key, asession=session, geo_tool=geo_tool
+            )
+        )
     return tools
 
 

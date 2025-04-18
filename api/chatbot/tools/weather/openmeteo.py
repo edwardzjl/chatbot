@@ -1,22 +1,19 @@
 import logging
-from asyncio import TimeoutError
 from collections import namedtuple
-from contextlib import asynccontextmanager
-from typing import Annotated, AsyncGenerator, Literal, TypeAlias
+from typing import Annotated, Literal, TypeAlias
 from urllib.parse import urlencode, urljoin
 
-import requests
-from aiohttp import ClientSession, ClientResponseError
+from aiohttp import ClientResponseError
 from langchain_core.callbacks import (
     AsyncCallbackManagerForToolRun,
     CallbackManagerForToolRun,
 )
-from langchain_core.tools import BaseTool, ToolException
+from langchain_core.tools import ToolException
 from langchain_core.tools.base import ArgsSchema
 from pydantic import BaseModel, Field
-from requests.exceptions import HTTPError, Timeout
-from tenacity import retry, retry_if_exception_type, stop_after_attempt
+from requests.exceptions import HTTPError
 
+from chatbot.tools.base import HttpTool
 
 logger = logging.getLogger(__name__)
 
@@ -179,7 +176,7 @@ class WeatherInput(BaseModel):
     )
 
 
-class WeatherTool(BaseTool):
+class WeatherTool(HttpTool):
     name: str = "weather_forcast"
     description: str = "Useful for when you need to access weather data."
     args_schema: ArgsSchema | None = WeatherInput
@@ -188,15 +185,6 @@ class WeatherTool(BaseTool):
     base_url: str = "https://api.open-meteo.com"
     geocoding_base_url: str = "https://geocoding-api.open-meteo.com"
     apikey: str | None = None
-
-    session: requests.Session | None = None
-    """Synchronous requests session. Optional.
-    If not provided, the synchronous `run` will send one-shot requests instead.
-    """
-    asession: ClientSession | None = None
-    """Asynchronous requests session. Optional.
-    If not provided, the asynchronous `arun` will create a new session for each request.
-    """
 
     @property
     def forcast_url(self) -> str:
@@ -237,18 +225,6 @@ class WeatherTool(BaseTool):
             data = self._format_response(data)
             return data, {"url": f"{self.forcast_url}?{urlencode(params)}"}
 
-    @retry(
-        retry=retry_if_exception_type((HTTPError, Timeout)),
-        stop=stop_after_attempt(3),
-        reraise=True,
-    )
-    def _req(self, url: str, params: dict) -> dict:
-        """A request wrapper. Mainly for retrying."""
-        client = self.session or requests.get
-        response = client.get(url, params=params)
-        response.raise_for_status()
-        return response.json()
-
     async def _arun(
         self,
         location: str,
@@ -279,26 +255,6 @@ class WeatherTool(BaseTool):
         else:
             data = self._format_response(data)
             return data, {"url": f"{self.forcast_url}?{urlencode(params)}"}
-
-    @asynccontextmanager
-    async def _with_asession(self) -> AsyncGenerator[ClientSession, None]:
-        """Yield either the injected session or a new temporary session."""
-        if self.asession:
-            yield self.asession
-        else:
-            async with ClientSession(raise_for_status=True) as session:
-                yield session
-
-    @retry(
-        retry=retry_if_exception_type((ClientResponseError, TimeoutError)),
-        stop=stop_after_attempt(3),
-        reraise=True,
-    )
-    async def _areq(self, url: str, params: dict) -> dict:
-        """A request wrapper. Mainly for retrying."""
-        async with self._with_asession() as session:
-            async with await session.get(url, params=params) as response:
-                return await response.json()
 
     def _format_response(self, data: dict) -> dict:
         """Formats a response containing daily and hourly data.

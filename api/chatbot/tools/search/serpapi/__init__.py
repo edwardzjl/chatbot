@@ -1,21 +1,17 @@
-import functools
 import logging
 from typing import Literal
-from typing_extensions import Self
 
-from aiohttp import ClientTimeout, ClientResponseError
-from aiohttp_client_cache import CachedSession as AsyncCachedSession, SQLiteBackend
+from aiohttp import ClientResponseError
 from langchain_core.callbacks import (
     AsyncCallbackManagerForToolRun,
     CallbackManagerForToolRun,
 )
 from langchain_core.tools import BaseTool, ToolException
 from langchain_core.tools.base import ArgsSchema
-from pydantic import BaseModel, Field, model_validator
-from requests.exceptions import HTTPError, Timeout
-from requests_cache import CachedSession
-from tenacity import retry, retry_if_exception_type, stop_after_attempt
+from pydantic import BaseModel, Field
+from requests.exceptions import HTTPError
 
+from chatbot.tools.base import HttpTool
 from chatbot.utils import is_public_ip
 
 from .schema import SearchResult
@@ -34,7 +30,7 @@ class SearchInput(BaseModel):
     )
 
 
-class SearchTool(BaseTool):
+class SearchTool(HttpTool):
     name: str = "search"
     description: str = "Useful for when you need to search the Internet."
     args_schema: ArgsSchema | None = SearchInput
@@ -44,24 +40,8 @@ class SearchTool(BaseTool):
     base_url: str = "https://serpapi.com/search.json"
     engine: str = "google_light"
     api_key: str
-    timeout: int | None = 5
-    """Timeout in seconds for both sync and async requests. Default: 5 seconds."""
-    session: CachedSession = CachedSession(
-        "serpapi.cache", expire_after=-1, ignored_parameters=["apikey"]
-    )
-    """Synchronous requests session with cache support."""
 
     geo_tool: BaseTool | None = None
-
-    @model_validator(mode="after")
-    def patch_request_timeout(self) -> Self:
-        # Monkey patch the session to add a global 5 seconds timeout
-        # See <https://requests.readthedocs.io/en/latest/user/advanced/#timeouts>
-        if self.timeout:
-            self.session.request = functools.partial(
-                self.session.request, timeout=self.timeout
-            )
-        return self
 
     def _run(
         self,
@@ -90,23 +70,12 @@ class SearchTool(BaseTool):
                 logger.exception("Failed to get location from IP")
 
         try:
-            data = self._search(params)
+            data = self._req(self.base_url, params)
         except HTTPError as http_err:
             raise ToolException(str(http_err))
         else:
             llm_content = self._format_response(data)
             return llm_content, data
-
-    @retry(
-        retry=retry_if_exception_type((HTTPError, Timeout)),
-        stop=stop_after_attempt(3),
-        reraise=True,
-    )
-    def _search(self, params: dict) -> dict:
-        """A request wrapper. Mainly for retrying."""
-        response = self.session.get(self.base_url, params=params)
-        response.raise_for_status()
-        return response.json()
 
     async def _arun(
         self,
@@ -135,29 +104,12 @@ class SearchTool(BaseTool):
                 logger.exception("Failed to get location from IP")
 
         try:
-            data = await self._asearch(params)
+            data = await self._areq(self.base_url, params)
         except ClientResponseError as http_err:
             raise ToolException(str(http_err))
         else:
             llm_content = self._format_response(data)
             return llm_content, data
-
-    @retry(
-        retry=retry_if_exception_type((ClientResponseError, TimeoutError)),
-        stop=stop_after_attempt(3),
-        reraise=True,
-    )
-    async def _asearch(self, params: dict) -> dict:
-        """A request wrapper. Mainly for retrying."""
-        # <https://docs.aiohttp.org/en/stable/client_quickstart.html#timeouts>
-        timeout = ClientTimeout(total=self.timeout)
-        async with AsyncCachedSession(
-            timeout=timeout,
-            raise_for_status=True,
-            cache=SQLiteBackend("searpapi.async.cache"),
-        ) as session:
-            async with await session.get(self.base_url, params=params) as response:
-                return await response.json()
 
     def _format_response(self, data: dict) -> str:
         try:
@@ -166,7 +118,3 @@ class SearchTool(BaseTool):
         except Exception:
             logger.exception("Failed to format response")
             return data
-
-    def __del__(self):
-        """cleanup"""
-        self.session.close()

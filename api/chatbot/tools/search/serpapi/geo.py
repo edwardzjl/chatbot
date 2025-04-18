@@ -1,21 +1,14 @@
-import functools
-from typing_extensions import Self
 from urllib.parse import urljoin
 
-from aiohttp import ClientTimeout, ClientResponseError
-from aiohttp_client_cache import CachedSession as AsyncCachedSession, SQLiteBackend
 from langchain_core.callbacks import (
     AsyncCallbackManagerForToolRun,
     CallbackManagerForToolRun,
 )
-from langchain_core.tools import BaseTool
-from pydantic import model_validator
-from requests.exceptions import HTTPError, Timeout
-from requests_cache import CachedSession
-from tenacity import retry, retry_if_exception_type, stop_after_attempt
+
+from chatbot.tools.base import HttpTool
 
 
-class GeoLocationTool(BaseTool):
+class GeoLocationTool(HttpTool):
     """Get the geolocation of a given IP address or domain name.
 
     This tool is not for agent usage. It is used internally for other tools (e.g., SearchTool).
@@ -27,28 +20,12 @@ class GeoLocationTool(BaseTool):
 
     base_url: str = "https://api.ipgeolocation.io"
     api_key: str
-    timeout: int | None = 5
-    """Timeout in seconds for both sync and async requests. Default: 5 seconds."""
-    session: CachedSession = CachedSession(
-        "ipgeolocation.cache", expire_after=-1, ignored_parameters=["apiKey"]
-    )
-    """Synchronous requests session with cache support."""
 
-    @model_validator(mode="after")
-    def patch_request_timeout(self) -> Self:
-        # Monkey patch the session to add a global 5 seconds timeout
-        # See <https://requests.readthedocs.io/en/latest/user/advanced/#timeouts>
-        if self.timeout:
-            self.session.request = functools.partial(
-                self.session.request, timeout=self.timeout
-            )
-        return self
+    @property
+    def ipgeo_url(self) -> str:
+        """Return the URL for the IP geolocation API."""
+        return urljoin(self.base_url, "/ipgeo")
 
-    @retry(
-        retry=retry_if_exception_type((HTTPError, Timeout)),
-        stop=stop_after_attempt(3),
-        reraise=True,
-    )
     def _run(
         self,
         ip: str,
@@ -59,17 +36,9 @@ class GeoLocationTool(BaseTool):
             "apiKey": self.api_key,
             "ip": ip,
         }
-        url = urljoin(self.base_url, "/ipgeo")
-        response = self.session.get(url, params=params)
-        response.raise_for_status()
-        data = response.json()
+        data = self._req(self.ipgeo_url, params)
         return ", ".join([data["city"], data["state_prov"], data["country_name"]])
 
-    @retry(
-        retry=retry_if_exception_type((ClientResponseError, TimeoutError)),
-        stop=stop_after_attempt(3),
-        reraise=True,
-    )
     async def _arun(
         self,
         ip: str,
@@ -80,13 +49,5 @@ class GeoLocationTool(BaseTool):
             "apiKey": self.api_key,
             "ip": ip,
         }
-        timeout = ClientTimeout(total=5)
-        async with AsyncCachedSession(
-            base_url=self.base_url,
-            timeout=timeout,
-            raise_for_status=True,
-            cache=SQLiteBackend("ipgeolocation.async.cache"),
-        ) as session:
-            async with await session.get("/ipgeo", params=params) as response:
-                data = await response.json()
+        data = await self._areq(self.ipgeo_url, params)
         return ", ".join([data["city"], data["state_prov"], data["country_name"]])
