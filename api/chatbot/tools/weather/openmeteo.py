@@ -1,21 +1,19 @@
-import functools
 import logging
 from asyncio import TimeoutError
 from collections import namedtuple
-from typing import Annotated, Literal, TypeAlias
-from typing_extensions import Self
+from contextlib import asynccontextmanager
+from typing import Annotated, AsyncGenerator, Literal, TypeAlias
 from urllib.parse import urlencode, urljoin
 
-from aiohttp import ClientTimeout, ClientResponseError
-from aiohttp_client_cache import CachedSession as AsyncCachedSession, SQLiteBackend
+import requests
+from aiohttp import ClientSession, ClientResponseError
 from langchain_core.callbacks import (
     AsyncCallbackManagerForToolRun,
     CallbackManagerForToolRun,
 )
 from langchain_core.tools import BaseTool, ToolException
 from langchain_core.tools.base import ArgsSchema
-from pydantic import BaseModel, Field, model_validator
-from requests_cache import CachedSession
+from pydantic import BaseModel, Field
 from requests.exceptions import HTTPError, Timeout
 from tenacity import retry, retry_if_exception_type, stop_after_attempt
 
@@ -160,7 +158,7 @@ class WeatherInput(BaseModel):
         default=None,
     )
     forecast_days: int | None = Field(
-        description="Forecasts data for the next N days (including today). Mutually exclusive with `start_date` and `end_date`",
+        description="Forecasts data for the next N days (1 means today). Mutually exclusive with `start_date` and `end_date`",
         strict=True,
         ge=1,
         le=16,
@@ -190,22 +188,15 @@ class WeatherTool(BaseTool):
     base_url: str = "https://api.open-meteo.com"
     geocoding_base_url: str = "https://geocoding-api.open-meteo.com"
     apikey: str | None = None
-    timeout: int | None = 5
-    """Timeout in seconds for both sync and async requests. Default: 5 seconds."""
-    session: CachedSession = CachedSession(
-        "openmeteo.cache", expire_after=-1, ignored_parameters=["apikey"]
-    )
-    """Synchronous requests session with cache support."""
 
-    @model_validator(mode="after")
-    def patch_request_timeout(self) -> Self:
-        # Monkey patch the session to add a global 5 seconds timeout
-        # See <https://requests.readthedocs.io/en/latest/user/advanced/#timeouts>
-        if self.timeout:
-            self.session.request = functools.partial(
-                self.session.request, timeout=self.timeout
-            )
-        return self
+    session: requests.Session | None = None
+    """Synchronous requests session. Optional.
+    If not provided, the synchronous `run` will send one-shot requests instead.
+    """
+    asession: ClientSession | None = None
+    """Asynchronous requests session. Optional.
+    If not provided, the asynchronous `arun` will create a new session for each request.
+    """
 
     @property
     def forcast_url(self) -> str:
@@ -221,7 +212,13 @@ class WeatherTool(BaseTool):
         run_manager: CallbackManagerForToolRun | None = None,
         **kwargs,
     ) -> tuple[dict, dict]:
-        geocoding = self._get_geocoding(location)
+        params = {"name": location, "count": 1}
+        if self.apikey:
+            params["apikey"] = self.apikey
+
+        data = self._req(self.geocoding_url, params)
+        geocoding = self._format_geocoding_response(data)
+
         params = (
             geocoding._asdict()
             | {
@@ -229,12 +226,11 @@ class WeatherTool(BaseTool):
             }
             | kwargs
         )
-
         if self.apikey:
             params["apikey"] = self.apikey
 
         try:
-            data = self._forcast(params)
+            data = self._req(self.forcast_url, params)
         except HTTPError as http_err:
             raise ToolException(str(http_err))
         else:
@@ -246,31 +242,10 @@ class WeatherTool(BaseTool):
         stop=stop_after_attempt(3),
         reraise=True,
     )
-    def _get_geocoding(self, location: str) -> GeoCoding:
-        """
-        See <https://open-meteo.com/en/docs/geocoding-api>
-        """
-        params = {"name": location, "count": 1}
-        if self.apikey:
-            params["apikey"] = self.apikey
-
-        response = self.session.get(self.geocoding_url, params=params)
-        # Should not happen. Wrong location will result in an empty list.
-        response.raise_for_status()
-        data = response.json()
-        if "results" not in data:
-            raise ToolException("Invalid location")
-        target = ["results"][0]
-        return GeoCoding(latitude=target["latitude"], longitude=target["longitude"])
-
-    @retry(
-        retry=retry_if_exception_type((HTTPError, Timeout)),
-        stop=stop_after_attempt(3),
-        reraise=True,
-    )
-    def _forcast(self, params: dict) -> dict:
+    def _req(self, url: str, params: dict) -> dict:
         """A request wrapper. Mainly for retrying."""
-        response = self.session.get(self.forcast_url, params=params)
+        client = self.session or requests.get
+        response = client.get(url, params=params)
         response.raise_for_status()
         return response.json()
 
@@ -280,7 +255,13 @@ class WeatherTool(BaseTool):
         run_manager: AsyncCallbackManagerForToolRun | None = None,
         **kwargs,
     ) -> tuple[dict, dict]:
-        geocoding = await self._aget_geocoding(location)
+        params = {"name": location, "count": 1}
+        if self.apikey:
+            params["apikey"] = self.apikey
+
+        data = await self._areq(self.geocoding_url, params)
+        geocoding = self._format_geocoding_response(data)
+
         params = (
             geocoding._asdict()
             | {
@@ -288,66 +269,36 @@ class WeatherTool(BaseTool):
             }
             | kwargs
         )
-
         if self.apikey:
             params["apikey"] = self.apikey
 
         try:
-            data = await self._aforcast(params)
+            data = await self._areq(self.forcast_url, params)
         except ClientResponseError as http_err:
             raise ToolException(str(http_err))
         else:
             data = self._format_response(data)
             return data, {"url": f"{self.forcast_url}?{urlencode(params)}"}
 
+    @asynccontextmanager
+    async def _with_asession(self) -> AsyncGenerator[ClientSession, None]:
+        """Yield either the injected session or a new temporary session."""
+        if self.asession:
+            yield self.asession
+        else:
+            async with ClientSession(raise_for_status=True) as session:
+                yield session
+
     @retry(
         retry=retry_if_exception_type((ClientResponseError, TimeoutError)),
         stop=stop_after_attempt(3),
         reraise=True,
     )
-    async def _aforcast(self, params: dict) -> dict:
+    async def _areq(self, url: str, params: dict) -> dict:
         """A request wrapper. Mainly for retrying."""
-        # <https://docs.aiohttp.org/en/stable/client_quickstart.html#timeouts>
-        timeout = ClientTimeout(total=self.timeout)
-        async with AsyncCachedSession(
-            base_url=self.base_url,
-            timeout=timeout,
-            raise_for_status=True,
-            cache=SQLiteBackend("openmeteo.async.cache"),
-        ) as session:
-            async with await session.get("/v1/forecast/", params=params) as response:
+        async with self._with_asession() as session:
+            async with await session.get(url, params=params) as response:
                 return await response.json()
-
-    @retry(
-        retry=retry_if_exception_type((ClientResponseError, TimeoutError)),
-        stop=stop_after_attempt(3),
-        reraise=True,
-    )
-    async def _aget_geocoding(self, location: str) -> GeoCoding:
-        """
-        See <https://open-meteo.com/en/docs/geocoding-api>
-        """
-        params = {"name": location, "count": 1}
-        if self.apikey:
-            params["apikey"] = self.apikey
-
-        # The `raise_for_status` will not happen theorically. The server will return an empty list if the location is wrong.
-        # <https://docs.aiohttp.org/en/stable/client_quickstart.html#timeouts>
-        timeout = ClientTimeout(total=self.timeout)
-        async with AsyncCachedSession(
-            base_url=self.geocoding_base_url,
-            timeout=timeout,
-            raise_for_status=True,
-            cache=SQLiteBackend("openmeteo.async.cache"),
-        ) as session:
-            async with await session.get("/v1/search/", params=params) as response:
-                data = await response.json()
-                if "results" not in data:
-                    raise ToolException("Invalid location")
-                target = data["results"][0]
-                return GeoCoding(
-                    latitude=target["latitude"], longitude=target["longitude"]
-                )
 
     def _format_response(self, data: dict) -> dict:
         """Formats a response containing daily and hourly data.
@@ -469,6 +420,8 @@ class WeatherTool(BaseTool):
 
         return restructured_data
 
-    def __del__(self):
-        """cleanup"""
-        self.session.close()
+    def _format_geocoding_response(self, data: dict) -> GeoCoding:
+        if "results" not in data:
+            raise ToolException("Invalid location")
+        target = data["results"][0]
+        return GeoCoding(latitude=target["latitude"], longitude=target["longitude"])

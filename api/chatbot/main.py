@@ -4,6 +4,8 @@ import logging
 import re
 from contextlib import asynccontextmanager
 
+from aiohttp import ClientTimeout
+from aiohttp_client_cache import CachedSession, SQLiteBackend
 from fastapi import FastAPI, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.requests import Request
@@ -42,7 +44,14 @@ async def lifespan(app: FastAPI):
     ) as checkpointer:
         await checkpointer.setup()
 
-    yield
+    timeout = ClientTimeout(total=5)
+    async with CachedSession(
+        timeout=timeout,
+        raise_for_status=True,
+        cache=SQLiteBackend(),
+    ) as session:
+        app.state.aiohttp_session = session
+        yield
 
 
 app = FastAPI(
