@@ -5,7 +5,6 @@ import logging
 from functools import lru_cache
 from typing import TYPE_CHECKING, Annotated
 
-from aiohttp import ClientSession
 from fastapi import Depends
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
@@ -18,11 +17,12 @@ from langgraph.types import StateSnapshot
 
 from chatbot.agent import create_agent
 from chatbot.config import settings
+from chatbot.http_client import HttpClient
 from chatbot.llm.client import ReasoningChatOpenai
 from chatbot.llm.providers import LLMProvider, llm_provider_factory
 from chatbot.tools.weather.openmeteo import WeatherTool
 
-from .commons import get_client_session
+from .commons import get_http_client
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
@@ -53,10 +53,10 @@ SafetyModelDep = Annotated[ChatOpenAI, Depends(get_safaty_model)]
 
 # Cannot apply `lru_cache` to this function:
 def get_tools(
-    session: Annotated[ClientSession, Depends(get_client_session)],
+    http_client: Annotated[HttpClient, Depends(get_http_client)],
 ) -> list[BaseTool]:
     tools = []
-    tools.append(WeatherTool(asession=session))
+    tools.append(WeatherTool(http_client=http_client))
     if settings.serp_api_key:
         logger.info("Using SerpApi as search tool.")
         from chatbot.tools.search.serpapi import SearchTool
@@ -66,30 +66,36 @@ def get_tools(
             from chatbot.tools.search.serpapi.geo import GeoLocationTool
 
             geo_tool = GeoLocationTool(
-                api_key=settings.ipgeolocation_api_key, asession=session
+                api_key=settings.ipgeolocation_api_key, http_client=http_client
             )
         else:
             geo_tool = None
         tools.append(
             SearchTool(
-                api_key=settings.serp_api_key, asession=session, geo_tool=geo_tool
+                api_key=settings.serp_api_key,
+                http_client=http_client,
+                geo_tool=geo_tool,
             )
         )
     return tools
 
 
 @lru_cache
-def get_llm_provider() -> LLMProvider:
+def get_llm_provider(
+    http_client: Annotated[HttpClient, Depends(get_http_client)],
+) -> LLMProvider:
     provider = settings.llm.get("metadata", {}).get("provider")
     try:
         loop = asyncio.get_running_loop()
     except RuntimeError:
         # No running loop, safe to use asyncio.run
-        return asyncio.run(llm_provider_factory(settings.llm["base_url"], provider))
+        return asyncio.run(
+            llm_provider_factory(settings.llm["base_url"], provider, http_client)
+        )
     else:
         # Already inside a loop: create task and wait
         return loop.create_task(
-            llm_provider_factory(settings.llm["base_url"], provider)
+            llm_provider_factory(settings.llm["base_url"], provider, http_client)
         )
 
 

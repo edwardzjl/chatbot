@@ -8,12 +8,12 @@ from langchain_core.callbacks import (
     AsyncCallbackManagerForToolRun,
     CallbackManagerForToolRun,
 )
-from langchain_core.tools import ToolException
+from langchain_core.tools import BaseTool, ToolException
 from langchain_core.tools.base import ArgsSchema
 from pydantic import BaseModel, Field
 from requests.exceptions import HTTPError
 
-from chatbot.tools.base import HttpTool
+from chatbot.http_client import HttpClient
 
 logger = logging.getLogger(__name__)
 
@@ -176,7 +176,7 @@ class WeatherInput(BaseModel):
     )
 
 
-class WeatherTool(HttpTool):
+class WeatherTool(BaseTool):
     name: str = "weather_forcast"
     description: str = "Useful for when you need to access weather data."
     args_schema: ArgsSchema | None = WeatherInput
@@ -185,6 +185,8 @@ class WeatherTool(HttpTool):
     base_url: str = "https://api.open-meteo.com"
     geocoding_base_url: str = "https://geocoding-api.open-meteo.com"
     apikey: str | None = None
+
+    http_client: HttpClient = HttpClient()
 
     @property
     def forcast_url(self) -> str:
@@ -204,7 +206,7 @@ class WeatherTool(HttpTool):
         if self.apikey:
             params["apikey"] = self.apikey
 
-        data = self._req(self.geocoding_url, params)
+        data = self.http_client.get(self.geocoding_url, params=params)
         geocoding = self._format_geocoding_response(data)
 
         params = (
@@ -218,7 +220,7 @@ class WeatherTool(HttpTool):
             params["apikey"] = self.apikey
 
         try:
-            data = self._req(self.forcast_url, params)
+            data = self.http_client.get(self.forcast_url, params=params)
         except HTTPError as http_err:
             raise ToolException(str(http_err))
         else:
@@ -235,7 +237,7 @@ class WeatherTool(HttpTool):
         if self.apikey:
             params["apikey"] = self.apikey
 
-        data = await self._areq(self.geocoding_url, params)
+        data = await self.http_client.aget(self.geocoding_url, params=params)
         geocoding = self._format_geocoding_response(data)
 
         params = (
@@ -249,7 +251,7 @@ class WeatherTool(HttpTool):
             params["apikey"] = self.apikey
 
         try:
-            data = await self._areq(self.forcast_url, params)
+            data = await self.http_client.aget(self.forcast_url, params=params)
         except ClientResponseError as http_err:
             raise ToolException(str(http_err))
         else:
