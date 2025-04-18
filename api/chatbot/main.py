@@ -3,9 +3,10 @@
 import logging
 import re
 from contextlib import asynccontextmanager
+from functools import partial
 
 from aiohttp import ClientTimeout
-from aiohttp_client_cache import CachedSession, SQLiteBackend
+from aiohttp_client_cache import CachedSession as AsyncCachedSessio, SQLiteBackend
 from fastapi import FastAPI, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.requests import Request
@@ -14,6 +15,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from prometheus_client import make_asgi_app
+from requests_cache import CachedSession
 from sqlalchemy.exc import NoResultFound
 from starlette.routing import Mount
 
@@ -44,14 +46,21 @@ async def lifespan(app: FastAPI):
     ) as checkpointer:
         await checkpointer.setup()
 
-    timeout = ClientTimeout(total=5)
-    async with CachedSession(
-        timeout=timeout,
+    app.state.http_session = CachedSession(
+        expire_after=-1, ignored_parameters=["api_key", "apikey"], use_cache_dir=True
+    )
+    app.state.http_session.request = partial(app.state.http_session.request, timeout=10)
+
+    app.state.aiohttp_session = AsyncCachedSessio(
+        timeout=ClientTimeout(total=10),
         raise_for_status=True,
         cache=SQLiteBackend(),
-    ) as session:
-        app.state.aiohttp_session = session
-        yield
+    )
+
+    yield
+
+    app.state.http_session.close()
+    await app.state.aiohttp_session.close()
 
 
 app = FastAPI(
