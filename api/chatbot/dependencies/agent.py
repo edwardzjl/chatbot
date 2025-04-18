@@ -5,6 +5,7 @@ import logging
 from functools import lru_cache
 from typing import TYPE_CHECKING, Annotated
 
+from aiohttp import ClientSession
 from fastapi import Depends
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
@@ -20,6 +21,8 @@ from chatbot.config import settings
 from chatbot.llm.client import ReasoningChatOpenai
 from chatbot.llm.providers import LLMProvider, llm_provider_factory
 from chatbot.tools.weather.openmeteo import WeatherTool
+
+from .commons import get_client_session
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
@@ -48,10 +51,12 @@ def get_safaty_model() -> ChatOpenAI | None:
 SafetyModelDep = Annotated[ChatOpenAI, Depends(get_safaty_model)]
 
 
-@lru_cache
-def get_tools() -> list[BaseTool]:
+# Cannot apply `lru_cache` to this function:
+def get_tools(
+    session: Annotated[ClientSession, Depends(get_client_session)],
+) -> list[BaseTool]:
     tools = []
-    tools.append(WeatherTool())
+    tools.append(WeatherTool(asession=session))
     if settings.serp_api_key:
         logger.info("Using SerpApi as search tool.")
         from chatbot.tools.search.serpapi import SearchTool
