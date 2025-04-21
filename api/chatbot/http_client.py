@@ -57,7 +57,7 @@ class HttpClient:
     async def arequest(self, method: HttpMethod, url: str, **kwargs: Any) -> dict:
         """A request wrapper. Mainly for retrying."""
         async with self._with_asession() as session:
-            async with await session.request(method, url, **kwargs) as response:
+            async with session.request(method, url, **kwargs) as response:
                 return await response.json()
 
     def __getattr__(self, name: str):

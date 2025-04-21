@@ -21,7 +21,7 @@ class VLLMProvider(LLMProvider):
         self.client = http_client or HttpClient()
 
     async def get_models(self) -> list[dict[str, Any]]:
-        data = await self.client.aget(urljoin(self.base_url), "/v1/models")
+        data = await self.client.aget(urljoin(self.base_url, "/v1/models"))
         return data.get("data", [])
 
     @override

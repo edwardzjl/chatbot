@@ -23,7 +23,7 @@ class TGIProvider(LLMProvider):
         self.client = http_client or HttpClient()
 
     async def get_model_info(self) -> dict[str, Any]:
-        return await self.client.aget(urljoin(self.base_url), "/info")
+        return await self.client.aget(urljoin(self.base_url, "/info"))
 
     @override
     async def get_max_tokens(self, model_name: str) -> int:
