@@ -1,12 +1,9 @@
-from aiohttp import ClientSession
 from fastapi import Request, WebSocket
 
 from chatbot.http_client import HttpClient
 
 
-def get_http_client(
-    request: Request = None, websocket: WebSocket = None
-) -> ClientSession:
+def get_http_client(request: Request = None, websocket: WebSocket = None) -> HttpClient:
     """Get aiohttp session from scope.
 
     Scope can be either request or websocket.
