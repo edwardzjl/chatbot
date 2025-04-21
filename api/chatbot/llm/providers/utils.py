@@ -19,7 +19,8 @@ async def guess_provider(
 ) -> LLMProvider:
     http_client = http_client or HttpClient()
     try:
-        await http_client.aget(urljoin(base_url, "/info"))
+        async with await http_client.aget(urljoin(base_url, "/info")) as resp:
+            await resp.json()
         logger.info("Provider has `/info` endpoint, assuming it's TGI")
         return TGIProvider(base_url, http_client)
     except ClientResponseError as e:
@@ -27,7 +28,10 @@ async def guess_provider(
             logger.exception("Error while trying to guess provider")
             raise
     try:
-        await http_client.aget(urljoin(base_url, "/get_server_info"))
+        async with await http_client.aget(
+            urljoin(base_url, "/get_server_info")
+        ) as resp:
+            await resp.json()
         logger.info("Provider has `/get_server_info` endpoint, assuming it's SGLang")
         # TODO: implement SGLang provider
         return UnknownLLMProvider()
@@ -35,7 +39,8 @@ async def guess_provider(
         if e.status != 404:
             logger.exception("Error while trying to guess provider")
             raise
-    data = await http_client.aget(urljoin(base_url, "/v1/models"))
+    async with await http_client.aget(urljoin(base_url, "/v1/models")) as resp:
+        data = await resp.json()
     models = data.get("data", [])
 
     assert models

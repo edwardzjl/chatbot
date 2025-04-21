@@ -23,7 +23,8 @@ class TGIProvider(LLMProvider):
         self.client = http_client or HttpClient()
 
     async def get_model_info(self) -> dict[str, Any]:
-        return await self.client.aget(urljoin(self.base_url, "/info"))
+        async with await self.client.aget(urljoin(self.base_url, "/info")) as resp:
+            return await resp.json()
 
     @override
     async def get_max_tokens(self, model_name: str) -> int:
@@ -48,11 +49,12 @@ class TGIProvider(LLMProvider):
         """
         url = urljoin(self.base_url, "/chat_tokenize")
         # use 'prompt' param instead of 'messages' to get the number of tokens in the prompt
-        data = self.client.post(
+        resp = self.client.post(
             url,
             json={
                 "model": model_name,
                 "messages": convert_to_openai_messages(messages),
             },
         )
+        data = resp.json()
         return len(data["tokenize_response"])
