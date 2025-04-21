@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from functools import partial
 
 from aiohttp import ClientTimeout
-from aiohttp_client_cache import CachedSession as AsyncCachedSessio, SQLiteBackend
+from aiohttp_client_cache import CachedSession as AsyncCachedSession, SQLiteBackend
 from fastapi import FastAPI, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.requests import Request
@@ -51,7 +51,7 @@ async def lifespan(app: FastAPI):
     )
     app.state.http_session.request = partial(app.state.http_session.request, timeout=10)
 
-    app.state.aiohttp_session = AsyncCachedSessio(
+    app.state.aiohttp_session = AsyncCachedSession(
         timeout=ClientTimeout(total=10),
         raise_for_status=True,
         cache=SQLiteBackend(use_temp=True),
