@@ -21,7 +21,8 @@ class VLLMProvider(LLMProvider):
         self.client = http_client or HttpClient()
 
     async def get_models(self) -> list[dict[str, Any]]:
-        data = await self.client.aget(urljoin(self.base_url, "/v1/models"))
+        async with await self.client.aget(urljoin(self.base_url, "/v1/models")) as resp:
+            data = await resp.json()
         return data.get("data", [])
 
     @override
@@ -48,11 +49,12 @@ class VLLMProvider(LLMProvider):
         """
         url = urljoin(self.base_url, "/tokenize")
         # use 'prompt' param instead of 'messages' to get the number of tokens in the prompt
-        data = self.client.post(
+        resp = self.client.post(
             url,
             json={
                 "model": model_name,
                 "messages": convert_to_openai_messages(messages),
             },
         )
+        data = resp.json()
         return data["count"]

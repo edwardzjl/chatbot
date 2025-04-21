@@ -4,6 +4,7 @@ from typing import AsyncGenerator, Literal, TypeAlias, TYPE_CHECKING
 
 import requests
 from aiohttp import ClientSession
+from aiohttp.client import _RequestContextManager
 from requests.exceptions import Timeout
 from tenacity import retry, retry_if_exception_type, stop_after_attempt
 
@@ -17,6 +18,32 @@ async_methods = [f"a{method}" for method in sync_methods]
 
 
 class HttpClient:
+    """A unified HTTP client wrapper for both synchronous and asynchronous requests.
+
+    This class provides a consistent interface for making HTTP requests, supporting both
+    synchronous (using `requests` library) and asynchronous (using `aiohttp` library) operations.
+    It is designed to simplify the development process, especially in ecosystems where both sync
+    and async functions are required, such as in langchain.
+
+    Features:
+    - Supports common HTTP methods (GET, POST, PUT, DELETE, etc.) for both sync and async requests.
+    - Automatically retries requests in case of timeouts.
+    - Handles session management, making it easier to use `requests.Session` or `aiohttp.ClientSession`.
+    - Reduces boilerplate code by dynamically creating method handlers for sync and async operations.
+
+    Usage:
+    - For synchronous requests, use the `HttpClient` methods directly (e.g., `client.get()`, `client.post()`).
+    - For asynchronous requests, use the corresponding async methods (e.g., `client.aget()`, `client.apost()`).
+
+    Attributes:
+        session (requests.Session | None): Optional synchronous requests session.
+        asession (aiohttp.ClientSession | None): Optional asynchronous aiohttp session.
+
+    Methods:
+        request(method: str, url: str, **kwargs): Performs a synchronous HTTP request with retry support.
+        arequest(method: str, url: str, **kwargs): Performs an asynchronous HTTP request with retry support.
+    """
+
     def __init__(
         self,
         session: requests.Session | None = None,
@@ -36,12 +63,12 @@ class HttpClient:
         stop=stop_after_attempt(3),
         reraise=True,
     )
-    def request(self, method: HttpMethod, url: str, **kwargs) -> dict:
+    def request(self, method: HttpMethod, url: str, **kwargs) -> requests.Response:
         """Synchronous HTTP request with retry support."""
         client = self.session or requests
         response = client.request(method, url, **kwargs)
         response.raise_for_status()
-        return response.json()
+        return response
 
     @asynccontextmanager
     async def _with_asession(self) -> AsyncGenerator[ClientSession, None]:
@@ -57,11 +84,12 @@ class HttpClient:
         stop=stop_after_attempt(3),
         reraise=True,
     )
-    async def arequest(self, method: HttpMethod, url: str, **kwargs) -> dict:
+    async def arequest(
+        self, method: HttpMethod, url: str, **kwargs
+    ) -> _RequestContextManager:
         """A request wrapper. Mainly for retrying."""
         async with self._with_asession() as session:
-            async with session.request(method, url, **kwargs) as response:
-                return await response.json()
+            return session.request(method, url, **kwargs)
 
     def __getattr__(self, name: str):
         """Dynamically handle HTTP methods like get(), post(), etc."""
@@ -91,82 +119,82 @@ class HttpClient:
             self,
             url: str,
             **kwargs,
-        ) -> dict: ...
+        ) -> requests.Response: ...
 
         def options(
             self,
             url: str,
             **kwargs,
-        ) -> dict: ...
+        ) -> requests.Response: ...
 
         def head(
             self,
             url: str,
             **kwargs,
-        ) -> dict: ...
+        ) -> requests.Response: ...
 
         def post(
             self,
             url: str,
             **kwargs,
-        ) -> dict: ...
+        ) -> requests.Response: ...
 
         def put(
             self,
             url: str,
             **kwargs,
-        ) -> dict: ...
+        ) -> requests.Response: ...
 
         def patch(
             self,
             url: str,
             **kwargs,
-        ) -> dict: ...
+        ) -> requests.Response: ...
 
         def delete(
             self,
             url: str,
             **kwarg,
-        ) -> dict: ...
+        ) -> requests.Response: ...
 
         async def aget(
             self,
             url: str,
             **kwargs,
-        ) -> dict: ...
+        ) -> _RequestContextManager: ...
 
         async def aoptions(
             self,
             url: str,
             **kwargs,
-        ) -> dict: ...
+        ) -> _RequestContextManager: ...
 
         async def ahead(
             self,
             url: str,
             **kwargs,
-        ) -> dict: ...
+        ) -> _RequestContextManager: ...
 
         async def apost(
             self,
             url: str,
             **kwargs,
-        ) -> dict: ...
+        ) -> _RequestContextManager: ...
 
         async def aput(
             self,
             url: str,
             **kwargs,
-        ) -> dict: ...
+        ) -> _RequestContextManager: ...
 
         async def apatch(
             self,
             url: str,
             **kwargs,
-        ) -> dict: ...
+        ) -> _RequestContextManager: ...
 
         async def adelete(
             self,
             url: str,
             **kwargs,
-        ) -> dict: ...
+        ) -> _RequestContextManager: ...

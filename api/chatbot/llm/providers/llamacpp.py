@@ -22,7 +22,8 @@ class llamacppProvider(LLMProvider):
 
     @override
     async def get_max_tokens(self, model_name: str) -> int:
-        props = await self.client.aget(urljoin(self.base_url, "/props"))
+        async with await self.client.aget(urljoin(self.base_url, "/props")) as resp:
+            props = await resp.json()
         return props["default_generation_settings"]["n_ctx"]
 
     @override
@@ -41,12 +42,13 @@ class llamacppProvider(LLMProvider):
         Returns:
             int: The number of tokens in the provided messages.
         """
-        prompt = self.client.post(
+        resp = self.client.post(
             urljoin(self.base_url, "/apply-template"),
             json={
                 "messages": convert_to_openai_messages(messages),
             },
         )
+        prompt = resp.json()
 
         tokens = self.client.post(
             urljoin(self.base_url, "/tokenize"),

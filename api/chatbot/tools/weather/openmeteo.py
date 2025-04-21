@@ -206,7 +206,8 @@ class WeatherTool(BaseTool):
         if self.apikey:
             params["apikey"] = self.apikey
 
-        data = self.http_client.get(self.geocoding_url, params=params)
+        resp = self.http_client.get(self.geocoding_url, params=params)
+        data = resp.json()
         geocoding = self._format_geocoding_response(data)
 
         params = (
@@ -220,7 +221,8 @@ class WeatherTool(BaseTool):
             params["apikey"] = self.apikey
 
         try:
-            data = self.http_client.get(self.forcast_url, params=params)
+            resp = self.http_client.get(self.forcast_url, params=params)
+            data = resp.json()
         except HTTPError as http_err:
             raise ToolException(str(http_err))
         else:
@@ -237,7 +239,10 @@ class WeatherTool(BaseTool):
         if self.apikey:
             params["apikey"] = self.apikey
 
-        data = await self.http_client.aget(self.geocoding_url, params=params)
+        async with await self.http_client.aget(
+            self.geocoding_url, params=params
+        ) as resp:
+            data = await resp.json()
         geocoding = self._format_geocoding_response(data)
 
         params = (
@@ -251,7 +256,10 @@ class WeatherTool(BaseTool):
             params["apikey"] = self.apikey
 
         try:
-            data = await self.http_client.aget(self.forcast_url, params=params)
+            async with await self.http_client.aget(
+                self.forcast_url, params=params
+            ) as resp:
+                data = await resp.json()
         except ClientResponseError as http_err:
             raise ToolException(str(http_err))
         else:

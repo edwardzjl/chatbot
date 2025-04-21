@@ -72,7 +72,8 @@ class SearchTool(BaseTool):
                 logger.exception("Failed to get location from IP")
 
         try:
-            data = self.http_client.get(self.base_url, params=params)
+            resp = self.http_client.get(self.base_url, params=params)
+            data = resp.json()
         except HTTPError as http_err:
             raise ToolException(str(http_err))
         else:
@@ -106,7 +107,10 @@ class SearchTool(BaseTool):
                 logger.exception("Failed to get location from IP")
 
         try:
-            data = await self.http_client.aget(self.base_url, params=params)
+            async with await self.http_client.aget(
+                self.base_url, params=params
+            ) as resp:
+                data = await resp.json()
         except ClientResponseError as http_err:
             raise ToolException(str(http_err))
         else:

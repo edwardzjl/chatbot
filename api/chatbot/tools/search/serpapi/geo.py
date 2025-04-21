@@ -39,7 +39,8 @@ class GeoLocationTool(BaseTool):
             "apiKey": self.api_key,
             "ip": ip,
         }
-        data = self.http_client.get(self.ipgeo_url, params=params)
+        resp = self.http_client.get(self.ipgeo_url, params=params)
+        data = resp.json()
         return ", ".join([data["city"], data["state_prov"], data["country_name"]])
 
     async def _arun(
@@ -52,5 +53,6 @@ class GeoLocationTool(BaseTool):
             "apiKey": self.api_key,
             "ip": ip,
         }
-        data = await self.http_client.aget(self.ipgeo_url, params=params)
+        async with await self.http_client.aget(self.ipgeo_url, params=params) as resp:
+            data = await resp.json()
         return ", ".join([data["city"], data["state_prov"], data["country_name"]])
