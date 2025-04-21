@@ -1,6 +1,6 @@
 from asyncio import TimeoutError
 from contextlib import asynccontextmanager
-from typing import Any, AsyncGenerator, Literal, TypeAlias, TYPE_CHECKING
+from typing import AsyncGenerator, Literal, TypeAlias, TYPE_CHECKING
 
 import requests
 from aiohttp import ClientSession
@@ -11,6 +11,9 @@ from tenacity import retry, retry_if_exception_type, stop_after_attempt
 HttpMethod: TypeAlias = Literal[
     "GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"
 ]
+
+sync_methods = ["get", "post", "put", "patch", "delete", "head", "options"]
+async_methods = [f"a{method}" for method in sync_methods]
 
 
 class HttpClient:
@@ -33,7 +36,7 @@ class HttpClient:
         stop=stop_after_attempt(3),
         reraise=True,
     )
-    def request(self, method: HttpMethod, url: str, **kwargs: Any) -> dict:
+    def request(self, method: HttpMethod, url: str, **kwargs) -> dict:
         """Synchronous HTTP request with retry support."""
         client = self.session or requests
         response = client.request(method, url, **kwargs)
@@ -54,7 +57,7 @@ class HttpClient:
         stop=stop_after_attempt(3),
         reraise=True,
     )
-    async def arequest(self, method: HttpMethod, url: str, **kwargs: Any) -> dict:
+    async def arequest(self, method: HttpMethod, url: str, **kwargs) -> dict:
         """A request wrapper. Mainly for retrying."""
         async with self._with_asession() as session:
             async with session.request(method, url, **kwargs) as response:
@@ -62,22 +65,19 @@ class HttpClient:
 
     def __getattr__(self, name: str):
         """Dynamically handle HTTP methods like get(), post(), etc."""
-        sync_methods = ["get", "post", "put", "patch", "delete", "head", "options"]
-        async_methods = [f"a{method}" for method in sync_methods]
-
         # Handle sync methods (e.g., get(), post(), etc.)
         if name.lower() in sync_methods:
 
-            def method(url: str, **kwargs: Any):
-                return self.request(name.upper(), url, **kwargs)
+            def method(*args, **kwargs):
+                return self.request(name.upper(), *args, **kwargs)
 
             return method
 
         # Handle async methods (e.g., aget(), apost(), etc.)
         if name.lower() in async_methods:
 
-            def method(url: str, **kwargs: Any):
-                return self.arequest(name[1:].upper(), url, **kwargs)
+            def method(*args, **kwargs):
+                return self.arequest(name[1:].upper(), *args, **kwargs)
 
             return method
 
@@ -90,83 +90,83 @@ class HttpClient:
         def get(
             self,
             url: str,
-            **kwargs: Any,
+            **kwargs,
         ) -> dict: ...
 
         def options(
             self,
             url: str,
-            **kwargs: Any,
+            **kwargs,
         ) -> dict: ...
 
         def head(
             self,
             url: str,
-            **kwargs: Any,
+            **kwargs,
         ) -> dict: ...
 
         def post(
             self,
             url: str,
-            **kwargs: Any,
+            **kwargs,
         ) -> dict: ...
 
         def put(
             self,
             url: str,
-            **kwargs: Any,
+            **kwargs,
         ) -> dict: ...
 
         def patch(
             self,
             url: str,
-            **kwargs: Any,
+            **kwargs,
         ) -> dict: ...
 
         def delete(
             self,
             url: str,
-            **kwargs: Any,
+            **kwarg,
         ) -> dict: ...
 
         async def aget(
             self,
             url: str,
-            **kwargs: Any,
+            **kwargs,
         ) -> dict: ...
 
         async def aoptions(
             self,
             url: str,
-            **kwargs: Any,
+            **kwargs,
         ) -> dict: ...
 
         async def ahead(
             self,
             url: str,
-            **kwargs: Any,
+            **kwargs,
         ) -> dict: ...
 
         async def apost(
             self,
             url: str,
-            **kwargs: Any,
+            **kwargs,
         ) -> dict: ...
 
         async def aput(
             self,
             url: str,
-            **kwargs: Any,
+            **kwargs,
         ) -> dict: ...
 
         async def apatch(
             self,
             url: str,
-            **kwargs: Any,
+            **kwargs,
         ) -> dict: ...
 
         async def adelete(
             self,
             url: str,
-            **kwargs: Any,
+            **kwargs,
         ) -> dict: ...
