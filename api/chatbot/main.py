@@ -47,14 +47,14 @@ async def lifespan(app: FastAPI):
         await checkpointer.setup()
 
     app.state.http_session = CachedSession(
-        expire_after=-1, ignored_parameters=["api_key", "apikey"], use_cache_dir=True
+        expire_after=-1, ignored_parameters=["api_key", "apikey"], use_temp=True
     )
     app.state.http_session.request = partial(app.state.http_session.request, timeout=10)
 
     app.state.aiohttp_session = AsyncCachedSessio(
         timeout=ClientTimeout(total=10),
         raise_for_status=True,
-        cache=SQLiteBackend(),
+        cache=SQLiteBackend(use_temp=True),
     )
 
     yield
