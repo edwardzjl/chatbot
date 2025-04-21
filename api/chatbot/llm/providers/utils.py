@@ -1,4 +1,5 @@
 import logging
+from urllib.parse import urljoin
 
 from aiohttp import ClientResponseError
 
@@ -18,7 +19,7 @@ async def guess_provider(
 ) -> LLMProvider:
     http_client = http_client or HttpClient()
     try:
-        await http_client.aget("/info")
+        await http_client.aget(urljoin(base_url, "/info"))
         logger.info("Provider has `/info` endpoint, assuming it's TGI")
         return TGIProvider(base_url, http_client)
     except ClientResponseError as e:
@@ -26,7 +27,7 @@ async def guess_provider(
             logger.exception("Error while trying to guess provider")
             raise
     try:
-        await http_client.aget("/get_server_info")
+        await http_client.aget(urljoin(base_url, "/get_server_info"))
         logger.info("Provider has `/get_server_info` endpoint, assuming it's SGLang")
         # TODO: implement SGLang provider
         return UnknownLLMProvider()
@@ -34,7 +35,7 @@ async def guess_provider(
         if e.status != 404:
             logger.exception("Error while trying to guess provider")
             raise
-    data = await http_client.aget("/v1/models")
+    data = await http_client.aget(urljoin(base_url, "/v1/models"))
     models = data.get("data", [])
 
     assert models

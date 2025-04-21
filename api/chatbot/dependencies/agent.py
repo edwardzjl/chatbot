@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 import logging
 from functools import lru_cache
 from typing import TYPE_CHECKING, Annotated
@@ -80,23 +79,11 @@ def get_tools(
     return tools
 
 
-@lru_cache
-def get_llm_provider(
+async def get_llm_provider(
     http_client: Annotated[HttpClient, Depends(get_http_client)],
 ) -> LLMProvider:
     provider = settings.llm.get("metadata", {}).get("provider")
-    try:
-        loop = asyncio.get_running_loop()
-    except RuntimeError:
-        # No running loop, safe to use asyncio.run
-        return asyncio.run(
-            llm_provider_factory(settings.llm["base_url"], provider, http_client)
-        )
-    else:
-        # Already inside a loop: create task and wait
-        return loop.create_task(
-            llm_provider_factory(settings.llm["base_url"], provider, http_client)
-        )
+    return await llm_provider_factory(settings.llm["base_url"], provider, http_client)
 
 
 async def get_agent(
