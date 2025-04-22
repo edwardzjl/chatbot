@@ -1,25 +1,48 @@
 # Chatbot
 
-A simple, multi-user, multi-conversation, web-based chatbot.
+**Chatbot** is a toy project that I built to ~~waste my time~~ escape the stress of work. It is a Single-page application (SPA) that lets you chat with an LLM agent named **Rei** (for now).
 
-## Features
+In this project, I'm trying to reproduce some key features of popular LLM-based chatbots like [ChatGPT](https://chatgpt.com/), [Gemini](https://gemini.google.com/) and [Le Chat](https://chat.mistral.ai/chat).
 
-### Multi User
+A demo is available at <https://chatbot.agi.zjuici.com/>, which connects to a self-hosted LLM service. However, please note that this is just for demonstration purposes — it’s not production-ready and may go down at any time for any reason.
 
-Chatbot incorporates OpenID Connect for user identification. It relies on an external OAuth Client [oidc-authservice](https://github.com/arrikto/oidc-authservice) to handle authentication and set a trusted `userid` Header to the downstream services. Alternatively, [oauth2-proxy](https://github.com/oauth2-proxy/oauth2-proxy), which is more actively maintained, can be used in place of `oidc-authservice`.
+Also, I’m still quite new to web development (HTML, CSS, JavaScript, React, etc.), so the code in the `web` directory (or even the entire project :worried:) might not be the most aesthetically pleasing. If that's the case, feel free to open an issue or submit a pull request to help me improve things. :wink:
 
-### Multi Conversation
+## Key Features
 
-Chatbot supports multiple conversations. Each conversation is identified by a unique `conversationId`. Conversations consists of a sequence of `messages` as well as metadata such as `title`, `updatedAt`. Message persistance is handled by [langchain](https://github.com/langchain-ai/langchain)'s `RedisChatMessageHistory` module, which leverages Redis for storing chat history. Metadata persistance is handled separately by [redis-om](https://github.com/redis/redis-om-python), an object mapping library for Redis from Redis Labs. This separation of message content and metadata storage provides modularity and flexibility in the chatbot's underlying persistence architecture.
+I’ve already implemented some key features for the agent — although many (if not all) are still quite rough around the edges.
 
-### Streaming
+### Tool Usage
 
-Chatbot supports streaming LLM outputs to the user in real-time. Streaming messages are delivered via [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API), which enables bidirectional, full-duplex communication channels between the server and client.
+**Rei** can use external tools to be more helpful. Currently, two tools are available:
 
-On the LLM side, Chatbot uses [Text Generation Inference (TGI)](https://github.com/huggingface/text-generation-inference), an open source library from HuggingFace, to host large language models for text generation. TGI provides out-of-the-box support for continuous batching, streaming inference, and other useful features for deploying production-ready LLMs.
-Using TGI eliminates the need to build complex serving infrastructure from scratch. Its continuous batching allows the chatbot to achieve high throughput by batching requests. Streaming inference enables the chatbot to return partial results instantly rather than waiting for the full output.
+- Web Search: **Rei** can search the internet using a web-search tool powered by [SerpApi](https://serpapi.com/).
+- Weather Forcast: **Rei** Rei can fetch weather information using a weather-forecast tool backed by [Open-meteo](https://open-meteo.com/)
+
+More tools are planned, I want to make **Rei** a useful daily assistant! :smirk:
+
+### Multi Modal Inputs
+
+**Rei** supports text, image, and video input. However, I haven’t found any multi-modal model that performs well and supports tool usage effectively.
+
+Given my personal priorities, I’ve chosen to prioritize tool usage and temporarily disabled the multi-modal input button. If you know of any good multi-modal models that work well with tool usage, please let me know!
+
+### Working Memory
+
+**Rei** has a short-term memory system, allowing her to remember recent conversations -- kind of like [working memory](https://en.wikipedia.org/wiki/Working_memory) in humans.
+
+This is implemented by truncating the conversation history and passing the remaining messages to the LLM. The truncation strategy depends on the backend:
+
+- If you are using [text-generation-inference](https://github.com/huggingface/text-generation-inference), [vLLM](https://github.com/vllm-project/vllm) or [llama.cpp](https://github.com/ggml-org/llama.cpp), **Rei** can count tokens in all messages (including the input), and drop the oldest ones until the total is under 90% of the model's context length.
+- Otherwise, **Rei** falls back to keeping only the 20 most recent messages as working memory. (Note: In this case, you might encounter input-too-long issues.)
+
+## Why chatbot
 
 ## Architecture
+
+### Authentication
+
+Chatbot incorporates OpenID Connect for user identification. It relies on an external OAuth Client [oidc-authservice](https://github.com/arrikto/oidc-authservice) to handle authentication and set a trusted `userid` Header to the downstream services. Alternatively, [oauth2-proxy](https://github.com/oauth2-proxy/oauth2-proxy), which is more actively maintained, can be used in place of `oidc-authservice`.
 
 ## Deployment
 
