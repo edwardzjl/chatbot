@@ -21,8 +21,8 @@ providers:
   - provider: gitlab
     id: gitlab
     name: gitlab
-    clientID: e8bf4b6f0846fa048e68540cdaceafd340cd99a915147c77f0cbc8f4f264cbc1
-    clientSecret: gloas-b455bf581f73358cd537eee286416fb495f61ed19809a6d16d2e51ee5c1d65ef
+    clientID: ${PROVIDERS_GITLAB_CLIENTID}
+    clientSecret: ${PROVIDERS_GITLAB_CLIENTSECRET}
     oidcConfig:
       issuerUrl: https://gitlab.com
       audienceClaims:
@@ -31,8 +31,8 @@ providers:
   - provider: github
     id: gitee
     name: gitee
-    clientID: c9f90f7eea23453da556bf86924c3f468bc1b40740a533d6e3bee837a6ac7739
-    clientSecret: 0872160c0c38ce659554d2d6bd10dca0022a57b6b4792594c45c65380d9184e5
+    clientID: ${PROVIDERS_GITEE_CLIENTID}
+    clientSecret: ${PROVIDERS_GITEE_CLIENTSECRET}
     loginUrl: https://gitee.com/oauth/authorize
     redeemUrl: https://gitee.com/oauth/access_token
     scope: user_info emails
@@ -40,13 +40,13 @@ providers:
   - provider: github
     id: github
     name: github
-    clientID: 13cf570549ff0674230c
-    clientSecret: 4b7409c02ebaab91a96152d2ac5cc2cc31c4292b
+    clientID: ${PROVIDERS_GITHUB_CLIENTID}
+    clientSecret: ${PROVIDERS_GITHUB_CLIENTSECRET}
   - provider: google
     id: google
     name: google
-    clientID: 210937179771-sfbnkrnfa5osl6fdrelrk6um4qr11dii.apps.googleusercontent.com
-    clientSecret: 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
+    clientID: ${PROVIDERS_GOOGLE_CLIENTID}
+    clientSecret: ${PROVIDERS_GOOGLE_CLIENTSECRET}
     googleConfig: {}
     loginURLParameters:
       - default:
