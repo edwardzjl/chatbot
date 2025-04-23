@@ -54,6 +54,7 @@ class Settings(BaseSettings):
 
     serp_api_key: str | None = None
     ipgeolocation_api_key: str | None = None
+    openmeteo_api_key: str | None = None
 
     @model_validator(mode="after")
     def set_default_standby_url(self) -> Self:
