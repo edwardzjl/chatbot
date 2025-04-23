@@ -60,10 +60,62 @@ See [deployment instructions](./manifests/README.md)
 
 ## Configuration
 
-Key | Default Value | Description
----|---|---
-LLM | `http://localhost:8080` | llm service config dict
-SAFETY_LLM | `None` | safety llm service config dict
-POSTGRES_PRIMARY_URL | `postgresql+psycopg://postgres:postgres@localhost:5432/` | Database url to read / write messages and metadata
-POSTGRES_STANDBY_URL | `None` | Database url to read messages and metadata
-LOG_LEVEL | `INFO` | log level
+Chatbot reads its configuration from environment variables. The following variables are currently supported:
+
+#### LLM
+
+A dictionary used to construct a [ChatOpenAI](https://python.langchain.com/api_reference/openai/chat_models/langchain_openai.chat_models.base.ChatOpenAI.html) instance, which serves as the core of the agent.
+
+- type: `dict`
+- default: `{"api_key": "NOT_SET"}`
+
+#### SAFETY_LLM
+
+A dictionary used to construct a [ChatOpenAI](https://python.langchain.com/api_reference/openai/chat_models/langchain_openai.chat_models.base.ChatOpenAI.html) instance that acts as a safety guard.
+
+This is optional. Even if not set, the LLM you use may still have built-in safety mechanisms to reject harmful or toxic inputs. If you want to explicitly enable this feature, make sure you are using one of the Llama Guard 3 models.
+
+- type: `dict | None`
+- default: `None`
+
+#### POSTGRES_PRIMARY_URL
+
+The database url for reading and writing agent states and conversation metadata.
+
+- type: `str`
+- default: `postgresql+psycopg://postgres:postgres@localhost:5432/`
+
+#### POSTGRES_STANDBY_URL
+
+An optional read-only database URL for agent states and conversation metadata. If not set, reads will fall back to `POSTGRES_PRIMARY_URL`.
+
+- type: `str | None`
+- default: `None`
+
+#### SERP_API_KEY
+
+The API key for [SearpApi](https://serpapi.com/), enabling **Rei** to use it as the `web-search` tool. You can get you key [here](https://serpapi.com/manage-api-key).
+
+- type: `str | None`
+- default: `None`
+
+#### IPGEOLOCATION_API_KEY
+
+The API key for [ipgeolocation](https://ipgeolocation.io/ip-location-api.html). Supplying this enables IP-to-location conversion, which can improve search relevance by passing the location as a parameter to the web-search tool.
+
+- type: `str | None`
+- default: `None`
+
+#### OPENMETEO_API_KEY
+
+The API key for [Open-meteo](https://open-meteo.com/).  Open-Meteo provides a free tier that doesn’t require an API key, so Rei can still use the `weather-forecast` tool without one. However, if you're using it in commercial projects, please consider subscribing to their API.
+
+- type: `str | None`
+- default: `None`
+
+#### LOG_LEVEL
+
+The logging level for the application.
+
+- type: `str`
+- default: `INFO`
