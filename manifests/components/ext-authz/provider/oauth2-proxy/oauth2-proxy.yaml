@@ -18,30 +18,6 @@ metricsServer:
 providers:
   # only the first provider works now.
   # see <https://github.com/oauth2-proxy/oauth2-proxy/issues/926>
-  - provider: gitlab
-    id: gitlab
-    name: gitlab
-    clientID: ${PROVIDERS_GITLAB_CLIENTID}
-    clientSecret: ${PROVIDERS_GITLAB_CLIENTSECRET}
-    oidcConfig:
-      issuerUrl: https://gitlab.com
-      audienceClaims:
-        - aud
-  # gitee not working
-  - provider: github
-    id: gitee
-    name: gitee
-    clientID: ${PROVIDERS_GITEE_CLIENTID}
-    clientSecret: ${PROVIDERS_GITEE_CLIENTSECRET}
-    loginUrl: https://gitee.com/oauth/authorize
-    redeemUrl: https://gitee.com/oauth/access_token
-    scope: user_info emails
-    # validateUrl: https://gitee.com/edwardlol/api/v1
-  - provider: github
-    id: github
-    name: github
-    clientID: ${PROVIDERS_GITHUB_CLIENTID}
-    clientSecret: ${PROVIDERS_GITHUB_CLIENTSECRET}
   - provider: google
     id: google
     name: google
