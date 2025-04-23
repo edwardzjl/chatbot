@@ -55,7 +55,9 @@ def get_tools(
     http_client: Annotated[HttpClient, Depends(get_http_client)],
 ) -> list[BaseTool]:
     tools = []
-    tools.append(WeatherTool(http_client=http_client))
+    tools.append(
+        WeatherTool(http_client=http_client, apikey=settings.openmeteo_api_key)
+    )
     if settings.serp_api_key:
         logger.info("Using SerpApi as search tool.")
         from chatbot.tools.search.serpapi import SearchTool
