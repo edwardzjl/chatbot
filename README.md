@@ -16,8 +16,8 @@ I’ve already implemented some key features for the agent — although many (if
 
 **Rei** can use external tools to be more helpful. Currently, two tools are available:
 
-- Web Search: **Rei** can search the internet using a web-search tool powered by [SerpApi](https://serpapi.com/).
-- Weather Forcast: **Rei** Rei can fetch weather information using a weather-forecast tool backed by [Open-meteo](https://open-meteo.com/)
+- Web Search: **Rei** can search the internet using a `web-search` tool powered by [SerpApi](https://serpapi.com/).
+- Weather Forcast: **Rei** Rei can fetch weather information using a `weather-forecast` tool backed by [Open-meteo](https://open-meteo.com/)
 
 More tools are planned, I want to make **Rei** a useful daily assistant! :smirk:
 
@@ -26,6 +26,16 @@ More tools are planned, I want to make **Rei** a useful daily assistant! :smirk:
 **Rei** supports text, image, and video input. However, I haven’t found any multi-modal model that performs well and supports tool usage effectively.
 
 Given my personal priorities, I’ve chosen to prioritize tool usage and temporarily disabled the multi-modal input button. If you know of any good multi-modal models that work well with tool usage, please let me know!
+
+### Reasoning
+
+Chatbot supports reasoning models like [deepseek-ai/DeepSeek-R1-Distill-Qwen-32B](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B) and [Qwen/QwQ-32B](https://huggingface.co/Qwen/QwQ-32B). Even if you're not using one of these models, the chatbot can still encourage reasoning behavior through prompt engineering.
+
+However, as of this writing, most reasoning models either do not support tool usage or perform poorly when using tools. For that reason, it’s generally recommended to stick with a non-reasoning model if tool usage is important to you.
+
+Also, when using reasoning models, their chat templates typically force them to "think" at the beginning of a response, following a "think-then-act" pattern. This isn't the case for non-reasoning models, which might "think" at the beginning, in the middle, or wherever it feels natural. I haven't forced them to start with a thinking step, because I feel the current behavior is more human-like -- as humans, we often pause mid-sentence to think, then continue.
+
+That said, the current implementation of the chatbot always renders the "thinking" step at the beginning of the AI's response. So you might occasionally notice a bit of weirdness — like the response appears first, then jumps back to render the thought. This UX issue needs improvement, but I haven't yet decided how to best handle it.
 
 ### Working Memory
 
