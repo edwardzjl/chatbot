@@ -1,4 +1,6 @@
 name: Chatbot API CI
+permissions:
+  contents: read
 
 on:
   push:
