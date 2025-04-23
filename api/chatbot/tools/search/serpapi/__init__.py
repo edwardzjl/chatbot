@@ -31,7 +31,7 @@ class SearchInput(BaseModel):
 
 
 class SearchTool(BaseTool):
-    name: str = "search"
+    name: str = "web_search"
     description: str = "Useful for when you need to search the Internet."
     args_schema: ArgsSchema | None = SearchInput
     response_format: Literal["content", "content_and_artifact"] = "content_and_artifact"
