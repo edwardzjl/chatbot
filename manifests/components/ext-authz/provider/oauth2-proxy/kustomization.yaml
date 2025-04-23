@@ -13,15 +13,14 @@ configMapGenerator:
   - name: oauth2-proxy
     files:
       - oauth2-proxy.yaml
+    # we will mount configmaps so we can't use suffix hash
+    options:
+      disableNameSuffixHash: true
 
 secretGenerator:
   - name: oauth2-proxy
     envs:
       - secret-params.env
-
-# we will mount configmaps so we can't use suffix hash
-generatorOptions:
-  disableNameSuffixHash: true
 
 images:
   - name: quay.io/oauth2-proxy/oauth2-proxy

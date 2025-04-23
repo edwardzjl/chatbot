@@ -10,4 +10,4 @@ resources:
 
 images:
   - name: redis
-    newTag: 7.4.1-alpine
+    newTag: 7.4.2-alpine
