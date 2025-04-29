@@ -40,10 +40,14 @@ async def lifespan(app: FastAPI):
     async with sqlalchemy_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-    # Create checkpointer tables
-    async with AsyncPostgresSaver.from_conn_string(
-        settings.psycopg_primary_url
-    ) as checkpointer:
+        # pep-249 style ConnectionFairy connection pool proxy object
+        # presents a sync interface
+        connection_fairy = await conn.get_raw_connection()
+
+        # the really-real innermost driver connection is available
+        # from the .driver_connection attribute
+        raw_asyncio_connection = connection_fairy.driver_connection
+        checkpointer = AsyncPostgresSaver(raw_asyncio_connection)
         await checkpointer.setup()
 
     app.state.http_session = CachedSession(
