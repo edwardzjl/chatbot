@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from langchain_core.messages import BaseMessage, trim_messages
 from sqlalchemy import select
+from uuid import UUID
 
 from chatbot.dependencies import (
     AgentStateDep,
@@ -45,6 +46,15 @@ async def get_conversation(
     session: SqlalchemyROSessionDep,
     agent_state: AgentStateDep,
 ) -> ConversationDetail:
+    try:
+        conversation_id = UUID(conversation_id)
+    except Exception:
+        # It's not a valid UUID but I am not doing anything here.
+        # I'm not sure whether I should stick with UUID.
+        # In most cases, I don't need to do anything. SQLAlchemy will do the conversion for me.
+        # However, SQLite doesn't have a native UUID type.
+        # See <https://github.com/sqlalchemy/sqlalchemy/discussions/9290#discussioncomment-4953349>
+        ...
     conv: ORMConversation = await session.get(ORMConversation, conversation_id)
     if conv.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
@@ -76,6 +86,15 @@ async def update_conversation(
     userid: UserIdHeaderDep,
     session: SqlalchemySessionDep,
 ) -> ConversationDetail:
+    try:
+        conversation_id = UUID(conversation_id)
+    except Exception:
+        # It's not a valid UUID but I am not doing anything here.
+        # I'm not sure whether I should stick with UUID.
+        # In most cases, I don't need to do anything. SQLAlchemy will do the conversion for me.
+        # However, SQLite doesn't have a native UUID type.
+        # See <https://github.com/sqlalchemy/sqlalchemy/discussions/9290#discussioncomment-4953349>
+        ...
     conv: ORMConversation = await session.get(ORMConversation, conversation_id)
     if conv.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
