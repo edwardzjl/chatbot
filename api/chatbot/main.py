@@ -3,6 +3,7 @@
 import logging
 import re
 from contextlib import asynccontextmanager
+from inspect import iscoroutinefunction
 from functools import partial
 
 from aiohttp import ClientTimeout
@@ -13,7 +14,7 @@ from fastapi.requests import Request
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
+from langgraph.checkpoint.base import BaseCheckpointSaver
 from prometheus_client import make_asgi_app
 from requests_cache import CachedSession
 from sqlalchemy.exc import NoResultFound
@@ -40,15 +41,25 @@ async def lifespan(app: FastAPI):
     async with sqlalchemy_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-        # pep-249 style ConnectionFairy connection pool proxy object
-        # presents a sync interface
-        connection_fairy = await conn.get_raw_connection()
+        # Create checkpointer tables
+        if settings.postgres_primary_url.startswith("postgresql"):
+            from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 
-        # the really-real innermost driver connection is available
-        # from the .driver_connection attribute
-        raw_asyncio_connection = connection_fairy.driver_connection
-        checkpointer = AsyncPostgresSaver(raw_asyncio_connection)
-        await checkpointer.setup()
+            connection_fairy = await conn.get_raw_connection()
+            raw_asyncio_connection = connection_fairy.driver_connection
+            checkpointer = AsyncPostgresSaver(raw_asyncio_connection)
+
+        elif settings.postgres_primary_url.startswith("sqlite"):
+            from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+
+            connection_fairy = await conn.get_raw_connection()
+            raw_asyncio_connection = connection_fairy.driver_connection
+            checkpointer = AsyncSqliteSaver(raw_asyncio_connection)
+        else:
+            from langgraph.checkpoint.memory import InMemorySaver
+
+            checkpointer = InMemorySaver()
+        await maybe_setup_checkpointer(checkpointer)
 
     app.state.http_session = CachedSession(
         expire_after=-1, ignored_parameters=["api_key", "apikey"], use_temp=True
@@ -148,3 +159,24 @@ def exception_handler(request: Request, exc: Exception):
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={"detail": "server error"},
     )
+
+
+async def maybe_setup_checkpointer(checkpointer: BaseCheckpointSaver) -> None:
+    """Set up the checkpointer, if applicable.
+
+    Some checkpointer implementations (e.g., `langgraph.checkpoint.postgres.PostgresSaver`)
+    provide a `setup()` method, which may be either synchronous or asynchronous
+    (e.g., `langgraph.checkpoint.postgres.aio.AsyncPostgresSaver`).
+
+    This utility detects and invokes the appropriate `setup()` method if it exists,
+    allowing for a unified setup process across different checkpointer types.
+    """
+
+    setup = getattr(checkpointer, "setup", None)
+    if setup is None:
+        return
+
+    if iscoroutinefunction(setup):
+        await setup()
+    else:
+        setup()

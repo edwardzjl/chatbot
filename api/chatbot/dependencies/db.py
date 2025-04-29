@@ -1,5 +1,5 @@
 from collections.abc import AsyncGenerator
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
@@ -28,6 +28,19 @@ async def get_sqlalchemy_session() -> AsyncGenerator[AsyncSession, None]:
 
 
 SqlalchemySessionDep = Annotated[AsyncSession, Depends(get_sqlalchemy_session)]
+
+
+async def get_raw_conn() -> AsyncGenerator[Any, None]:
+    # See <https://docs.sqlalchemy.org/en/20/faq/connections.html#accessing-the-underlying-connection-for-an-asyncio-driver>
+    async with sqlalchemy_engine.begin() as conn:
+        # pep-249 style ConnectionFairy connection pool proxy object
+        # presents a sync interface
+        connection_fairy = await conn.get_raw_connection()
+
+        # the really-real innermost driver connection is available
+        # from the .driver_connection attribute
+        raw_asyncio_connection = connection_fairy.driver_connection
+        yield raw_asyncio_connection
 
 
 sqlalchemy_ro_engine = create_async_engine(
