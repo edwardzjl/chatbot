@@ -16,6 +16,7 @@ from langgraph.types import StateSnapshot
 
 from chatbot.agent import create_agent
 from chatbot.config import settings
+from chatbot.dependencies.db import sqlalchemy_engine
 from chatbot.http_client import HttpClient
 from chatbot.llm.client import ReasoningChatOpenai
 from chatbot.llm.providers import LLMProvider, llm_provider_factory
@@ -96,10 +97,17 @@ async def get_agent(
 ) -> AsyncGenerator[CompiledGraph, None]:
     context_length = await llm_provider.get_max_tokens(settings.llm["model_name"])
     token_counter = llm_provider.get_token_counter(settings.llm["model_name"])
-    async with AsyncPostgresSaver.from_conn_string(
-        settings.psycopg_primary_url
-    ) as checkpointer:
-        yield create_agent(
+
+    async with sqlalchemy_engine.begin() as conn:
+        # pep-249 style ConnectionFairy connection pool proxy object
+        # presents a sync interface
+        connection_fairy = await conn.get_raw_connection()
+
+        # the really-real innermost driver connection is available
+        # from the .driver_connection attribute
+        raw_asyncio_connection = connection_fairy.driver_connection
+        checkpointer = AsyncPostgresSaver(raw_asyncio_connection)
+        return create_agent(
             chat_model,
             safety_model=safety_model,
             checkpointer=checkpointer,
