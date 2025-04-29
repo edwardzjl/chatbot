@@ -78,14 +78,14 @@ This is optional. Even if not set, the LLM you use may still have built-in safet
 - type: `dict | None`
 - default: `None`
 
-#### POSTGRES_PRIMARY_URL
+#### DB_PRIMARY_URL
 
 The database url for reading and writing agent states and conversation metadata.
 
 - type: `str`
 - default: `postgresql+psycopg://postgres:postgres@localhost:5432/`
 
-#### POSTGRES_STANDBY_URL
+#### DB_STANDBY_URL
 
 An optional read-only database URL for agent states and conversation metadata. If not set, reads will fall back to `POSTGRES_PRIMARY_URL`.
 

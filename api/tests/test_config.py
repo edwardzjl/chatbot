@@ -13,31 +13,31 @@ class TestSettings(unittest.TestCase):
         settings = Settings(llm=custom_llm)
         self.assertEqual(settings.llm, custom_llm)
 
-    def test_postgres_primary_url_default(self):
+    def test_db_primary_url_default(self):
         settings = Settings()
         expected = "postgresql+psycopg://postgres:postgres@localhost:5432/"
-        self.assertEqual(str(settings.postgres_primary_url), expected)
+        self.assertEqual(str(settings.db_primary_url), expected)
 
-    def test_postgres_primary_url_custom(self):
+    def test_db_primary_url_custom(self):
         custom_primary_url = (
             "postgresql+psycopg://primary_user:primary_pass@localhost/primary_db"
         )
-        settings = Settings(postgres_primary_url=custom_primary_url)
+        settings = Settings(db_primary_url=custom_primary_url)
         expected = "postgresql+psycopg://primary_user:primary_pass@localhost/primary_db"
-        self.assertEqual(str(settings.postgres_primary_url), expected)
+        self.assertEqual(str(settings.db_primary_url), expected)
 
-    def test_postgres_standby_url_default(self):
+    def test_db_standby_url_default(self):
         settings = Settings()
         expected = "postgresql+psycopg://postgres:postgres@localhost:5432/"
-        self.assertEqual(str(settings.postgres_standby_url), expected)
+        self.assertEqual(str(settings.db_standby_url), expected)
 
-    def test_postgres_standby_url_custom(self):
+    def test_db_standby_url_custom(self):
         custom_standby_url = (
             "postgresql+psycopg://standby_user:standby_pass@localhost/standby_db"
         )
-        settings = Settings(postgres_standby_url=custom_standby_url)
+        settings = Settings(db_standby_url=custom_standby_url)
         expected = "postgresql+psycopg://standby_user:standby_pass@localhost/standby_db"
-        self.assertEqual(str(settings.postgres_standby_url), expected)
+        self.assertEqual(str(settings.db_standby_url), expected)
 
 
 if __name__ == "__main__":

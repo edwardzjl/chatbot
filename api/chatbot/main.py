@@ -42,14 +42,14 @@ async def lifespan(app: FastAPI):
         await conn.run_sync(Base.metadata.create_all)
 
         # Create checkpointer tables
-        if settings.postgres_primary_url.startswith("postgresql"):
+        if settings.db_primary_url.startswith("postgresql"):
             from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 
             connection_fairy = await conn.get_raw_connection()
             raw_asyncio_connection = connection_fairy.driver_connection
             checkpointer = AsyncPostgresSaver(raw_asyncio_connection)
 
-        elif settings.postgres_primary_url.startswith("sqlite"):
+        elif settings.db_primary_url.startswith("sqlite"):
             from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
             connection_fairy = await conn.get_raw_connection()

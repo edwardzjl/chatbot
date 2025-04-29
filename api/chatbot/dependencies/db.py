@@ -10,7 +10,7 @@ from chatbot.config import settings
 
 
 sqlalchemy_engine = create_async_engine(
-    str(settings.postgres_primary_url),
+    str(settings.db_primary_url),
     poolclass=NullPool,
 )
 sqlalchemy_session = sessionmaker(
@@ -44,7 +44,7 @@ async def get_raw_conn() -> AsyncGenerator[Any, None]:
 
 
 sqlalchemy_ro_engine = create_async_engine(
-    str(settings.postgres_standby_url),
+    str(settings.db_standby_url),
     poolclass=NullPool,
 )
 sqlalchemy_ro_session = sessionmaker(
