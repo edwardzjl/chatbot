@@ -10,13 +10,13 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import Runnable
 from langchain_core.tools import BaseTool
 from langchain_openai import ChatOpenAI
-from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
+from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.graph.graph import CompiledGraph
 from langgraph.types import StateSnapshot
 
 from chatbot.agent import create_agent
 from chatbot.config import settings
-from chatbot.dependencies.db import sqlalchemy_engine
+from chatbot.dependencies.db import get_raw_conn
 from chatbot.http_client import HttpClient
 from chatbot.llm.client import ReasoningChatOpenai
 from chatbot.llm.providers import LLMProvider, llm_provider_factory
@@ -25,7 +25,7 @@ from chatbot.tools.weather.openmeteo import WeatherTool
 from .commons import get_http_client
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator
+    from typing import AsyncGenerator
 
 
 logger = logging.getLogger(__name__)
@@ -89,32 +89,42 @@ async def get_llm_provider(
     return await llm_provider_factory(settings.llm["base_url"], provider, http_client)
 
 
+async def get_checkpointer() -> AsyncGenerator[BaseCheckpointSaver, None]:
+    if settings.postgres_primary_url.startswith("postgresql"):
+        from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
+
+        async with get_raw_conn() as conn:
+            yield AsyncPostgresSaver(conn)
+
+    elif settings.postgres_primary_url.startswith("sqlite"):
+        from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+
+        async with get_raw_conn() as conn:
+            yield AsyncSqliteSaver(conn)
+    else:
+        from langgraph.checkpoint.memory import InMemorySaver
+
+        yield InMemorySaver()
+
+
 async def get_agent(
     chat_model: ChatModelDep,
     llm_provider: Annotated[LLMProvider, Depends(get_llm_provider)],
+    checkpointer: Annotated[BaseCheckpointSaver, Depends(get_checkpointer)],
     tools: Annotated[list[BaseTool], Depends(get_tools)],
     safety_model: SafetyModelDep,
 ) -> AsyncGenerator[CompiledGraph, None]:
     context_length = await llm_provider.get_max_tokens(settings.llm["model_name"])
     token_counter = llm_provider.get_token_counter(settings.llm["model_name"])
 
-    async with sqlalchemy_engine.begin() as conn:
-        # pep-249 style ConnectionFairy connection pool proxy object
-        # presents a sync interface
-        connection_fairy = await conn.get_raw_connection()
-
-        # the really-real innermost driver connection is available
-        # from the .driver_connection attribute
-        raw_asyncio_connection = connection_fairy.driver_connection
-        checkpointer = AsyncPostgresSaver(raw_asyncio_connection)
-        return create_agent(
-            chat_model,
-            safety_model=safety_model,
-            checkpointer=checkpointer,
-            token_counter=token_counter,
-            context_length=context_length,
-            tools=tools,
-        )
+    return create_agent(
+        chat_model,
+        safety_model=safety_model,
+        checkpointer=checkpointer,
+        token_counter=token_counter,
+        context_length=context_length,
+        tools=tools,
+    )
 
 
 AgentDep = Annotated[CompiledGraph, Depends(get_agent)]
