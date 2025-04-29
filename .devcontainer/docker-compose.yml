@@ -6,13 +6,7 @@ services:
       - ..:/workspace:cached
     env_file: devcontainer.env
     depends_on:
-      - postgres
       - llama-cpp
-
-  postgres:
-    image: postgres
-    environment:
-      POSTGRES_PASSWORD: postgres
 
   download-weights:
     build:
