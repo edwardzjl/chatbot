@@ -90,13 +90,13 @@ async def get_llm_provider(
 
 
 async def get_checkpointer() -> AsyncGenerator[BaseCheckpointSaver, None]:
-    if settings.postgres_primary_url.startswith("postgresql"):
+    if settings.db_primary_url.startswith("postgresql"):
         from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 
         async with get_raw_conn() as conn:
             yield AsyncPostgresSaver(conn)
 
-    elif settings.postgres_primary_url.startswith("sqlite"):
+    elif settings.db_primary_url.startswith("sqlite"):
         from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
         async with get_raw_conn() as conn:
