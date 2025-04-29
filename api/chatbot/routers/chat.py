@@ -1,4 +1,5 @@
 import logging
+from uuid import UUID
 
 from fastapi import (
     APIRouter,
@@ -44,10 +45,12 @@ async def chat(
         try:
             payload: str = await websocket.receive_text()
             message = HumanChatMessage.model_validate_json(payload)
+            # In most cases, I don't need to do anything. SQLAlchemy will do the conversion for me.
+            # However, SQLite doesn't have a native UUID type.
+            # See <https://github.com/sqlalchemy/sqlalchemy/discussions/9290#discussioncomment-4953349>
+            conversation_id = UUID(message.conversation)
             async with sqlalchemy_session() as session:
-                conv: Conversation = await session.get(
-                    Conversation, message.conversation
-                )
+                conv: Conversation = await session.get(Conversation, conversation_id)
             if conv.owner != userid:
                 # TODO: I'm not sure whether this is the correct way to handle this.
                 # See websocket code definitions here: <https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code>
