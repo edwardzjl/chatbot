@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Any
 from urllib.parse import urljoin
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from fastapi import APIRouter, HTTPException
 from sqlalchemy import select
@@ -43,7 +43,7 @@ async def get_shares(
 
 @router.get("/{share_id}")
 async def get_share(
-    share_id: str,
+    share_id: UUID,
     session: SqlalchemyROSessionDep,
     agent: AgentDep,
 ) -> Share:
@@ -93,7 +93,7 @@ async def create_share(
 
 @router.delete("/{share_id}", status_code=204)
 async def delete_share(
-    share_id: str,
+    share_id: UUID,
     userid: UserIdHeaderDep,
     session: SqlalchemySessionDep,
 ) -> None:

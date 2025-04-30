@@ -41,20 +41,11 @@ async def get_conversations(
 
 @router.get("/{conversation_id}")
 async def get_conversation(
-    conversation_id: str,
+    conversation_id: UUID,
     userid: UserIdHeaderDep,
     session: SqlalchemyROSessionDep,
     agent_state: AgentStateDep,
 ) -> ConversationDetail:
-    try:
-        conversation_id = UUID(conversation_id)
-    except Exception:
-        # It's not a valid UUID but I am not doing anything here.
-        # I'm not sure whether I should stick with UUID.
-        # In most cases, I don't need to do anything. SQLAlchemy will do the conversion for me.
-        # However, SQLite doesn't have a native UUID type.
-        # See <https://github.com/sqlalchemy/sqlalchemy/discussions/9290#discussioncomment-4953349>
-        ...
     conv: ORMConversation = await session.get(ORMConversation, conversation_id)
     if conv.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
@@ -81,20 +72,11 @@ async def create_conversation(
 
 @router.put("/{conversation_id}")
 async def update_conversation(
-    conversation_id: str,
+    conversation_id: UUID,
     payload: UpdateConversation,
     userid: UserIdHeaderDep,
     session: SqlalchemySessionDep,
 ) -> ConversationDetail:
-    try:
-        conversation_id = UUID(conversation_id)
-    except Exception:
-        # It's not a valid UUID but I am not doing anything here.
-        # I'm not sure whether I should stick with UUID.
-        # In most cases, I don't need to do anything. SQLAlchemy will do the conversion for me.
-        # However, SQLite doesn't have a native UUID type.
-        # See <https://github.com/sqlalchemy/sqlalchemy/discussions/9290#discussioncomment-4953349>
-        ...
     conv: ORMConversation = await session.get(ORMConversation, conversation_id)
     if conv.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
@@ -109,7 +91,7 @@ async def update_conversation(
 
 @router.delete("/{conversation_id}", status_code=204)
 async def delete_conversation(
-    conversation_id: str,
+    conversation_id: UUID,
     userid: UserIdHeaderDep,
     session: SqlalchemySessionDep,
 ) -> None:
@@ -122,7 +104,7 @@ async def delete_conversation(
 
 @router.post("/{conversation_id}/summarization", status_code=201)
 async def summarize(
-    conversation_id: str,
+    conversation_id: UUID,
     userid: UserIdHeaderDep,
     session: SqlalchemyROSessionDep,
     agent_state: AgentStateDep,
