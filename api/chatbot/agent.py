@@ -93,7 +93,7 @@ The content inside the <think> tags is for your internal use only and will not b
 
 Current date: {date}
 """
-        # force_thinking will force the LLM to engage thinking at the begining of the response
+        # force_thinking will force the LLM to engage thinking at the beginning of the response
         force_thinking = config["configurable"].get("force_thinking", False)
 
         prompt = ChatPromptTemplate.from_messages(
