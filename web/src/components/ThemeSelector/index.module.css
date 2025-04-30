@@ -31,17 +31,18 @@
     background-color: transparent;
     /* must add transparent border or the button will shake on hover */
     border: 1px solid transparent;
+    border-radius: 3px;
     color: var(--text-primary);
     display: flex;
     align-items: center;
 }
 
 .themeMenuItem:hover {
+    background-color: var(--bg-secondary);
     border: 1px solid var(--border-color);
-    border-radius: 3px;
 }
 
 .themeMenuItem.selected {
+    background-color: var(--bg-secondary);
     border: 1px solid var(--border-color);
-    border-radius: 3px;
 }
