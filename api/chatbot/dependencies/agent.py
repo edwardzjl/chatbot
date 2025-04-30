@@ -164,7 +164,15 @@ def get_smry_chain(chat_model: ChatModelDep) -> Runnable:
         ]
     )
 
-    return tmpl | chat_model | StrOutputParser()
+    runnable = (
+        tmpl
+        | chat_model.bind(
+            extra_body={"chat_template_kwargs": {"enable_thinking": False}}
+        )
+        | StrOutputParser()
+    )
+
+    return runnable
 
 
 SmrChainDep = Annotated[Runnable, Depends(get_smry_chain)]
