@@ -181,7 +181,7 @@ const ChatMessage = ({ convId, message }) => {
                         switch (tool_call.function.name) {
                         case "weather_forcast":
                             return <ThermostatIcon key={index} />
-                        case "search":
+                        case "web_search":
                             return <TravelExploreIcon key={index} />
                         default:
                             return null;
