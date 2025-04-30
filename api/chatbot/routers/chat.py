@@ -60,12 +60,20 @@ async def chat(
                 "userid": userid,
                 "client_ip": websocket.client.host,
             }
+
+            runtime_configuration = {
+                "thread_id": message.conversation,
+                "force_thinking": message.additional_kwargs.get(
+                    "force_thinking", False
+                ),
+            }
+
             async for event in agent.astream_events(
                 input={"messages": [message.to_lc()]},
                 config={
                     "run_name": "chat",
                     "metadata": chain_metadata,
-                    "configurable": {"thread_id": message.conversation},
+                    "configurable": runtime_configuration,
                 },
                 version="v2",
             ):

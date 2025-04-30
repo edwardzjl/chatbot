@@ -12,6 +12,7 @@ import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import PreviewImage from "@/components/PreviewImage";
 
 import { ConfigContext } from "@/contexts/config";
+import { PreferenceContext } from "@/contexts/preference";
 import { SnackbarContext } from "@/contexts/snackbar";
 import { WebsocketContext } from "@/contexts/websocket";
 
@@ -58,6 +59,7 @@ import { uploadFile } from "./utils";
  */
 const ChatInput = ({ onSubmit }) => {
     const params = useParams();
+    const { preference } = useContext(PreferenceContext);
     const { ready } = useContext(WebsocketContext);
     const { setSnackbar } = useContext(SnackbarContext);
     const { models } = useContext(ConfigContext);
@@ -102,6 +104,7 @@ const ChatInput = ({ onSubmit }) => {
             attachments: attachments,
             type: "human",
             sent_at: toLocalISOString(new Date()),
+            additional_kwargs: { force_thinking: preference.forceThinking }
         };
         try {
             await onSubmit(message);

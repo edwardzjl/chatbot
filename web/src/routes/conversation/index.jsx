@@ -99,7 +99,8 @@ const Conversation = () => {
 
             while (retries < MAX_RETRIES) {
                 try {
-                    send(JSON.stringify({ additional_kwargs: { require_summarization: true }, ...message }));
+                    const toSend = { ...message, additional_kwargs: { ...message.additional_kwargs, require_summarization: true } }
+                    send(JSON.stringify(toSend));
                     sessionStorage.removeItem(initMsgKey);
                     dispatch({
                         type: "added",

@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Callable, Literal
 
 from langchain_core.messages import BaseMessage, SystemMessage, trim_messages
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables.config import RunnableConfig
 from langgraph.graph import END, START, MessagesState, StateGraph
 from langgraph.prebuilt import ToolNode
 
@@ -83,7 +84,7 @@ def create_agent(
                 ...
         return {"messages": []}
 
-    async def chatbot(state: MessagesState) -> MessagesState:
+    async def chatbot(state: MessagesState, config: RunnableConfig) -> MessagesState:
         """Process the current state and generate a response using the LLM."""
 
         instruction = """You are Rei, the ideal assistant dedicated to assisting users effectively. Always assist with care, respect, and truth. Respond with utmost utility yet securely. Avoid harmful, unethical, prejudiced, or negative content. Ensure replies promote fairness and positivity.
@@ -92,6 +93,8 @@ The content inside the <think> tags is for your internal use only and will not b
 
 Current date: {date}
 """
+        # force_thinking will force the LLM to engage thinking at the begining of the response
+        force_thinking = config["configurable"].get("force_thinking", False)
 
         prompt = ChatPromptTemplate.from_messages(
             [
@@ -100,7 +103,9 @@ Current date: {date}
             ]
         )
 
-        bound = prompt | chat_model
+        bound = prompt | chat_model.bind(
+            extra_body={"chat_template_kwargs": {"enable_thinking": force_thinking}}
+        )
 
         # I don't want this hint message to be persisted, so I'm not adding it to the state.
         hint_message = None
