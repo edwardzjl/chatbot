@@ -1,4 +1,5 @@
 from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
 from typing import Annotated, Any
 
 from fastapi import Depends
@@ -30,6 +31,7 @@ async def get_sqlalchemy_session() -> AsyncGenerator[AsyncSession, None]:
 SqlalchemySessionDep = Annotated[AsyncSession, Depends(get_sqlalchemy_session)]
 
 
+@asynccontextmanager
 async def get_raw_conn() -> AsyncGenerator[Any, None]:
     # See <https://docs.sqlalchemy.org/en/20/faq/connections.html#accessing-the-underlying-connection-for-an-asyncio-driver>
     async with sqlalchemy_engine.begin() as conn:
