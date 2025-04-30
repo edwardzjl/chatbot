@@ -1,0 +1,65 @@
+.title {
+    background-color: transparent;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+}
+
+.title:hover {
+    background-color: var(--bg-secondary);
+    border-radius: 5px;
+}
+
+.titleText {
+    margin: 0.3em;
+    text-align: start;
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.menuList {
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    padding: 0.5rem;
+}
+
+.menuItem {
+    width: 100%;
+    margin: 2px;
+    background-color: transparent;
+    /* must add transparent border or the button will shake on hover */
+    border: 1px solid transparent;
+    border-radius: 3px;
+    color: var(--text-primary);
+    display: flex;
+    flex-direction: column;
+    padding: 0.6em 0.6em;
+}
+
+.menuItemTitle {
+    margin: 0.3em;
+    text-align: start;
+    font-size: 1rem;
+    font-weight: bold;
+    text-align: left;
+}
+
+.menuItemText {
+    margin: 0.3em;
+    text-align: start;
+    font-size: 0.8rem;
+    text-align: left;
+}
+
+.menuItem:hover {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.menuItem.selected {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+}
