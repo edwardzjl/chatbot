@@ -115,7 +115,12 @@ GeoCoding = namedtuple("GeoCoding", ["latitude", "longitude"])
 # See <https://open-meteo.com/en/docs>
 # The docstring will be constructed as openapi description, and will be passed to LLMs, so keep it clean and concise.
 class WeatherInput(BaseModel):
-    """Input params for Weather Forecast API."""
+    """Input params for Weather Forecast API.
+    - At least one of `current`, `daily`, or `hourly` must be specified to return forecast data.
+    - If `hourly` or `daily` is selected, you must also specify a time range using `past_days`, `forecast_days`, or `start_date`/`end_date`.
+    - `current` returns the real-time weather at the time of request and does not require any date parameters.
+    - If none of the weather data fields (`current`, `daily`, or `hourly`) are selected, the response will be empty.
+    """
 
     location: str = Field(
         description="Location for forecast. Accepts **English** location names or postal codes."
@@ -123,7 +128,7 @@ class WeatherInput(BaseModel):
     current: Annotated[
         HourlyParamsType,
         Field(
-            description=f"""Specifies which current weather data fields to return:
+            description=f"""Query the weather data at the exact time of the invocation. Does not require any date range parameters. Available values:
 {hourly_params}
 """,
             default=None,
@@ -132,7 +137,7 @@ class WeatherInput(BaseModel):
     daily: Annotated[
         DailyParamsType,
         Field(
-            description=f"""Specifies which daily weather data fields to return.
+            description=f"""Queries daily aggregated weather data. Requires a date range to be specified via one of the following parameters: `past_days`, `forecast_days`, or both `start_date` and `end_date`. Available values:
 {daily_params}
 """,
             default=None,
@@ -141,7 +146,7 @@ class WeatherInput(BaseModel):
     hourly: Annotated[
         HourlyParamsType,
         Field(
-            description=f"""Specifies which hourly weather data fields to return.
+            description=f"""Queries daily aggregated weather data. Requires a date range to be specified via one of the following parameters: `past_days`, `forecast_days`, or both `start_date` and `end_date`. Available values:
 {hourly_params}
 """,
             default=None,
