@@ -83,7 +83,7 @@ This is optional. Even if not set, the LLM you use may still have built-in safet
 The database url for reading and writing agent states and conversation metadata.
 
 - type: `str`
-- default: `postgresql+psycopg://postgres:postgres@localhost:5432/`
+- default: `sqlite+aiosqlite:///chatbot.sqlite`
 
 #### DB_STANDBY_URL
 

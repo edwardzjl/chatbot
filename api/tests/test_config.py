@@ -15,7 +15,7 @@ class TestSettings(unittest.TestCase):
 
     def test_db_primary_url_default(self):
         settings = Settings()
-        expected = "postgresql+psycopg://postgres:postgres@localhost:5432/"
+        expected = "sqlite+aiosqlite:///chatbot.sqlite"
         self.assertEqual(str(settings.db_primary_url), expected)
 
     def test_db_primary_url_custom(self):
@@ -28,7 +28,7 @@ class TestSettings(unittest.TestCase):
 
     def test_db_standby_url_default(self):
         settings = Settings()
-        expected = "postgresql+psycopg://postgres:postgres@localhost:5432/"
+        expected = "sqlite+aiosqlite:///chatbot.sqlite"
         self.assertEqual(str(settings.db_standby_url), expected)
 
     def test_db_standby_url_custom(self):

@@ -20,9 +20,7 @@ class Settings(BaseSettings):
 
     llm: dict[str, Any] = Field(default_factory=lambda: {"api_key": "NOT_SET"})
     safety_llm: dict[str, Any] | None = None
-    db_primary_url: PostgresDsn | str = (
-        "postgresql+psycopg://postgres:postgres@localhost:5432/"
-    )
+    db_primary_url: PostgresDsn | str = "sqlite+aiosqlite:///chatbot.sqlite"
     """Primary database url for read / write connections."""
     db_standby_url: PostgresDsn | str | None = None
     """Standby database url for read only connections.
