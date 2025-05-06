@@ -6,10 +6,12 @@ from langchain_core.callbacks import (
     CallbackManagerForLLMRun,
 )
 from langchain_core.language_models.base import LanguageModelInput
+from langchain_core.load.serializable import Serializable
 from langchain_core.messages import AIMessage, BaseMessage
 from langchain_core.outputs import ChatGenerationChunk
 from langchain_openai import ChatOpenAI
 from langchain_openai.chat_models.base import _convert_message_to_dict
+from pydantic import PrivateAttr, Field
 
 
 logger = logging.getLogger(__name__)
@@ -20,7 +22,7 @@ class MessageChunk(TypedDict):
     type: Literal["text", "thought"]
 
 
-class StreamThinkingProcessor:
+class StreamThinkingProcessor(Serializable):
     """Processes a stream of tokens to identify and separate "thinking" sections
     from regular text based on start and stop thinking signatures.
 
@@ -28,34 +30,39 @@ class StreamThinkingProcessor:
     and uses buffers to handle partial signature matches in the token stream.
     """
 
-    def __init__(
-        self,
-        default_thinking: bool = False,
-        thinking_signature: str = "<think>",
-        stop_thinking_signature: str = "</think>",
-    ) -> None:
-        """Initializes the StreamThinkingProcessor.
+    default_thinking: bool = False
+    """If True, the processor starts in "thinking" mode.
+    If False, it starts in "text" mode, processing text until the `thinking_signature` is encountered.
+    """
+    thinking_signature: str = "<think>"
+    """The string signature that indicates the start of a "thinking" section."""
+    stop_thinking_signature: str = "</think>"
+    """The string signature that indicates the end of a "thinking" section."""
 
-        Args:
-            default_thinking (bool): If True, the processor starts in "thinking" mode.
-                                     If False, it starts in "text" mode, processing text until
-                                     the thinking_signature is encountered.
-            thinking_signature (str): The string signature that indicates the start of a "thinking" section.
-            stop_thinking_signature (str): The string signature that indicates the end of a "thinking" section.
-        """
-        self.thinking_signature = thinking_signature
-        self.stop_thinking_signature = stop_thinking_signature
-        self.default_thinking = default_thinking
-        self.reset()
+    # I cannot use `PrivateAttr` for `thinking` as `default_thinking` in `default_factory` is not a `PrivateAttr`
+    thinking: bool = Field(default_factory=lambda data: data["default_thinking"])
+    _maybe_start_thinking: bool = PrivateAttr(default=False)
+    _maybe_stop_thinking: bool = PrivateAttr(default=False)
+    _buffer: str = PrivateAttr(default="")
+
+    @classmethod
+    def is_lc_serializable(cls) -> bool:
+        """Return whether this model can be serialized by Langchain."""
+        return True
+
+    @classmethod
+    def get_lc_namespace(cls) -> list[str]:
+        """Return the namespace of this model."""
+        return ["chatbot", "llm", "client"]
 
     def reset(self) -> None:
         """Resets the processor to its initial state, as defined by default_thinking.
         Clears internal buffers and sets the thinking state to default.
         """
         self.thinking = self.default_thinking
-        self.maybe_start_thinking = False
-        self.maybe_stop_thinking = False
-        self.buffer = ""
+        self._maybe_start_thinking = False
+        self._maybe_stop_thinking = False
+        self._buffer = ""
 
     def on_token(self, token: str) -> MessageChunk | None:
         """Processes a single token from the stream.
@@ -74,7 +81,7 @@ class StreamThinkingProcessor:
         """
         if not self.thinking:  # Currently in "text" mode.
             if (
-                not self.maybe_start_thinking
+                not self._maybe_start_thinking
             ):  # Not currently looking for thinking start signature.
                 if token.startswith(self.thinking_signature):
                     # Token starts with the thinking signature. Enter "thinking" mode.
@@ -85,39 +92,39 @@ class StreamThinkingProcessor:
                         return {"data": remaining, "type": "thought"}
                 elif self.thinking_signature.startswith(token):
                     # Token is a prefix of the thinking signature. Start buffering.
-                    self.maybe_start_thinking = True
-                    self.buffer = token
+                    self._maybe_start_thinking = True
+                    self._buffer = token
                 else:
                     # Regular text token, not related to thinking signatures. Return as "text" chunk.
                     return {"data": token, "type": "text"}
             else:  # `self.maybe_start_thinking is True`:  Currently buffering to detect thinking start signature.
-                self.buffer += token  # Append current token to the buffer.
-                if self.buffer.startswith(
+                self._buffer += token  # Append current token to the buffer.
+                if self._buffer.startswith(
                     self.thinking_signature
                 ):  # buffer may be longer than thinking_signature
                     # Buffer now starts with the thinking signature. Enter "thinking" mode.
                     self.thinking = True
-                    self.maybe_start_thinking = (
+                    self._maybe_start_thinking = (
                         False  # Stop looking for start signature.
                     )
-                    remaining = self.buffer.removeprefix(self.thinking_signature)
+                    remaining = self._buffer.removeprefix(self.thinking_signature)
                     if remaining:
                         # If buffer contains data after the signature, return it as "thought" chunk.
                         return {"data": remaining, "type": "thought"}
-                elif self.thinking_signature.startswith(self.buffer):
+                elif self.thinking_signature.startswith(self._buffer):
                     # Buffer is still a prefix of the thinking signature. Continue buffering.
                     return None  # No chunk to return yet, still buffering.
                 else:
                     # Buffer is no longer related to thinking signature. It was just regular text.
-                    self.maybe_start_thinking = (
+                    self._maybe_start_thinking = (
                         False  # Stop looking for start signature.
                     )
-                    data = self.buffer  # Return the buffered data as "text" chunk.
-                    self.buffer = ""  # Clear buffer.
+                    data = self._buffer  # Return the buffered data as "text" chunk.
+                    self._buffer = ""  # Clear buffer.
                     return {"data": data, "type": "text"}
         else:  # `self.thinking is True`: Currently in "thinking" mode.
             if (
-                not self.maybe_stop_thinking
+                not self._maybe_stop_thinking
             ):  # Not currently looking for thinking stop signature.
                 if token.startswith(self.stop_thinking_signature):
                     # Token starts with the stop thinking signature. Exit "thinking" mode.
@@ -129,36 +136,43 @@ class StreamThinkingProcessor:
                         return {"data": remaining, "type": "text"}
                 elif self.stop_thinking_signature.startswith(token):
                     # Token is a prefix of the stop thinking signature. Start buffering.
-                    self.maybe_stop_thinking = True
-                    self.buffer = token
+                    self._maybe_stop_thinking = True
+                    self._buffer = token
                 else:
                     # Regular thought token, not related to stop thinking signature. Return as "thought" chunk.
                     return {"data": token, "type": "thought"}
             else:  # self.maybe_stop_thinking is True: Currently buffering to detect thinking stop signature.
-                self.buffer += token  # Append current token to buffer.
-                if self.buffer.startswith(
+                self._buffer += token  # Append current token to buffer.
+                if self._buffer.startswith(
                     self.stop_thinking_signature
                 ):  # buffer may be longer than stop_thinking_signature
                     # Buffer now starts with stop thinking signature. Exit "thinking" mode.
-                    remaining = self.buffer.removeprefix(self.stop_thinking_signature)
+                    remaining = self._buffer.removeprefix(self.stop_thinking_signature)
                     self.reset()  # Reset state for next thinking section detection.
                     self.thinking = False  # NOTE!: ENSURE we exit thinking mode, regardless of default_thinking
                     if remaining:
                         # If buffer contains data after the signature, return it as "text" chunk.
                         return {"data": remaining, "type": "text"}
-                elif self.stop_thinking_signature.startswith(self.buffer):
+                elif self.stop_thinking_signature.startswith(self._buffer):
                     # Buffer is still a prefix of the stop thinking signature. Continue buffering.
                     return None  # No chunk to return yet, still buffering.
                 else:
                     # Buffer is no longer related to stop thinking signature. It was just a thought.
-                    self.maybe_stop_thinking = False  # Stop looking for stop signature.
-                    data = self.buffer  # Return the buffered data as "thought" chunk.
-                    self.buffer = ""  # Clear buffer.
+                    self._maybe_stop_thinking = (
+                        False  # Stop looking for stop signature.
+                    )
+                    data = self._buffer  # Return the buffered data as "thought" chunk.
+                    self._buffer = ""  # Clear buffer.
                     return {"data": data, "type": "thought"}
 
 
 class ReasoningChatOpenai(ChatOpenAI):
     thinking_processor: StreamThinkingProcessor = StreamThinkingProcessor()
+
+    @classmethod
+    def get_lc_namespace(cls) -> list[str]:
+        """Get the namespace of the langchain object."""
+        return ["chatbot", "llm", "client"]
 
     def _stream(
         self,
