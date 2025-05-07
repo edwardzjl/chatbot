@@ -21,7 +21,7 @@ import { UserContext } from "@/contexts/user";
 import PeekDetails from "@/components/PeekDetails";
 import PreviewImage from "@/components/PreviewImage";
 
-import { stringToColor } from "@/commons";
+import { parseThinkBlocks, stringToColor } from "@/commons";
 
 import MarkdownContent from "./MarkdownContent";
 
@@ -92,6 +92,9 @@ const ChatMessage = ({ convId, message }) => {
      */
     const myMessage = message.from && message.from.toLowerCase() === username;
 
+    const segments = parseThinkBlocks(message.content || ""); // Handle null/undefined
+
+
     return (
         <div className={`${styles.messageContainer} ${myMessage ? styles.mine : ""}`}>
             <div className={styles.messageTitle}>
@@ -106,15 +109,23 @@ const ChatMessage = ({ convId, message }) => {
                 <div className={styles.messageTitleName}>{myMessage ? "You" : "AI"}</div>
             </div>
             <div className={styles.messageBody}>
-                {message.additional_kwargs && message.additional_kwargs.thought && (
-                    <PeekDetails
-                        summary="Thoughts"
-                        content={message.additional_kwargs.thought}
-                    >
-                        <MarkdownContent content={message.additional_kwargs.thought} />
-                    </PeekDetails>
-                )}
-                <MarkdownContent content={message.content || ""} />
+                {segments.map((segment, index) => {
+                    const key = `${segment.type}-${index}`;
+                    if (segment.type === 'think') {
+                        return (
+                            <PeekDetails
+                                key={key}
+                                summary="Thoughts"
+                            >
+                                <MarkdownContent content={segment.content} />
+                            </PeekDetails>
+                        );
+                    } else if (segment.type === "text") {
+                        return (
+                            <MarkdownContent key={key} content={segment.content} />
+                        );
+                    }
+                })}
                 {message.attachments &&
                     <div className={styles.attachments}>
                         {message.attachments.map((attachment, index) => (

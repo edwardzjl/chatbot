@@ -173,18 +173,18 @@ class ReasoningChatOpenai(ChatOpenAI):
         ):
             yield self._process(chunk)
 
-    async def _astream(
-        self,
-        messages: list[BaseMessage],
-        stop: list[str] | None = None,
-        run_manager: AsyncCallbackManagerForLLMRun | None = None,
-        **kwargs: Any,
-    ) -> AsyncIterator[ChatGenerationChunk]:
-        self.thinking_processor.reset()
-        async for chunk in super()._astream(
-            messages, stop=stop, run_manager=run_manager, **kwargs
-        ):
-            yield self._process(chunk)
+    # async def _astream(
+    #     self,
+    #     messages: list[BaseMessage],
+    #     stop: list[str] | None = None,
+    #     run_manager: AsyncCallbackManagerForLLMRun | None = None,
+    #     **kwargs: Any,
+    # ) -> AsyncIterator[ChatGenerationChunk]:
+    #     self.thinking_processor.reset()
+    #     async for chunk in super()._astream(
+    #         messages, stop=stop, run_manager=run_manager, **kwargs
+    #     ):
+    #         yield self._process(chunk)
 
     def _get_request_payload(
         self,

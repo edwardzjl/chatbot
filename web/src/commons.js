@@ -75,3 +75,51 @@ export const formatTimestamp = (timestamp) => {
         second: "2-digit",
     });
 };
+
+/**
+ * Parses a text string to identify sections enclosed in <think>...</think> tags.
+ * Returns an array of segments, each marked as 'text' or 'think'.
+ *
+ * @param {string} text - The input text string.
+ * @returns {Array<{type: 'text' | 'think', content: string}>} - An array of parsed segments.
+ */
+export const parseThinkBlocks = (text) => {
+    const segments = [];
+    // Regex to find <think>...</think> blocks.
+    // The 's' flag allows '.' to match newlines.
+    // The 'g' flag finds all matches.
+    // The '?' makes the match non-greedy. This is crucial for correct extraction.
+    const regex = /<think>(.*?)<\/think>/gs;
+    let lastIndex = 0;
+    let match;
+
+    while ((match = regex.exec(text)) !== null) {
+        // Add the text before the current match as a 'text' segment
+        if (match.index > lastIndex) {
+            segments.push({
+                type: "text",
+                content: text.substring(lastIndex, match.index)
+            });
+        }
+
+        // Add the content inside the <think> tags as a 'think' segment
+        // match[1] contains the captured content within the tags
+        segments.push({
+            type: "think",
+            content: match[1] // The captured group inside <think>...</think>
+        });
+
+        // Update lastIndex to be the end of the current match
+        lastIndex = regex.lastIndex;
+    }
+
+    // Add any remaining text after the last match as a 'text' segment
+    if (lastIndex < text.length) {
+        segments.push({
+            type: "text",
+            content: text.substring(lastIndex)
+        });
+    }
+
+    return segments;
+};
