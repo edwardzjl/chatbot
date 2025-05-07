@@ -2,19 +2,22 @@
 export const messagesReducer = (messages, action) => {
     switch (action.type) {
     case "added": {
+        console.debug("Adding message: ", action.message);
         // find reversly could potentially be faster as the full message usually is the last one (streamed).
         const match = messages.findLastIndex(message => message.id === action.message.id);
         if (match !== -1) {
-            // message already exists, ignore it
+            console.warn(`Message with id ${action.message.id} already exists, skip adding...`);
             return messages;
         }
         return [...messages, { ...action.message }];
     }
     case "appended": {
+        console.debug("Appending message: ", action.message);
         const match = messages.findLastIndex(message => message.id === action.message.id);
         if (match === -1) {
             // we don't have this message, ignore it
             // this could happen when the user switch to another conversation and switch back
+            console.warn(`Message with id ${action.message.id} not found, skip appending...`);
             return messages;
         }
         return [
@@ -29,10 +32,11 @@ export const messagesReducer = (messages, action) => {
         ];
     }
     case "updated": {
+        console.debug("Updating message: ", action.message);
         // find reversly could potentially be faster as the full message usually is the last one (streamed).
         const match = messages.findLastIndex(message => message.id === action.message.id);
         if (match === -1) {
-            // message does not exist, ignore it
+            console.warn(`Message with id ${action.message.id} not found, skip updating...`);
             return messages;
         }
         return [
