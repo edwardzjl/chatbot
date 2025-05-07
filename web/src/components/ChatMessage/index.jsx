@@ -114,7 +114,17 @@ const ChatMessage = ({ convId, message }) => {
                         <MarkdownContent content={message.additional_kwargs.thought} />
                     </PeekDetails>
                 )}
-                <MarkdownContent content={message.content || ""} />
+                {typeof message.content === "string" && <MarkdownContent content={message.content || ""} />}
+                {Array.isArray(message.content) && message.content.map((chunk, index) => {
+                    switch (chunk.type) {
+                    case "text":
+                        return <MarkdownContent key={index} content={chunk.text} />;
+                    // TODO: support other types of content, e.g. image_url, video_url, etc.
+                    // And maybe thoughts as well.
+                    default:
+                        return null;
+                    }
+                })}
                 {message.attachments &&
                     <div className={styles.attachments}>
                         {message.attachments.map((attachment, index) => (
