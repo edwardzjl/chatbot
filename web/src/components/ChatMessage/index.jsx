@@ -1,4 +1,4 @@
-import styles from './index.module.css';
+import styles from "./index.module.css";
 
 import { useContext, useState } from "react";
 import Markdown from "react-markdown";
@@ -123,10 +123,14 @@ const ChatMessage = ({ convId, message }) => {
                     components={{
                         code({ inline, className, children, ...props }) {
                             const match = /language-(\w+)/.exec(className || "");
-                            return !inline && match ? (
+                            if (inline || !match) {
+                                return <code {...props} className={className}>{children}</code>;
+                            }
+                            const language = match[1];
+                            return (
                                 <div>
                                     <div className={styles.messageCodeTitle}>
-                                        <div>{match[1]}</div>
+                                        <div>{language}</div>
                                         <Tooltip title={copyTooltipTitle}>
                                             <ContentCopyIcon
                                                 aria-label="Copy code snippet to clipboard"
@@ -137,17 +141,13 @@ const ChatMessage = ({ convId, message }) => {
                                     <SyntaxHighlighter
                                         {...props}
                                         style={codeTheme}
-                                        language={match[1]}
+                                        language={language}
                                         PreTag="div"
                                     >
                                         {/* remove the last line separator, is it necessary? */}
                                         {String(children).replace(/\n$/, "")}
                                     </SyntaxHighlighter>
                                 </div>
-                            ) : (
-                                <code {...props} className={className}>
-                                    {children}
-                                </code>
                             );
                         },
                     }}

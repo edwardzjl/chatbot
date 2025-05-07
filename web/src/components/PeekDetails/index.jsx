@@ -21,9 +21,12 @@ const PeekDetails = ({ summary, content, peekHeight = "5rem" }) => {
     };
 
     useEffect(() => {
-        if (!isOpen && contentRef.current) {
+        if (!contentRef.current) {
+            return;
+        }
+        if (!isOpen) {
             contentRef.current.scrollTop = contentRef.current.scrollHeight - contentRef.current.clientHeight;
-        } else if (isOpen && contentRef.current) {
+        } else {
             contentRef.current.scrollTop = 0;
         }
     }, [isOpen, content]);
@@ -47,25 +50,25 @@ const PeekDetails = ({ summary, content, peekHeight = "5rem" }) => {
                     components={{
                         code({ inline, className, children, ...props }) {
                             const match = /language-(\w+)/.exec(className || "");
-                            return !inline && match ? (
+                            if (inline || !match) {
+                                return <code {...props} className={className}>{children}</code>;
+                            }
+                            const language = match[1];
+                            return (
                                 <div>
                                     <div className={styles.codeTitle}>
-                                        <div>{match[1]}</div>
+                                        <div>{language}</div>
                                     </div>
                                     <SyntaxHighlighter
                                         {...props}
                                         style={codeTheme}
-                                        language={match[1]}
+                                        language={language}
                                         PreTag="div"
                                     >
                                         {/* remove the last line separator, is it necessary? */}
                                         {String(children).replace(/\n$/, "")}
                                     </SyntaxHighlighter>
                                 </div>
-                            ) : (
-                                <code {...props} className={className}>
-                                    {children}
-                                </code>
                             );
                         },
                     }}
