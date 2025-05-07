@@ -96,7 +96,7 @@ async def chat(
                     # Send an empty non-chunk message to start the streaming.
                     msg = AIChatMessage(
                         parent_id=message.id,
-                        id=f"run-{event['run_id']}",
+                        id=f"run--{event['run_id']}",
                         conversation=message.conversation,
                         content="",  # Tired of handling null / undefined in js, simply sending an empty string.
                     )
