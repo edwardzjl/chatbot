@@ -1,0 +1,9 @@
+.codeTitle {
+    padding: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    background-color: var(--bg-primary);
+}
