@@ -59,16 +59,6 @@
     transition: opacity 1s;
 }
 
-.messageCodeTitle {
-    padding: 5px;
-    padding-left: 10px;
-    padding-right: 10px;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    background-color: var(--bg-primary);
-}
-
 .attachments {
     display: flex;
     flex-wrap: wrap;
