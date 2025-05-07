@@ -1,11 +1,6 @@
 import styles from "./index.module.css";
 
 import { useContext, useState } from "react";
-import Markdown from "react-markdown";
-import SyntaxHighlighter from "react-syntax-highlighter";
-import remarkGfm from "remark-gfm";
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
 import PropTypes from "prop-types";
 
 import Avatar from "@mui/material/Avatar";
@@ -21,13 +16,14 @@ import TravelExploreIcon from '@mui/icons-material/TravelExplore';
 
 import { MessageContext } from "@/contexts/message";
 import { SnackbarContext } from "@/contexts/snackbar";
-import { ThemeContext } from "@/contexts/theme";
 import { UserContext } from "@/contexts/user";
 
 import PeekDetails from "@/components/PeekDetails";
 import PreviewImage from "@/components/PreviewImage";
 
 import { stringToColor } from "@/commons";
+
+import MarkdownContent from "./MarkdownContent";
 
 
 /**
@@ -42,7 +38,6 @@ import { stringToColor } from "@/commons";
  * @returns {JSX.Element} The rendered ChatMessage component.
  */
 const ChatMessage = ({ convId, message }) => {
-    const { codeTheme } = useContext(ThemeContext);
     const { username, avatar } = useContext(UserContext);
     const { setSnackbar } = useContext(SnackbarContext);
     const { dispatch } = useContext(MessageContext);
@@ -116,82 +111,10 @@ const ChatMessage = ({ convId, message }) => {
                         summary="Thoughts"
                         content={message.additional_kwargs.thought}
                     >
-                        <Markdown
-                            remarkPlugins={[remarkGfm, remarkMath]}
-                            rehypePlugins={[rehypeKatex]}
-                            components={{
-                                code({ inline, className, children, ...props }) {
-                                    const match = /language-(\w+)/.exec(className || "");
-                                    if (inline || !match) {
-                                        return <code {...props} className={className}>{children}</code>;
-                                    }
-                                    const language = match[1];
-                                    return (
-                                        <div>
-                                            <div className={styles.messageCodeTitle}>
-                                                <div>{language}</div>
-                                                <Tooltip title={copyTooltipTitle}>
-                                                    <ContentCopyIcon
-                                                        aria-label="Copy code snippet to clipboard"
-                                                        onClick={() => onCopyClick(children)}
-                                                    />
-                                                </Tooltip>
-                                            </div>
-                                            <SyntaxHighlighter
-                                                {...props}
-                                                style={codeTheme}
-                                                language={language}
-                                                PreTag="div"
-                                            >
-                                                {/* remove the last line separator, is it necessary? */}
-                                                {String(children).replace(/\n$/, "")}
-                                            </SyntaxHighlighter>
-                                        </div>
-                                    );
-                                }
-                            }}
-                        >
-                            {message.additional_kwargs.thought}
-                        </Markdown>
+                        <MarkdownContent content={message.additional_kwargs.thought} />
                     </PeekDetails>
                 )}
-                <Markdown
-                    remarkPlugins={[remarkGfm, remarkMath]}
-                    rehypePlugins={[rehypeKatex]}
-                    components={{
-                        code({ inline, className, children, ...props }) {
-                            const match = /language-(\w+)/.exec(className || "");
-                            if (inline || !match) {
-                                return <code {...props} className={className}>{children}</code>;
-                            }
-                            const language = match[1];
-                            return (
-                                <div>
-                                    <div className={styles.messageCodeTitle}>
-                                        <div>{language}</div>
-                                        <Tooltip title={copyTooltipTitle}>
-                                            <ContentCopyIcon
-                                                aria-label="Copy code snippet to clipboard"
-                                                onClick={() => onCopyClick(children)}
-                                            />
-                                        </Tooltip>
-                                    </div>
-                                    <SyntaxHighlighter
-                                        {...props}
-                                        style={codeTheme}
-                                        language={language}
-                                        PreTag="div"
-                                    >
-                                        {/* remove the last line separator, is it necessary? */}
-                                        {String(children).replace(/\n$/, "")}
-                                    </SyntaxHighlighter>
-                                </div>
-                            );
-                        },
-                    }}
-                >
-                    {message.content || ""}
-                </Markdown>
+                <MarkdownContent content={message.content || ""} />
                 {message.attachments &&
                     <div className={styles.attachments}>
                         {message.attachments.map((attachment, index) => (
