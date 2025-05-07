@@ -6,40 +6,19 @@ import SyntaxHighlighter from "react-syntax-highlighter";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
-import { darcula, googlecode } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import PropTypes from "prop-types";
 
 import { ThemeContext } from "@/contexts/theme";
 
 
 const PeekDetails = ({ summary, content, peekHeight = "5rem" }) => {
-    const { theme } = useContext(ThemeContext);
-    const [markdownTheme, setMarkdownTheme] = useState(darcula);
+    const { codeTheme } = useContext(ThemeContext);
     const contentRef = useRef(null);
     const [isOpen, setIsOpen] = useState(false);
 
     const toggleOpen = () => {
         setIsOpen(!isOpen);
     };
-
-    // Update markdown theme based on the current theme
-    useEffect(() => {
-        switch (theme) {
-        case "dark":
-            setMarkdownTheme(darcula);
-            break;
-        case "light":
-            setMarkdownTheme(googlecode);
-            break;
-        default: {
-            if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
-                setMarkdownTheme(darcula);
-            } else {
-                setMarkdownTheme(googlecode);
-            }
-        }
-        }
-    }, [theme]);
 
     useEffect(() => {
         if (!isOpen && contentRef.current) {
@@ -75,7 +54,7 @@ const PeekDetails = ({ summary, content, peekHeight = "5rem" }) => {
                                     </div>
                                     <SyntaxHighlighter
                                         {...props}
-                                        style={markdownTheme}
+                                        style={codeTheme}
                                         language={match[1]}
                                         PreTag="div"
                                     >
