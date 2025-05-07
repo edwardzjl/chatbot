@@ -115,7 +115,45 @@ const ChatMessage = ({ convId, message }) => {
                     <PeekDetails
                         summary="Thoughts"
                         content={message.additional_kwargs.thought}
-                    />
+                    >
+                        <Markdown
+                            remarkPlugins={[remarkGfm, remarkMath]}
+                            rehypePlugins={[rehypeKatex]}
+                            components={{
+                                code({ inline, className, children, ...props }) {
+                                    const match = /language-(\w+)/.exec(className || "");
+                                    if (inline || !match) {
+                                        return <code {...props} className={className}>{children}</code>;
+                                    }
+                                    const language = match[1];
+                                    return (
+                                        <div>
+                                            <div className={styles.messageCodeTitle}>
+                                                <div>{language}</div>
+                                                <Tooltip title={copyTooltipTitle}>
+                                                    <ContentCopyIcon
+                                                        aria-label="Copy code snippet to clipboard"
+                                                        onClick={() => onCopyClick(children)}
+                                                    />
+                                                </Tooltip>
+                                            </div>
+                                            <SyntaxHighlighter
+                                                {...props}
+                                                style={codeTheme}
+                                                language={language}
+                                                PreTag="div"
+                                            >
+                                                {/* remove the last line separator, is it necessary? */}
+                                                {String(children).replace(/\n$/, "")}
+                                            </SyntaxHighlighter>
+                                        </div>
+                                    );
+                                }
+                            }}
+                        >
+                            {message.additional_kwargs.thought}
+                        </Markdown>
+                    </PeekDetails>
                 )}
                 <Markdown
                     remarkPlugins={[remarkGfm, remarkMath]}
