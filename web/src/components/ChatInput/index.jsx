@@ -12,7 +12,6 @@ import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import PreviewImage from "@/components/PreviewImage";
 
 import { ConfigContext } from "@/contexts/config";
-import { PreferenceContext } from "@/contexts/preference";
 import { SnackbarContext } from "@/contexts/snackbar";
 import { WebsocketContext } from "@/contexts/websocket";
 
@@ -59,10 +58,9 @@ import { uploadFile } from "./utils";
  */
 const ChatInput = ({ onSubmit }) => {
     const params = useParams();
-    const { preference } = useContext(PreferenceContext);
     const { ready } = useContext(WebsocketContext);
     const { setSnackbar } = useContext(SnackbarContext);
-    const { models } = useContext(ConfigContext);
+    const { models, selectedModel } = useContext(ConfigContext);
 
     const [input, setInput] = useState("");
     const inputRef = useRef(null);
@@ -104,7 +102,7 @@ const ChatInput = ({ onSubmit }) => {
             attachments: attachments,
             type: "human",
             sent_at: toLocalISOString(new Date()),
-            additional_kwargs: { force_thinking: preference.forceThinking }
+            additional_kwargs: { model_name: selectedModel }
         };
         try {
             await onSubmit(message);
@@ -143,6 +141,7 @@ const ChatInput = ({ onSubmit }) => {
     const handleFileChange = async (event) => {
         const selectedFiles = Array.from(event.target.files);
 
+        // TODO: selected model
         const limits = models[0]?.metadata?.limit_mm_per_prompt || {};
 
         // Note the `type` and `mimetype` fields are not the same.
