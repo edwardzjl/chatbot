@@ -1,6 +1,6 @@
 import styles from "./index.module.css";
 
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { createContext, memo, useCallback, useContext, useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
 
 
@@ -56,6 +56,21 @@ Dropdown.propTypes = {
     children: PropTypes.node.isRequired,
     className: PropTypes.string,
 };
+
+export const DropdownIndicator = memo(({ className }) => {
+    const { open } = useContext(DropdownContext);
+
+    return (
+        <span className={`${styles.dropdownIndicator} ${open ? styles.open : ""} ${className}`}>
+            ▼
+        </span>
+    );
+});
+DropdownIndicator.displayName = "DropdownIndicator";
+DropdownIndicator.propTypes = {
+    className: PropTypes.string,
+};
+
 
 /**
  * A button component to toggle the open/close state of the dropdown.
