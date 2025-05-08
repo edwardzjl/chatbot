@@ -4,15 +4,6 @@ from chatbot.config import Settings
 
 
 class TestSettings(unittest.TestCase):
-    def test_llm_default(self):
-        settings = Settings()
-        self.assertEqual(settings.llm, {"api_key": "NOT_SET"})
-
-    def test_llm_custom(self):
-        custom_llm = {"model": "gpt-3", "version": "davinci"}
-        settings = Settings(llm=custom_llm)
-        self.assertEqual(settings.llm, custom_llm)
-
     def test_db_primary_url_default(self):
         settings = Settings()
         expected = "sqlite+aiosqlite:///chatbot.sqlite"

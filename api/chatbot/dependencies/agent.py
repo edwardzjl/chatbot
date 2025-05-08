@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-from functools import lru_cache
 from typing import TYPE_CHECKING, Annotated
 
 from fastapi import Depends
@@ -9,7 +8,6 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import Runnable
 from langchain_core.tools import BaseTool
-from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.graph.graph import CompiledGraph
 from langgraph.types import StateSnapshot
@@ -18,7 +16,6 @@ from chatbot.agent import create_agent
 from chatbot.config import settings
 from chatbot.dependencies.db import get_raw_conn
 from chatbot.http_client import HttpClient
-from chatbot.llm.client import ReasoningChatOpenai
 from chatbot.llm.providers import LLMProvider, llm_provider_factory
 from chatbot.tools.weather.openmeteo import WeatherTool
 
@@ -29,26 +26,6 @@ if TYPE_CHECKING:
 
 
 logger = logging.getLogger(__name__)
-
-
-@lru_cache
-def get_chat_model() -> ChatOpenAI:
-    return ReasoningChatOpenai(**settings.llm)
-
-
-ChatModelDep = Annotated[ChatOpenAI, Depends(get_chat_model)]
-
-
-@lru_cache
-def get_safaty_model() -> ChatOpenAI | None:
-    return (
-        ChatOpenAI(**settings.safety_llm, tags=["internal"])
-        if settings.safety_llm is not None
-        else None
-    )
-
-
-SafetyModelDep = Annotated[ChatOpenAI, Depends(get_safaty_model)]
 
 
 # Cannot apply `lru_cache` to this function:
@@ -85,8 +62,10 @@ def get_tools(
 async def get_llm_provider(
     http_client: Annotated[HttpClient, Depends(get_http_client)],
 ) -> LLMProvider:
-    provider = settings.llm.get("metadata", {}).get("provider")
-    return await llm_provider_factory(settings.llm["base_url"], provider, http_client)
+    provider = (settings.llm.metadata or {}).get("provider")
+    return await llm_provider_factory(
+        settings.llm.openai_api_base, provider, http_client
+    )
 
 
 async def get_checkpointer() -> AsyncGenerator[BaseCheckpointSaver, None]:
@@ -108,18 +87,19 @@ async def get_checkpointer() -> AsyncGenerator[BaseCheckpointSaver, None]:
 
 
 async def get_agent(
-    chat_model: ChatModelDep,
+    # chat_model: ChatModelDep,
     llm_provider: Annotated[LLMProvider, Depends(get_llm_provider)],
     checkpointer: Annotated[BaseCheckpointSaver, Depends(get_checkpointer)],
     tools: Annotated[list[BaseTool], Depends(get_tools)],
-    safety_model: SafetyModelDep,
+    # safety_model: SafetyModelDep,
 ) -> AsyncGenerator[CompiledGraph, None]:
-    context_length = await llm_provider.get_max_tokens(settings.llm["model_name"])
-    token_counter = llm_provider.get_token_counter(settings.llm["model_name"])
+    model_name = settings.llm.model_name
+    context_length = await llm_provider.get_max_tokens(model_name)
+    token_counter = llm_provider.get_token_counter(model_name)
 
     return create_agent(
-        chat_model,
-        safety_model=safety_model,
+        settings.llm,
+        safety_model=settings.safety_llm,
         checkpointer=checkpointer,
         token_counter=token_counter,
         context_length=context_length,
@@ -148,7 +128,7 @@ AgentStateDep = Annotated[StateSnapshot, Depends(get_agent_state)]
 #   pydantic.errors.PydanticUndefinedAnnotation: name 'ChatModelDep' is not defined
 #  ```
 # So for now this function is not cached.
-def get_smry_chain(chat_model: ChatModelDep) -> Runnable:
+def get_smry_chain() -> Runnable:
     instruction = (
         "You are Rei, the ideal assistant dedicated to assisting users effectively."
     )
@@ -166,7 +146,7 @@ def get_smry_chain(chat_model: ChatModelDep) -> Runnable:
 
     runnable = (
         tmpl
-        | chat_model.bind(
+        | settings.llm.bind(
             extra_body={"chat_template_kwargs": {"enable_thinking": False}}
         )
         | StrOutputParser()
