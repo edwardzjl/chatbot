@@ -58,3 +58,7 @@ class Settings(BaseSettings):
         if self.db_standby_url is None:
             self.db_standby_url = self.db_primary_url
         return self
+
+    def __hash__(self):
+        # LRU cache doesn't work with mutable objects, so we need to hash the settings object
+        return self.model_dump_json().__hash__()
