@@ -13,7 +13,6 @@ import Sharing from "@/routes/sharing";
 import { ConfigProvider } from "@/contexts/config/provider";
 import { ConversationProvider } from "@/contexts/conversation/provider";
 import { MessageProvider } from "@/contexts/message/provider";
-import { PreferenceProvider } from "@/contexts/preference/provider";
 import { SnackbarProvider } from "@/contexts/snackbar/provider";
 import { ThemeProvider } from "@/contexts/theme/provider";
 import { UserProvider } from "@/contexts/user/provider";
@@ -62,15 +61,13 @@ function App() {
             <SnackbarProvider>
                 <ConfigProvider>
                     <UserProvider>
-                        <PreferenceProvider>
-                            <ConversationProvider>
-                                <WebsocketProvider>
-                                    <MessageProvider>
-                                        <RouterProvider router={router} />
-                                    </MessageProvider>
-                                </WebsocketProvider>
-                            </ConversationProvider>
-                        </PreferenceProvider>
+                        <ConversationProvider>
+                            <WebsocketProvider>
+                                <MessageProvider>
+                                    <RouterProvider router={router} />
+                                </MessageProvider>
+                            </WebsocketProvider>
+                        </ConversationProvider>
                     </UserProvider>
                 </ConfigProvider>
             </SnackbarProvider>
