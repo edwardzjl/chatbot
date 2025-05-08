@@ -3,9 +3,6 @@ import logging
 import os
 import sys
 
-from chatbot.main import app
-
-__all__ = ["app"]
 
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 
