@@ -119,8 +119,7 @@ def userinfo(
 
 @app.get("/api/models")
 def models_info() -> list[dict]:
-    masked = settings.llm.copy()
-    masked.pop("api_key", None)
+    masked = settings.llm.to_json()
     return [masked]
 
 
