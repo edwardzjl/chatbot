@@ -93,9 +93,6 @@ The content inside the <think> tags is for your internal use only and will not b
 
 Current date: {date}
 """
-        # force_thinking will force the LLM to engage thinking at the beginning of the response
-        force_thinking = config["configurable"].get("force_thinking", False)
-
         prompt = ChatPromptTemplate.from_messages(
             [
                 ("system", instruction),
@@ -103,9 +100,7 @@ Current date: {date}
             ]
         )
 
-        bound = prompt | chat_model.bind(
-            extra_body={"chat_template_kwargs": {"enable_thinking": force_thinking}}
-        )
+        bound = prompt | chat_model
 
         # I don't want this hint message to be persisted, so I'm not adding it to the state.
         hint_message = None
