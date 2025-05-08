@@ -19,10 +19,11 @@ def create_engine(settings: SettingsDep) -> AsyncEngine:
     )
 
 
+SqlalchemyEngineDep = Annotated[AsyncEngine, Depends(create_engine)]
+
+
 @lru_cache
-def create_sessionmaker(
-    engine: Annotated[AsyncEngine, Depends(create_engine)],
-) -> sessionmaker:
+def create_sessionmaker(engine: SqlalchemyEngineDep) -> sessionmaker:
     return sessionmaker(
         engine,
         autocommit=False,
@@ -46,9 +47,7 @@ SqlalchemySessionDep = Annotated[AsyncSession, Depends(get_sqlalchemy_session)]
 
 
 @asynccontextmanager
-async def get_raw_conn(
-    engine: Annotated[AsyncEngine, Depends(create_engine)],
-) -> AsyncGenerator[Any, None]:
+async def get_raw_conn(engine: SqlalchemyEngineDep) -> AsyncGenerator[Any, None]:
     # See <https://docs.sqlalchemy.org/en/20/faq/connections.html#accessing-the-underlying-connection-for-an-asyncio-driver>
     async with engine.begin() as conn:
         # pep-249 style ConnectionFairy connection pool proxy object
