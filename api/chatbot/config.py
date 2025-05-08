@@ -40,6 +40,8 @@ class Settings(BaseSettings):
     @field_validator("llm", mode="before")
     @classmethod
     def construct_openai_client(cls, value: Any) -> ChatOpenAI:
+        if not isinstance(value, dict):
+            return value
         return ReasoningChatOpenai(**value)
 
     @field_validator("safety_llm", mode="before")
@@ -47,6 +49,8 @@ class Settings(BaseSettings):
     def construct_safety_openai_client(cls, value: Any) -> ChatOpenAI | None:
         if not value:
             return None
+        if not isinstance(value, dict):
+            return value
         return ChatOpenAI(**value, tags=["internal"])
 
     @model_validator(mode="after")
