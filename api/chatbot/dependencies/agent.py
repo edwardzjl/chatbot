@@ -14,7 +14,7 @@ from langgraph.types import StateSnapshot
 
 from chatbot.agent import create_agent
 from chatbot.dependencies.commons import SettingsDep
-from chatbot.dependencies.db import get_raw_conn
+from chatbot.dependencies.db import SqlalchemyEngineDep, get_raw_conn
 from chatbot.http_client import HttpClient
 from chatbot.llm.providers import LLMProvider, llm_provider_factory
 from chatbot.tools.weather.openmeteo import WeatherTool
@@ -72,17 +72,18 @@ async def get_llm_provider(
 
 async def get_checkpointer(
     settings: SettingsDep,
+    engine: SqlalchemyEngineDep,
 ) -> AsyncGenerator[BaseCheckpointSaver, None]:
     if settings.db_primary_url.startswith("postgresql"):
         from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 
-        async with get_raw_conn() as conn:
+        async with get_raw_conn(engine) as conn:
             yield AsyncPostgresSaver(conn)
 
     elif settings.db_primary_url.startswith("sqlite"):
         from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
-        async with get_raw_conn() as conn:
+        async with get_raw_conn(engine) as conn:
             yield AsyncSqliteSaver(conn)
     else:
         from langgraph.checkpoint.memory import InMemorySaver
