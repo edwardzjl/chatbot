@@ -9,7 +9,8 @@ from fastapi import (
 )
 from langchain_core.messages import AIMessage, BaseMessage, trim_messages
 
-from chatbot.dependencies import AgentDep, SmrChainDep, UserIdHeaderDep
+from chatbot.dependencies import UserIdHeaderDep
+from chatbot.dependencies.agent import AgentWrapperDep, SmrChainWrapperDep
 from chatbot.dependencies.db import SqlalchemySessionMakerDep
 from chatbot.metrics import connected_clients
 from chatbot.metrics.llm import input_tokens, output_tokens
@@ -35,8 +36,8 @@ router = APIRouter(
 async def chat(
     websocket: WebSocket,
     userid: UserIdHeaderDep,
-    agent: AgentDep,
-    smry_chain: SmrChainDep,
+    agent_wrapper: AgentWrapperDep,
+    smry_chain_wrapper: SmrChainWrapperDep,
     session_maker: SqlalchemySessionMakerDep,
 ):
     await websocket.accept()
@@ -56,6 +57,10 @@ async def chat(
                 # TODO: I'm not sure whether this is the correct way to handle this.
                 # See websocket code definitions here: <https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code>
                 raise WebSocketException(code=3403, reason="authorization error")
+
+            selected_model = message.additional_kwargs.get("model_name")
+            agent = await agent_wrapper(selected_model)
+
             chain_metadata = {
                 "conversation_id": message.conversation,
                 "userid": userid,
@@ -127,6 +132,7 @@ async def chat(
             if message.additional_kwargs and message.additional_kwargs.get(
                 "require_summarization", False
             ):
+                smry_chain = smry_chain_wrapper(selected_model)
                 config = {"configurable": {"thread_id": message.conversation}}
                 state = await agent.aget_state(config)
                 msgs: list[BaseMessage] = state.values.get("messages", [])

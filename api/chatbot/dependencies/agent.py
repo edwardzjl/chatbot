@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import logging
+from functools import partial
 from typing import TYPE_CHECKING, Annotated
 
-from fastapi import Depends
+from fastapi import Depends, Header
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import Runnable
@@ -16,7 +17,7 @@ from chatbot.agent import create_agent
 from chatbot.dependencies.commons import SettingsDep
 from chatbot.dependencies.db import SqlalchemyEngineDep, get_raw_conn
 from chatbot.http_client import HttpClient
-from chatbot.llm.providers import LLMProvider, llm_provider_factory
+from chatbot.llm.providers import llm_provider_factory
 from chatbot.tools.weather.openmeteo import WeatherTool
 
 from .commons import get_http_client
@@ -26,6 +27,12 @@ if TYPE_CHECKING:
 
 
 logger = logging.getLogger(__name__)
+
+
+def ModelHeader(alias: str | None = None, **kwargs):
+    if alias is None:
+        alias = "Select-Model"
+    return Header(alias=alias, **kwargs)
 
 
 # Cannot apply `lru_cache` to this function:
@@ -60,16 +67,6 @@ def get_tools(
     return tools
 
 
-async def get_llm_provider(
-    settings: SettingsDep,
-    http_client: Annotated[HttpClient, Depends(get_http_client)],
-) -> LLMProvider:
-    provider = (settings.llms[0].metadata or {}).get("provider")
-    return await llm_provider_factory(
-        settings.llms[0].openai_api_base, provider, http_client
-    )
-
-
 async def get_checkpointer(
     settings: SettingsDep,
     engine: SqlalchemyEngineDep,
@@ -92,19 +89,24 @@ async def get_checkpointer(
 
 
 async def get_agent(
-    # chat_model: ChatModelDep,
-    llm_provider: Annotated[LLMProvider, Depends(get_llm_provider)],
     checkpointer: Annotated[BaseCheckpointSaver, Depends(get_checkpointer)],
     tools: Annotated[list[BaseTool], Depends(get_tools)],
-    # safety_model: SafetyModelDep,
     settings: SettingsDep,
+    http_client: Annotated[HttpClient, Depends(get_http_client)],
+    select_model: Annotated[str | None, ModelHeader()] = None,
 ) -> AsyncGenerator[CompiledGraph, None]:
-    model_name = settings.llms[0].model_name
-    context_length = await llm_provider.get_max_tokens(model_name)
-    token_counter = llm_provider.get_token_counter(model_name)
+    llm_name = select_model or settings.llms[0].name
+    llm = settings.must_get_llm(llm_name)
+
+    provider = (llm.metadata or {}).get("provider")
+    llm_provider = await llm_provider_factory(
+        llm.openai_api_base, provider, http_client
+    )
+    context_length = await llm_provider.get_max_tokens(llm.model_name)
+    token_counter = llm_provider.get_token_counter(llm.model_name)
 
     return create_agent(
-        settings.llms[0],
+        llm,
         safety_model=settings.safety_llm,
         checkpointer=checkpointer,
         token_counter=token_counter,
@@ -114,6 +116,18 @@ async def get_agent(
 
 
 AgentDep = Annotated[CompiledGraph, Depends(get_agent)]
+
+
+def get_agent_wrapper(
+    checkpointer: Annotated[BaseCheckpointSaver, Depends(get_checkpointer)],
+    tools: Annotated[list[BaseTool], Depends(get_tools)],
+    settings: SettingsDep,
+    http_client: Annotated[HttpClient, Depends(get_http_client)],
+) -> partial:
+    return partial(get_agent, checkpointer, tools, settings, http_client)
+
+
+AgentWrapperDep = Annotated[partial, Depends(get_agent_wrapper)]
 
 
 async def get_agent_state(conversation_id: str, agent: AgentDep) -> StateSnapshot:
@@ -134,7 +148,13 @@ AgentStateDep = Annotated[StateSnapshot, Depends(get_agent_state)]
 #   pydantic.errors.PydanticUndefinedAnnotation: name 'ChatModelDep' is not defined
 #  ```
 # So for now this function is not cached.
-def get_smry_chain(settings: SettingsDep) -> Runnable:
+def get_smry_chain(
+    settings: SettingsDep,
+    select_model: Annotated[str | None, ModelHeader()] = None,
+) -> Runnable:
+    llm_name = select_model or settings.llms[0].name
+    llm = settings.must_get_llm(llm_name)
+
     instruction = (
         "You are Rei, the ideal assistant dedicated to assisting users effectively."
     )
@@ -152,9 +172,7 @@ def get_smry_chain(settings: SettingsDep) -> Runnable:
 
     runnable = (
         tmpl
-        | settings.llms[0].bind(
-            extra_body={"chat_template_kwargs": {"enable_thinking": False}}
-        )
+        | llm.bind(extra_body={"chat_template_kwargs": {"enable_thinking": False}})
         | StrOutputParser()
     )
 
@@ -162,3 +180,10 @@ def get_smry_chain(settings: SettingsDep) -> Runnable:
 
 
 SmrChainDep = Annotated[Runnable, Depends(get_smry_chain)]
+
+
+def get_smry_chain_wrapper(settings: SettingsDep) -> partial:
+    return partial(get_smry_chain, settings)
+
+
+SmrChainWrapperDep = Annotated[partial, Depends(get_smry_chain_wrapper)]
