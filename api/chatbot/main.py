@@ -20,8 +20,8 @@ from requests_cache import CachedSession
 from sqlalchemy.exc import NoResultFound
 from starlette.routing import Mount
 
-from chatbot.config import settings
 from chatbot.dependencies import EmailHeaderDep, UserIdHeaderDep, UsernameHeaderDep
+from chatbot.dependencies.commons import SettingsDep, get_settings
 from chatbot.dependencies.db import sqlalchemy_engine
 from chatbot.models import Base
 from chatbot.routers.chat import router as chat_router
@@ -37,6 +37,8 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    settings = get_settings()
+
     # Create tables for ORM models
     async with sqlalchemy_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
@@ -118,7 +120,7 @@ def userinfo(
 
 
 @app.get("/api/models")
-def models_info() -> list[dict]:
+def models_info(settings: SettingsDep) -> list[dict]:
     masked = settings.llm.to_json()
     return [masked]
 

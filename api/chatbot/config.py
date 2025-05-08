@@ -54,6 +54,3 @@ class Settings(BaseSettings):
         if self.db_standby_url is None:
             self.db_standby_url = self.db_primary_url
         return self
-
-
-settings = Settings(_env_file=".env", _env_file_encoding="utf-8")

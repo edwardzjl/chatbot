@@ -7,8 +7,10 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
 
-from chatbot.config import settings
+from chatbot.dependencies.commons import get_settings
 
+
+settings = get_settings()
 
 sqlalchemy_engine = create_async_engine(
     str(settings.db_primary_url),

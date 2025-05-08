@@ -3,11 +3,12 @@ from typing import Annotated
 
 from fastapi import Depends
 from minio import Minio
-from chatbot.config import settings
+
+from chatbot.dependencies.commons import SettingsDep
 
 
 @lru_cache
-def get_s3_client() -> Minio:
+def get_s3_client(settings: SettingsDep) -> Minio:
     client = Minio(
         endpoint=settings.s3.endpoint,
         access_key=settings.s3.access_key,
