@@ -64,9 +64,9 @@ async def get_llm_provider(
     settings: SettingsDep,
     http_client: Annotated[HttpClient, Depends(get_http_client)],
 ) -> LLMProvider:
-    provider = (settings.llm.metadata or {}).get("provider")
+    provider = (settings.llms[0].metadata or {}).get("provider")
     return await llm_provider_factory(
-        settings.llm.openai_api_base, provider, http_client
+        settings.llms[0].openai_api_base, provider, http_client
     )
 
 
@@ -99,12 +99,12 @@ async def get_agent(
     # safety_model: SafetyModelDep,
     settings: SettingsDep,
 ) -> AsyncGenerator[CompiledGraph, None]:
-    model_name = settings.llm.model_name
+    model_name = settings.llms[0].model_name
     context_length = await llm_provider.get_max_tokens(model_name)
     token_counter = llm_provider.get_token_counter(model_name)
 
     return create_agent(
-        settings.llm,
+        settings.llms[0],
         safety_model=settings.safety_llm,
         checkpointer=checkpointer,
         token_counter=token_counter,
@@ -152,7 +152,7 @@ def get_smry_chain(settings: SettingsDep) -> Runnable:
 
     runnable = (
         tmpl
-        | settings.llm.bind(
+        | settings.llms[0].bind(
             extra_body={"chat_template_kwargs": {"enable_thinking": False}}
         )
         | StrOutputParser()
