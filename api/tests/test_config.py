@@ -4,8 +4,13 @@ from chatbot.config import Settings
 
 
 class TestSettings(unittest.TestCase):
+    def _create_settings(self, **kwargs) -> Settings:
+        llm_instance = kwargs.pop("llm", {"api_key": "test_key"})
+
+        return Settings(llm=llm_instance, **kwargs)
+
     def test_db_primary_url_default(self):
-        settings = Settings()
+        settings = self._create_settings()
         expected = "sqlite+aiosqlite:///chatbot.sqlite"
         self.assertEqual(str(settings.db_primary_url), expected)
 
@@ -13,12 +18,12 @@ class TestSettings(unittest.TestCase):
         custom_primary_url = (
             "postgresql+psycopg://primary_user:primary_pass@localhost/primary_db"
         )
-        settings = Settings(db_primary_url=custom_primary_url)
+        settings = self._create_settings(db_primary_url=custom_primary_url)
         expected = "postgresql+psycopg://primary_user:primary_pass@localhost/primary_db"
         self.assertEqual(str(settings.db_primary_url), expected)
 
     def test_db_standby_url_default(self):
-        settings = Settings()
+        settings = self._create_settings()
         expected = "sqlite+aiosqlite:///chatbot.sqlite"
         self.assertEqual(str(settings.db_standby_url), expected)
 
@@ -26,7 +31,7 @@ class TestSettings(unittest.TestCase):
         custom_standby_url = (
             "postgresql+psycopg://standby_user:standby_pass@localhost/standby_db"
         )
-        settings = Settings(db_standby_url=custom_standby_url)
+        settings = self._create_settings(db_standby_url=custom_standby_url)
         expected = "postgresql+psycopg://standby_user:standby_pass@localhost/standby_db"
         self.assertEqual(str(settings.db_standby_url), expected)
 
