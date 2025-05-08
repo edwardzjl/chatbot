@@ -48,7 +48,23 @@ class Settings(BaseSettings):
             raise ValueError("llms must be a list")
         if not all(isinstance(item, dict) for item in value):
             return value
-        return [ReasoningChatOpenai(**v) for v in value]
+
+        # THIS IS STUPID!
+        # `langchain_openai.chat_models.base.BaseChatOpenAI.extra_body` is typed as `Optional[Mapping[str, Any]]`.
+        # Pydantic does not automatically convert the *values* within this mapping.
+        # Since environment variables are always strings, this results in string values in `extra_body`, e.g.:
+        # {"repetition_penalty": "1.05", "chat_template_kwargs": {"enable_thinking": "True"}}
+        # Crucially, vLLM's "non-thinking mode" requires `extra_body['chat_template_kwargs']['enable_thinking']` to be the *boolean* `False`, not the string "False".
+        # IDK whether other parameters in `extra_body` also require specific types, but converting them proactively is a safe approach.
+        processed = [
+            {
+                key: preprocess_value(val) if key == "extra_body" else val
+                for key, val in item.items()
+            }
+            for item in value
+        ]
+
+        return [ReasoningChatOpenai(**v) for v in processed]
 
     @field_validator("safety_llm", mode="before")
     @classmethod
@@ -97,3 +113,24 @@ class Settings(BaseSettings):
     def __hash__(self):
         # LRU cache doesn't work with mutable objects, so we need to hash the settings object
         return self.model_dump_json().__hash__()
+
+
+def preprocess_value(value: Any) -> Any:
+    if isinstance(value, str):
+        if value.lower() == "true":
+            return True
+        if value.lower() == "false":
+            return False
+        try:
+            return int(value)
+        except ValueError:
+            try:
+                return float(value)
+            except ValueError:
+                return value
+    elif isinstance(value, dict):
+        return {k: preprocess_value(v) for k, v in value.items()}
+    elif isinstance(value, list):
+        return [preprocess_value(item) for item in value]
+    else:
+        return value
