@@ -2,6 +2,15 @@
     /* Seems nothing to add here */
 }
 
+.dropdownIndicator {
+    transition: transform 0.2s ease;
+    display: inline-block; /* 确保可以应用 transform */
+}
+
+.dropdownIndicator.open {
+    transform: rotate(180deg);
+}
+
 .dropdownButton {
     cursor: pointer;
 }
