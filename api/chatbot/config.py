@@ -19,7 +19,7 @@ class S3Settings(BaseModel):
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_nested_delimiter="__")
+    model_config = SettingsConfigDict(env_nested_delimiter="__", extra="ignore")
 
     llm: ChatOpenAI
     safety_llm: ChatOpenAI | None = None
