@@ -10,7 +10,7 @@ from fastapi import (
 from langchain_core.messages import AIMessage, BaseMessage, trim_messages
 
 from chatbot.dependencies import AgentDep, SmrChainDep, UserIdHeaderDep
-from chatbot.dependencies.db import sqlalchemy_session
+from chatbot.dependencies.db import SqlalchemySessionMakerDep
 from chatbot.metrics import connected_clients
 from chatbot.metrics.llm import input_tokens, output_tokens
 from chatbot.models import Conversation
@@ -37,6 +37,7 @@ async def chat(
     userid: UserIdHeaderDep,
     agent: AgentDep,
     smry_chain: SmrChainDep,
+    session_maker: SqlalchemySessionMakerDep,
 ):
     await websocket.accept()
     connected_clients.inc()
@@ -49,7 +50,7 @@ async def chat(
             # However, SQLite doesn't have a native UUID type.
             # See <https://github.com/sqlalchemy/sqlalchemy/discussions/9290#discussioncomment-4953349>
             conversation_id = UUID(message.conversation)
-            async with sqlalchemy_session() as session:
+            async with session_maker() as session:
                 conv: Conversation = await session.get(Conversation, conversation_id)
             if conv.owner != userid:
                 # TODO: I'm not sure whether this is the correct way to handle this.
@@ -118,7 +119,7 @@ async def chat(
                         ).inc(usage_metadata["output_tokens"])
 
             conv.last_message_at = utcnow()
-            async with sqlalchemy_session() as session:
+            async with session_maker() as session:
                 conv = await session.merge(conv)
                 await session.commit()
 
@@ -142,7 +143,7 @@ async def chat(
                 )
                 title = title_raw.strip('"')
                 conv.title = title
-                async with sqlalchemy_session() as session:
+                async with session_maker() as session:
                     conv = await session.merge(conv)
                     await session.commit()
 

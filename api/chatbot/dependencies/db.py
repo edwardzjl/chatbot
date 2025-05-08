@@ -1,32 +1,44 @@
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
+from functools import lru_cache
 from typing import Annotated, Any
 
 from fastapi import Depends
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
 
-from chatbot.dependencies.commons import get_settings
+from chatbot.dependencies.commons import SettingsDep
 
 
-settings = get_settings()
-
-sqlalchemy_engine = create_async_engine(
-    str(settings.db_primary_url),
-    poolclass=NullPool,
-)
-sqlalchemy_session = sessionmaker(
-    sqlalchemy_engine,
-    autocommit=False,
-    expire_on_commit=False,
-    autoflush=False,
-    class_=AsyncSession,
-)
+@lru_cache
+def create_engine(settings: SettingsDep) -> AsyncEngine:
+    return create_async_engine(
+        str(settings.db_primary_url),
+        poolclass=NullPool,
+    )
 
 
-async def get_sqlalchemy_session() -> AsyncGenerator[AsyncSession, None]:
-    async with sqlalchemy_session() as session:
+@lru_cache
+def create_sessionmaker(
+    engine: Annotated[AsyncEngine, Depends(create_engine)],
+) -> sessionmaker:
+    return sessionmaker(
+        engine,
+        autocommit=False,
+        expire_on_commit=False,
+        autoflush=False,
+        class_=AsyncSession,
+    )
+
+
+SqlalchemySessionMakerDep = Annotated[sessionmaker, Depends(create_sessionmaker)]
+
+
+async def get_sqlalchemy_session(
+    session_maker: SqlalchemySessionMakerDep,
+) -> AsyncGenerator[AsyncSession, None]:
+    async with session_maker() as session:
         yield session
 
 
@@ -34,9 +46,11 @@ SqlalchemySessionDep = Annotated[AsyncSession, Depends(get_sqlalchemy_session)]
 
 
 @asynccontextmanager
-async def get_raw_conn() -> AsyncGenerator[Any, None]:
+async def get_raw_conn(
+    engine: Annotated[AsyncEngine, Depends(create_engine)],
+) -> AsyncGenerator[Any, None]:
     # See <https://docs.sqlalchemy.org/en/20/faq/connections.html#accessing-the-underlying-connection-for-an-asyncio-driver>
-    async with sqlalchemy_engine.begin() as conn:
+    async with engine.begin() as conn:
         # pep-249 style ConnectionFairy connection pool proxy object
         # presents a sync interface
         connection_fairy = await conn.get_raw_connection()
@@ -47,21 +61,31 @@ async def get_raw_conn() -> AsyncGenerator[Any, None]:
         yield raw_asyncio_connection
 
 
-sqlalchemy_ro_engine = create_async_engine(
-    str(settings.db_standby_url),
-    poolclass=NullPool,
-)
-sqlalchemy_ro_session = sessionmaker(
-    sqlalchemy_ro_engine,
-    autocommit=False,
-    expire_on_commit=False,
-    autoflush=False,
-    class_=AsyncSession,
-)
+@lru_cache
+def create_ro_engine(settings: SettingsDep) -> AsyncEngine:
+    return create_async_engine(
+        str(settings.db_standby_url),
+        poolclass=NullPool,
+    )
 
 
-async def get_sqlalchemy_ro_session() -> AsyncGenerator[AsyncSession, None]:
-    async with sqlalchemy_ro_session() as session:
+@lru_cache
+def create_ro_sessionmaker(
+    engine: Annotated[AsyncEngine, Depends(create_ro_engine)],
+) -> sessionmaker:
+    return sessionmaker(
+        engine,
+        autocommit=False,
+        expire_on_commit=False,
+        autoflush=False,
+        class_=AsyncSession,
+    )
+
+
+async def get_sqlalchemy_ro_session(
+    session_maker: Annotated[sessionmaker, Depends(create_ro_sessionmaker)],
+) -> AsyncGenerator[AsyncSession, None]:
+    async with session_maker() as session:
         yield session
 
 
