@@ -19,6 +19,10 @@
     font-weight: bold;
 }
 
+.dropdownIndicator {
+    margin-left: 8px;
+}
+
 .menuList {
     background-color: var(--bg-primary);
     border: 1px solid var(--border-color);
