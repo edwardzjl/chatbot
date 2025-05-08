@@ -22,7 +22,7 @@ from starlette.routing import Mount
 
 from chatbot.dependencies import EmailHeaderDep, UserIdHeaderDep, UsernameHeaderDep
 from chatbot.dependencies.commons import SettingsDep, get_settings
-from chatbot.dependencies.db import sqlalchemy_engine
+from chatbot.dependencies.db import create_engine
 from chatbot.models import Base
 from chatbot.routers.chat import router as chat_router
 from chatbot.routers.conversation import router as conversation_router
@@ -39,6 +39,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     settings = get_settings()
 
+    sqlalchemy_engine = create_engine(settings)
     # Create tables for ORM models
     async with sqlalchemy_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
