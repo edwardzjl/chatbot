@@ -4,20 +4,49 @@ import PropTypes from "prop-types";
 import { ConfigContext } from "./index";
 
 
+const SESSION_STORAGE_KEY = "appConfigModels";
+
+
 export const ConfigProvider = ({ children }) => {
     const [models, setModels] = useState([]);
 
     useEffect(() => {
-        const initialization = async () => {
-            const res = await fetch("/api/models");
-            if (res.ok) {
-                const data = await res.json();
-                setModels(data);
+        const loadConfig = async () => {
+            const cachedModels = sessionStorage.getItem(SESSION_STORAGE_KEY);
+
+            if (cachedModels) {
+                try {
+                    const data = JSON.parse(cachedModels);
+                    setModels(data);
+                    console.info("Loaded models from sessionStorage");
+                    return;
+                } catch (parseError) {
+                    console.error("Failed to parse models from sessionStorage, fetching...", parseError);
+                }
             } else {
-                console.error("error getting config", res);
+                console.info("Models not found in sessionStorage, fetching...");
+            }
+
+            try {
+                const res = await fetch("/api/models");
+                if (res.ok) {
+                    const data = await res.json();
+                    setModels(data);
+                    try {
+                        sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(data));
+                        console.info("Fetched and stored models in sessionStorage");
+                    } catch (storageError) {
+                        console.error("Failed to store models in sessionStorage:", storageError);
+                    }
+                } else {
+                    console.error("Error fetching models:", res.status, res.statusText);
+                }
+            } catch (fetchError) {
+                console.error("Network or unexpected error fetching models:", fetchError);
             }
         };
-        initialization();
+
+        loadConfig();
 
         return () => { };
     }, []);
