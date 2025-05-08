@@ -5,9 +5,9 @@ from chatbot.config import Settings
 
 class TestSettings(unittest.TestCase):
     def _create_settings(self, **kwargs) -> Settings:
-        llm_instance = kwargs.pop("llm", {"api_key": "test_key"})
+        llms = kwargs.pop("llms", [{"api_key": "test_key"}])
 
-        return Settings(llm=llm_instance, **kwargs)
+        return Settings(llms=llms, **kwargs)
 
     def test_db_primary_url_default(self):
         settings = self._create_settings()

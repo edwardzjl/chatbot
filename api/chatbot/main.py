@@ -122,8 +122,7 @@ def userinfo(
 
 @app.get("/api/models")
 def models_info(settings: SettingsDep) -> list[dict]:
-    masked = settings.llm.to_json()
-    return [masked]
+    return [llm.to_json() for llm in settings.llms]
 
 
 app.mount(

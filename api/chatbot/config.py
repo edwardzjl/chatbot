@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 from langchain_openai import ChatOpenAI
@@ -8,6 +9,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing_extensions import Self
 
 from chatbot.llm.client import ReasoningChatOpenai
+
+
+logger = logging.getLogger(__name__)
 
 
 class S3Settings(BaseModel):
@@ -21,7 +25,7 @@ class S3Settings(BaseModel):
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_nested_delimiter="__", extra="ignore")
 
-    llm: ChatOpenAI
+    llms: list[ChatOpenAI]
     safety_llm: ChatOpenAI | None = None
 
     db_primary_url: PostgresDsn | str = "sqlite+aiosqlite:///chatbot.sqlite"
@@ -37,12 +41,14 @@ class Settings(BaseSettings):
     ipgeolocation_api_key: str | None = None
     openmeteo_api_key: str | None = None
 
-    @field_validator("llm", mode="before")
+    @field_validator("llms", mode="before")
     @classmethod
     def construct_openai_client(cls, value: Any) -> ChatOpenAI:
-        if not isinstance(value, dict):
+        if not isinstance(value, list):
+            raise ValueError("llms must be a list")
+        if not all(isinstance(item, dict) for item in value):
             return value
-        return ReasoningChatOpenai(**value)
+        return [ReasoningChatOpenai(**v) for v in value]
 
     @field_validator("safety_llm", mode="before")
     @classmethod
@@ -58,6 +64,35 @@ class Settings(BaseSettings):
         if self.db_standby_url is None:
             self.db_standby_url = self.db_primary_url
         return self
+
+    def must_get_llm(self, name: str | None) -> ChatOpenAI:
+        """Retrieves an LLM instance by its model name, defaulting if necessary.
+
+        Searches for an LLM within `self.llms` whose `model_name` matches the
+        provided `name`. If `name` is None, or if a matching LLM is not found
+        for a given name, the method returns the first LLM in the `self.llms` list.
+
+        Args:
+            name: The `model_name` of the desired LLM. If None, the first LLM
+                  in the list is returned.
+
+        Returns:
+            A `ChatOpenAI` instance. This will be the matching LLM if found,
+            otherwise the first LLM in the list.
+
+        Warning:
+            Logs a warning if no name is provided or if the provided name does
+            not match any LLM's model name in the list.
+            Assumes `self.llms` is not empty; will raise `IndexError` if it is.
+        """
+        if name is None:
+            logger.warning("No LLM name provided, returning the first LLM.")
+            return self.llms[0]
+        for llm in self.llms:
+            if llm.name == name:
+                return llm
+        logger.warning("LLM name %s not found, returning the first LLM.", name)
+        return self.llms[0]
 
     def __hash__(self):
         # LRU cache doesn't work with mutable objects, so we need to hash the settings object
