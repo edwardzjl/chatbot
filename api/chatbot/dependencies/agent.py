@@ -13,7 +13,7 @@ from langgraph.graph.graph import CompiledGraph
 from langgraph.types import StateSnapshot
 
 from chatbot.agent import create_agent
-from chatbot.config import settings
+from chatbot.dependencies.commons import SettingsDep
 from chatbot.dependencies.db import get_raw_conn
 from chatbot.http_client import HttpClient
 from chatbot.llm.providers import LLMProvider, llm_provider_factory
@@ -30,6 +30,7 @@ logger = logging.getLogger(__name__)
 
 # Cannot apply `lru_cache` to this function:
 def get_tools(
+    settings: SettingsDep,
     http_client: Annotated[HttpClient, Depends(get_http_client)],
 ) -> list[BaseTool]:
     tools = []
@@ -60,6 +61,7 @@ def get_tools(
 
 
 async def get_llm_provider(
+    settings: SettingsDep,
     http_client: Annotated[HttpClient, Depends(get_http_client)],
 ) -> LLMProvider:
     provider = (settings.llm.metadata or {}).get("provider")
@@ -68,7 +70,9 @@ async def get_llm_provider(
     )
 
 
-async def get_checkpointer() -> AsyncGenerator[BaseCheckpointSaver, None]:
+async def get_checkpointer(
+    settings: SettingsDep,
+) -> AsyncGenerator[BaseCheckpointSaver, None]:
     if settings.db_primary_url.startswith("postgresql"):
         from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 
@@ -92,6 +96,7 @@ async def get_agent(
     checkpointer: Annotated[BaseCheckpointSaver, Depends(get_checkpointer)],
     tools: Annotated[list[BaseTool], Depends(get_tools)],
     # safety_model: SafetyModelDep,
+    settings: SettingsDep,
 ) -> AsyncGenerator[CompiledGraph, None]:
     model_name = settings.llm.model_name
     context_length = await llm_provider.get_max_tokens(model_name)
@@ -128,7 +133,7 @@ AgentStateDep = Annotated[StateSnapshot, Depends(get_agent_state)]
 #   pydantic.errors.PydanticUndefinedAnnotation: name 'ChatModelDep' is not defined
 #  ```
 # So for now this function is not cached.
-def get_smry_chain() -> Runnable:
+def get_smry_chain(settings: SettingsDep) -> Runnable:
     instruction = (
         "You are Rei, the ideal assistant dedicated to assisting users effectively."
     )

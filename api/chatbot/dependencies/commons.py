@@ -1,6 +1,18 @@
-from fastapi import Request, WebSocket
+from functools import lru_cache
+from typing import Annotated
 
+from fastapi import Depends, Request, WebSocket
+
+from chatbot.config import Settings
 from chatbot.http_client import HttpClient
+
+
+@lru_cache
+def get_settings() -> Settings:
+    return Settings(_env_file=[".env"], _env_file_encoding="utf-8")
+
+
+SettingsDep = Annotated[Settings, Depends(get_settings)]
 
 
 def get_http_client(request: Request = None, websocket: WebSocket = None) -> HttpClient:
