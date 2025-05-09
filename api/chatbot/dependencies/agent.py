@@ -18,7 +18,9 @@ from chatbot.dependencies.commons import SettingsDep
 from chatbot.dependencies.db import SqlalchemyEngineDep, get_raw_conn
 from chatbot.http_client import HttpClient
 from chatbot.llm.providers import llm_provider_factory
-from chatbot.tools.weather.openmeteo import WeatherTool
+from chatbot.tools.geo import GeoLocationTool
+from chatbot.tools.search.serpapi import SearchTool
+from chatbot.tools.weather import WeatherTool
 
 from .commons import get_http_client
 
@@ -46,11 +48,9 @@ def get_tools(
     )
     if settings.serp_api_key:
         logger.info("Using SerpApi as search tool.")
-        from chatbot.tools.search.serpapi import SearchTool
 
         if settings.ipgeolocation_api_key:
             logger.info("Using IPGeolocation as geolocation tool.")
-            from chatbot.tools.search.serpapi.geo import GeoLocationTool
 
             geo_tool = GeoLocationTool(
                 api_key=settings.ipgeolocation_api_key, http_client=http_client
