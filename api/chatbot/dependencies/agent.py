@@ -95,8 +95,7 @@ async def get_agent(
     http_client: Annotated[HttpClient, Depends(get_http_client)],
     select_model: Annotated[str | None, ModelHeader()] = None,
 ) -> AsyncGenerator[CompiledGraph, None]:
-    llm_name = select_model or settings.llms[0].name
-    llm = settings.must_get_llm(llm_name)
+    llm = settings.must_get_llm(select_model)
 
     provider = (llm.metadata or {}).get("provider")
     llm_provider = await llm_provider_factory(
@@ -152,8 +151,7 @@ def get_smry_chain(
     settings: SettingsDep,
     select_model: Annotated[str | None, ModelHeader()] = None,
 ) -> Runnable:
-    llm_name = select_model or settings.llms[0].name
-    llm = settings.must_get_llm(llm_name)
+    llm = settings.must_get_llm(select_model)
 
     instruction = (
         "You are Rei, the ideal assistant dedicated to assisting users effectively."
