@@ -2,13 +2,17 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, UTC
-from typing import TYPE_CHECKING, Callable, Literal
+from typing import TYPE_CHECKING, Annotated, Callable, Literal, TypeAlias
 
+from langchain_core.load import dumpd, load
 from langchain_core.messages import BaseMessage, SystemMessage, trim_messages
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import Runnable
+from langchain_core.tools import BaseTool
 from langchain_core.runnables.config import RunnableConfig
 from langgraph.graph import END, START, MessagesState, StateGraph
 from langgraph.prebuilt import ToolNode
+from pydantic import BaseModel, Field
 
 from chatbot.safety import create_hazard_classifier, hazard_categories
 
@@ -30,7 +34,7 @@ def create_agent(
         Callable[[list[BaseMessage]], int] | Callable[[BaseMessage], int] | None
     ) = None,
     context_length: int = 20,
-    tools: list = None,
+    tools: list[BaseTool] = None,
 ) -> CompiledGraph:
     if token_counter is None:
         if hasattr(chat_model, "get_num_tokens_from_messages"):
@@ -51,8 +55,7 @@ def create_agent(
         # Otherwise, leave 0.2 for new tokens
         max_input_tokens = int(context_length * 0.8)
 
-    if tools:
-        chat_model = chat_model.bind_tools(tools)
+    tool_picker = create_tool_picker(chat_model, tools) if tools else None
     tool_node = ToolNode(tools) if tools else None
 
     hazard_classifier = None
@@ -123,6 +126,24 @@ Please respond with care and professionalism. Avoid engaging with harmful or une
             start_on="human",  # This means that the first message should be from the user after trimming.
         )
 
+        if tool_picker:
+            try:
+                tool_names_out = await tool_picker.ainvoke(
+                    input={"messages": windowed_messages}
+                )
+                tool_names = tool_names_out.tool_names
+                selected_tools = [tool for tool in tools if tool.name in tool_names]
+
+                if selected_tools:
+                    nonlocal chat_model  # this claims that I am modifying the outer variable
+                    chat_model = chat_model.bind_tools(selected_tools)
+            except Exception:
+                logger.exception("Error picking tools, binding all")
+                nonlocal chat_model  # this claims that I am modifying the outer variable
+                chat_model = chat_model.bind_tools(tools)
+
+        bound = prompt | chat_model
+
         last_message_at = windowed_messages[-1].additional_kwargs.get("sent_at")
         responding_at = (
             datetime.fromisoformat(last_message_at)
@@ -161,3 +182,51 @@ Please respond with care and professionalism. Avoid engaging with harmful or une
         builder.add_edge("chatbot", END)
 
     return builder.compile(checkpointer=checkpointer)
+
+
+def create_tool_picker(chat_model: BaseChatModel, tools: list[BaseTool]) -> Runnable:
+    assert tools, "No tools provided to the tool picker."
+
+    tool_names = [tool.name for tool in tools]
+    ToolNamesType: TypeAlias = set[Literal[*tool_names]] | None  # type: ignore
+
+    valid_options = ["- `None`: No tool required."] + [
+        f"- `{tool.name}`: {tool.description}" for tool in tools
+    ]
+
+    class PickToolsOutput(BaseModel):
+        tool_names: Annotated[
+            ToolNamesType,
+            Field(
+                description=f"Set of tool names required for the task. Can be `None` if no tools are needed. Valid options:\n{'\n'.join(valid_options)}"
+            ),
+        ]
+
+    instruction = "You are a helpful assistant. You have access to tools, but should only use them when necessary. Start by deciding which tools, if any, are required for the task."
+
+    tmpl = ChatPromptTemplate.from_messages(
+        [
+            ("system", instruction),
+            ("placeholder", "{messages}"),
+        ]
+    )
+
+    secrets_map = {
+        field.upper(): getattr(chat_model, field).get_secret_value()  # type: ignore
+        for field in chat_model.lc_secrets.keys()
+    }
+
+    tool_picker_model: BaseChatModel = load(
+        dumpd(chat_model)
+        | {
+            "streaming": False,
+            "max_tokens": 128,  # NOTE: may need to update this value according to the number of tools
+            "tags": ["internal"],
+        },
+        secrets_map=secrets_map,
+        valid_namespaces=["chatbot"],
+    )
+
+    return tmpl | tool_picker_model.with_structured_output(PickToolsOutput).bind(
+        extra_body={"chat_template_kwargs": {"enable_thinking": False}}
+    )
