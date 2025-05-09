@@ -27,7 +27,7 @@ class GeoLocationTool(BaseTool):
     @property
     def ipgeo_url(self) -> str:
         """Return the URL for the IP geolocation API."""
-        return urljoin(self.base_url, "/ipgeo")
+        return urljoin(self.base_url, "/v2/ipgeo")
 
     def _run(
         self,
