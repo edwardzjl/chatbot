@@ -24,9 +24,10 @@ export const ConfigProvider = ({ children }) => {
             _setSelectedModel(models[0]?.name || null);
         }
         // Persist the selection
+        const valueToPersist = modelToSelect ? modelName : models[0]?.name || null;
         try {
-            localStorage.setItem(LOCAL_STORAGE_SELECTED_MODEL_KEY, modelName);
-            console.info("Selected model stored in localStorage:", modelName);
+            localStorage.setItem(LOCAL_STORAGE_SELECTED_MODEL_KEY, valueToPersist);
+            console.info("Selected model stored in localStorage:", valueToPersist);
         } catch (storageError) {
             console.error("Failed to store selected model ID in localStorage:", storageError);
         }
