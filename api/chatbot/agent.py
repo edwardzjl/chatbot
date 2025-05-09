@@ -2,13 +2,16 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, UTC
-from typing import TYPE_CHECKING, Callable, Literal
+from typing import TYPE_CHECKING, Annotated, Callable, Literal, TypeAlias
 
 from langchain_core.messages import BaseMessage, SystemMessage, trim_messages
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import Runnable
+from langchain_core.tools import BaseTool
 from langchain_core.runnables.config import RunnableConfig
 from langgraph.graph import END, START, MessagesState, StateGraph
 from langgraph.prebuilt import ToolNode
+from pydantic import BaseModel, Field
 
 from chatbot.safety import create_hazard_classifier, hazard_categories
 
@@ -30,7 +33,7 @@ def create_agent(
         Callable[[list[BaseMessage]], int] | Callable[[BaseMessage], int] | None
     ) = None,
     context_length: int = 20,
-    tools: list = None,
+    tools: list[BaseTool] = None,
 ) -> CompiledGraph:
     if token_counter is None:
         if hasattr(chat_model, "get_num_tokens_from_messages"):
@@ -51,8 +54,7 @@ def create_agent(
         # Otherwise, leave 0.2 for new tokens
         max_input_tokens = int(context_length * 0.8)
 
-    if tools:
-        chat_model = chat_model.bind_tools(tools)
+    tool_picker = create_tool_picker(chat_model, tools) if tools else None
     tool_node = ToolNode(tools) if tools else None
 
     hazard_classifier = None
@@ -100,8 +102,6 @@ Current date: {date}
             ]
         )
 
-        bound = prompt | chat_model
-
         # I don't want this hint message to be persisted, so I'm not adding it to the state.
         hint_message = None
         if hazard := state["messages"][-1].additional_kwargs.get("hazard"):
@@ -122,6 +122,26 @@ Please respond with care and professionalism. Avoid engaging with harmful or une
             max_tokens=max_input_tokens,
             start_on="human",  # This means that the first message should be from the user after trimming.
         )
+
+        if tool_picker:
+            try:
+                tool_names_out = await tool_picker.ainvoke(
+                    input={"messages": windowed_messages}
+                )
+                tool_names = tool_names_out["parsed"].tool_names
+                selected_tools = (
+                    [tool for tool in tools if tool.name in tool_names]
+                    if tool_names
+                    else []
+                )
+
+                if selected_tools:
+                    bound = prompt | chat_model.bind_tools(selected_tools)
+                else:
+                    bound = prompt | chat_model
+            except Exception:
+                logger.exception("Error picking tools, binding all")
+                bound = prompt | chat_model.bind_tools(tools)
 
         last_message_at = windowed_messages[-1].additional_kwargs.get("sent_at")
         responding_at = (
@@ -161,3 +181,50 @@ Please respond with care and professionalism. Avoid engaging with harmful or une
         builder.add_edge("chatbot", END)
 
     return builder.compile(checkpointer=checkpointer)
+
+
+def create_tool_picker(chat_model: BaseChatModel, tools: list[BaseTool]) -> Runnable:
+    assert tools, "No tools provided to the tool picker."
+
+    tool_names = [tool.name for tool in tools]
+    ToolNamesType: TypeAlias = set[Literal[*tool_names]] | None  # type: ignore
+
+    valid_options = [
+        "- `None`: No tool needed. You can answer based on your existing knowledge, or the task does not require fetching external information."
+    ] + [f"- `{tool.name}`: {tool.description}" for tool in tools]
+
+    class PickTools(BaseModel):
+        """Use this tool to pick the right tools."""
+
+        tool_names: Annotated[
+            ToolNamesType,
+            Field(
+                description=f"A set of tools required for the task. Can be `None` if no tools are needed. Valid options:\n{'\n'.join(valid_options)}"
+            ),
+        ]
+
+    instruction = """You are a helpful assistant. You have access to tools, but should only use them when necessary.
+
+Your primary task is to select the appropriate tools for the user's query by calling the `PickTools` function. You MUST always call `PickTools` as your first step to determine if any tools are needed.
+"""
+
+    tmpl = ChatPromptTemplate.from_messages(
+        [
+            ("system", instruction),
+            ("placeholder", "{messages}"),
+        ]
+    )
+
+    # Disable thinking for reasoning models.
+    # NOTE: this may only work for VLLM.
+    extra_body = chat_model.extra_body | {
+        "chat_template_kwargs": {"enable_thinking": False}
+    }
+
+    return tmpl | chat_model.with_structured_output(
+        PickTools,
+        method="json_schema",
+        strict=True,
+        include_raw=True,
+        tools=[PickTools],
+    ).bind(extra_body=extra_body).with_config(tags=["internal"])
