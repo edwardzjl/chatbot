@@ -178,7 +178,7 @@ class WeatherInput(BaseModel):
 
 class WeatherTool(BaseTool):
     name: str = "weather_forcast"
-    description: str = "Useful for when you need to access weather data."
+    description: str = "Use this tool to access weather information and forecasts for specific locations and time."
     args_schema: ArgsSchema | None = WeatherInput
     response_format: Literal["content", "content_and_artifact"] = "content_and_artifact"
 
