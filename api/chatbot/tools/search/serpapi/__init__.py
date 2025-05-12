@@ -32,7 +32,7 @@ class SearchInput(BaseModel):
 
 class SearchTool(BaseTool):
     name: str = "web_search"
-    description: str = "Useful for when you need to search the Internet."
+    description: str = "Use this tool to perform general web searches to find information on the internet. Use for facts, definitions, explanations, historical information, specific websites, or any query requiring a broad web search. Use only when more specific tools are not appropriate."
     args_schema: ArgsSchema | None = SearchInput
     response_format: Literal["content", "content_and_artifact"] = "content_and_artifact"
 
