@@ -122,7 +122,10 @@ const ChatInput = ({ onSubmit }) => {
     };
 
     const handleKeyDown = async (e) => {
-        // TODO: this will trigger in Chinese IME on OSX
+        // <https://developer.mozilla.org/zh-CN/docs/Web/API/Element/keydown_event>
+        if (e.isComposing || e.keyCode === 229) {
+            return;
+        }
         if (e.key === "Enter") {
             if (e.ctrlKey || e.shiftKey || e.altKey) {
                 // won't trigger submit here, but only shift key will add a new line
