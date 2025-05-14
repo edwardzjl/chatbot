@@ -216,11 +216,7 @@ class ReasoningChatOpenai(ChatOpenAI):
             kwargs["stop"] = stop
 
         dict_messages = [_convert_message_to_dict_patch(m) for m in messages]
-
-        if (
-            limit_mm_per_prompt := (self.metadata or {}).get("limit_mm_per_prompt")
-        ) is not None:
-            dict_messages = _limit_mm_input(dict_messages, limit_mm_per_prompt)
+        dict_messages = self._truncate_multi_modal_contents(dict_messages)
 
         return {
             "messages": dict_messages,
@@ -233,7 +229,7 @@ class ReasoningChatOpenai(ChatOpenAI):
         if not isinstance(token, str):
             return chunk
         message_chunk = self.thinking_processor.on_token(token)
-        chunk.message.additional_kwargs["raw_output"] = (
+        chunk.message.additional_kwargs["raw_content"] = (
             token  # record the raw output before we determine the type
         )
         if not message_chunk:
@@ -249,6 +245,89 @@ class ReasoningChatOpenai(ChatOpenAI):
             chunk.message.content = ""
             chunk.message.additional_kwargs["thought"] = message_chunk["data"]
             return chunk
+
+    def _truncate_multi_modal_contents(self, messages: list[dict]) -> list[dict]:
+        """Limit the number of multimodal content in the messages.
+
+        Args:
+            messages (list[dict]): OpenAI messages.
+        """
+        if not messages:  # Will this happen?
+            return messages
+
+        if (
+            limit_mm_per_prompt := (self.metadata or {}).get("limit_mm_per_prompt")
+        ) is None:
+            return messages
+
+        def parse_limit(key: str) -> int:
+            value = limit_mm_per_prompt.get(key, 1)
+            try:
+                return int(value)
+            except (ValueError, TypeError):
+                logging.error(
+                    "Invalid value for '%s' in limit_mm_per_prompt: %s, using default 1",
+                    key,
+                    value,
+                )
+                return 1
+
+        limit_image_per_prompt = parse_limit("image")
+        limit_video_per_prompt = parse_limit("video")
+
+        current_images = 0
+        current_videos = 0
+
+        # The goal is to keep the latest multimodal content in the messages.
+        # So I reversly iterate the messages and filter out the multimodal content
+        for message in reversed(messages):
+            content = message["content"]
+            if not isinstance(content, list):
+                continue
+
+            # Same here, I want to keep the latest multimodal content in the message.
+            for i in range(len(content) - 1, -1, -1):
+                part = content[i]
+                if not isinstance(part, dict):
+                    continue
+
+                part_type = part.get("type")
+                if part_type == "image_url":
+                    if current_images < limit_image_per_prompt:
+                        current_images += 1
+                    else:
+                        del content[i]
+                elif part_type == "video_url":
+                    if current_videos < limit_video_per_prompt:
+                        current_videos += 1
+                    else:
+                        del content[i]
+
+        return messages
+
+
+def _convert_message_to_dict_patch(message: BaseMessage) -> dict:
+    """Converts a BaseMessage to a dictionary, with additional handling for AIMessage raw_content.
+    This is a hack to work around the 'thought' part extracted by `StreamThinkingProcessor`,
+    and attribute dis-alignment when submitting multimodal messages.
+
+    OpenAI's Chat API expects the content to be a list of dictionaries, where each dictionary
+    represents a modality. While in my app, the content is always a string, and I put other things like
+    attachments in the `additional_kwargs` attribute.
+
+    This has to be done here, during converting the `BaseMessage` object to dict, before sending to the LLM.
+    Or langchain could somehow persist the patched message and destroy my app.
+    """
+    res = _convert_message_to_dict(message)
+    if (
+        isinstance(message, AIMessage)
+        and (raw_content := message.additional_kwargs.get("raw_content")) is not None
+    ):
+        res["content"] = raw_content
+
+    if attachments := message.additional_kwargs.get("attachments"):
+        res["content"] = convert_attachments(res["content"], attachments)
+    return res
 
 
 def convert_attachments(content, attachments: list) -> list:
@@ -296,77 +375,3 @@ def convert_attachments(content, attachments: list) -> list:
     content.extend(processed_attachments)
 
     return content
-
-
-def _convert_message_to_dict_patch(message: BaseMessage) -> dict:
-    """Converts a BaseMessage to a dictionary, with additional handling for AIMessage raw_output.
-    This is a hack to work around the 'thought' part extracted by `StreamThinkingProcessor`,
-    and attribute dis-alignment when submitting multimodal messages.
-
-    OpenAI's Chat API expects the content to be a list of dictionaries, where each dictionary
-    represents a modality. While in my app, the content is always a string, and I put other things like
-    attachments in the `additional_kwargs` attribute.
-
-    This has to be done here, during converting the `BaseMessage` object to dict, before sending to the LLM.
-    Or langchain could somehow persist the patched message and destroy my app.
-    """
-    res = _convert_message_to_dict(message)
-    if (
-        isinstance(message, AIMessage)
-        and (raw_output := message.additional_kwargs.get("raw_output")) is not None
-    ):
-        res["content"] = raw_output
-
-    if attachments := message.additional_kwargs.get("attachments"):
-        res["content"] = convert_attachments(res["content"], attachments)
-    return res
-
-
-def _limit_mm_input(messages: list[dict], limit_mm_per_prompt) -> list[dict]:
-    if not messages:  # fast return
-        return messages
-
-    def parse_limit(key: str) -> int:
-        value = limit_mm_per_prompt.get(key, 1)
-        try:
-            return int(value)
-        except (ValueError, TypeError):
-            logging.error(
-                "Invalid value for '%s' in limit_mm_per_prompt: %s, using default 1",
-                key,
-                value,
-            )
-            return 1
-
-    limit_image_per_prompt = parse_limit("image")
-    limit_video_per_prompt = parse_limit("video")
-
-    current_images = 0
-    current_videos = 0
-
-    # The goal is to keep the latest multimodal content in the messages.
-    # So I reversly iterate the messages and filter out the multimodal content
-    for message in reversed(messages):
-        content = message["content"]
-        if not isinstance(content, list):
-            continue
-
-        # Same here, I want to keep the latest multimodal content in the message.
-        for i in range(len(content) - 1, -1, -1):
-            part = content[i]
-            if not isinstance(part, dict):
-                continue
-
-            part_type = part.get("type")
-            if part_type == "image_url":
-                if current_images < limit_image_per_prompt:
-                    current_images += 1
-                else:
-                    del content[i]
-            elif part_type == "video_url":
-                if current_videos < limit_video_per_prompt:
-                    current_videos += 1
-                else:
-                    del content[i]
-
-    return messages
