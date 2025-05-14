@@ -1,5 +1,5 @@
 import logging
-from typing import Any, AsyncIterator, Iterator, Literal, TypedDict
+from typing import Any, AsyncIterator, Iterator, Literal, TypedDict, override
 
 from langchain_core.callbacks import (
     AsyncCallbackManagerForLLMRun,
@@ -169,11 +169,13 @@ class StreamThinkingProcessor(Serializable):
 class ReasoningChatOpenai(ChatOpenAI):
     thinking_processor: StreamThinkingProcessor = StreamThinkingProcessor()
 
+    @override
     @classmethod
     def get_lc_namespace(cls) -> list[str]:
         """Get the namespace of the langchain object."""
         return ["chatbot", "llm", "client"]
 
+    @override
     def _stream(
         self,
         messages: list[BaseMessage],
@@ -187,6 +189,7 @@ class ReasoningChatOpenai(ChatOpenAI):
         ):
             yield self._process(chunk)
 
+    @override
     async def _astream(
         self,
         messages: list[BaseMessage],
@@ -200,6 +203,7 @@ class ReasoningChatOpenai(ChatOpenAI):
         ):
             yield self._process(chunk)
 
+    @override
     def _get_request_payload(
         self,
         input_: LanguageModelInput,
