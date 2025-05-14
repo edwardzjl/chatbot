@@ -1,4 +1,5 @@
 import logging
+import re
 from typing import Any, AsyncIterator, Iterator, Literal, TypedDict, override
 
 from langchain_core.callbacks import (
@@ -7,10 +8,10 @@ from langchain_core.callbacks import (
 )
 from langchain_core.language_models.base import LanguageModelInput
 from langchain_core.load.serializable import Serializable
-from langchain_core.messages import AIMessage, BaseMessage
+from langchain_core.messages import AIMessage, BaseMessage, convert_to_openai_messages
 from langchain_core.outputs import ChatGenerationChunk
 from langchain_openai import ChatOpenAI
-from langchain_openai.chat_models.base import _convert_message_to_dict
+from langchain_openai.chat_models.base import _construct_responses_api_payload
 from pydantic import PrivateAttr, Field
 
 
@@ -211,18 +212,50 @@ class ReasoningChatOpenai(ChatOpenAI):
         stop: list[str] | None = None,
         **kwargs: Any,
     ) -> dict:
+        # Below is a temporary solution before <https://github.com/langchain-ai/langchain/pull/31226>
+        # gets merged.
+
+        # section supersuper
+
         messages = self._convert_input(input_).to_messages()
+
+        # section my patch 1
+
+        # It seems that we are safe to manipulate the `lc_messages` here for the following reasons:
+        # - `langchain_core.prompt_values.ChatPromptValue.to_messages` calls `list(self.messages)`, which will create a new list.
+        for lc_message in messages:
+            patch_content(lc_message)
+
+        # endsection my patch 1
+
         if stop is not None:
             kwargs["stop"] = stop
 
-        dict_messages = [_convert_message_to_dict_patch(m) for m in messages]
-        dict_messages = self._truncate_multi_modal_contents(dict_messages)
+        payload = {**self._default_params, **kwargs}
+        if self._use_responses_api(payload):
+            payload = _construct_responses_api_payload(messages, payload)
+        else:
+            # Use `convert_to_openai_messages` instead of `_convert_message_to_dict`
+            payload["messages"] = convert_to_openai_messages(messages)
 
-        return {
-            "messages": dict_messages,
-            **self._default_params,
-            **kwargs,
-        }
+        # endsection supersuper
+
+        # section super
+
+        if "max_tokens" in payload:
+            payload["max_completion_tokens"] = payload.pop("max_tokens")
+
+        # Mutate system message role to "developer" for o-series models
+        if self.model_name and re.match(r"^o\d", self.model_name):
+            for message in payload.get("messages", []):
+                if message["role"] == "system":
+                    message["role"] = "developer"
+
+        # endsection super
+
+        payload["messages"] = self._truncate_multi_modal_contents(payload["messages"])
+
+        return payload
 
     def _process(self, chunk: ChatGenerationChunk) -> ChatGenerationChunk:
         token = chunk.message.content
@@ -306,31 +339,18 @@ class ReasoningChatOpenai(ChatOpenAI):
         return messages
 
 
-def _convert_message_to_dict_patch(message: BaseMessage) -> dict:
-    """Converts a BaseMessage to a dictionary, with additional handling for AIMessage raw_content.
-    This is a hack to work around the 'thought' part extracted by `StreamThinkingProcessor`,
-    and attribute dis-alignment when submitting multimodal messages.
-
-    OpenAI's Chat API expects the content to be a list of dictionaries, where each dictionary
-    represents a modality. While in my app, the content is always a string, and I put other things like
-    attachments in the `additional_kwargs` attribute.
-
-    This has to be done here, during converting the `BaseMessage` object to dict, before sending to the LLM.
-    Or langchain could somehow persist the patched message and destroy my app.
-    """
-    res = _convert_message_to_dict(message)
+def patch_content(lc_message: BaseMessage) -> None:
     if (
-        isinstance(message, AIMessage)
-        and (raw_content := message.additional_kwargs.get("raw_content")) is not None
+        isinstance(lc_message, AIMessage)
+        and (raw_content := lc_message.additional_kwargs.get("raw_content")) is not None
     ):
-        res["content"] = raw_content
+        lc_message.content = raw_content
 
-    if attachments := message.additional_kwargs.get("attachments"):
-        res["content"] = convert_attachments(res["content"], attachments)
-    return res
+    if attachments := lc_message.additional_kwargs.get("attachments"):
+        lc_message.content = attach_attachments(lc_message.content, attachments)
 
 
-def convert_attachments(content, attachments: list) -> list:
+def attach_attachments(content: str | list[dict[str, Any]], attachments: list) -> list:
     """Convert and append the attachments into content to be compatible with OpenAI's Chat API."""
 
     if isinstance(content, str):
