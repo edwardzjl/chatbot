@@ -24,7 +24,7 @@ export const messagesReducer = (messages, action) => {
             ...messages.slice(0, match),
             {
                 ...messages[match],
-                content: mergeContent(messages[match].content, action.message.content),
+                content: mergeContentChunks(messages[match].content, action.message.content),
                 additional_kwargs: deepMerge(messages[match].additional_kwargs, action.message.additional_kwargs)
             },
             ...messages.slice(match + 1)
@@ -104,15 +104,25 @@ export const deepMerge = (a, b) => {
 };
 
 
-export const mergeContent = (a, b) => {
+/**
+ * Merge two OpenAI content chunks.
+ *
+ * Chunk should be either a string, or an array of objects.
+ * If content is an array, each element should either be a string or an object with at least a 'type' property.
+ *
+ * If both chunks are strings, they will be concatenated.
+ * If one chunk is a string and the other is an array, the string will be converted to an array with a single object.
+ * If both chunks are arrays, they will be merged using the mergeLists function.
+ */
+export const mergeContentChunks = (a, b) => {
     if (typeof a === "string" && typeof b === "string") {
         return a + b;
     }
     if (typeof a === "string") {
-        a = [{type: "text", text: a}];
+        a = [{ type: "text", text: a }];
     }
     if (typeof b === "string") {
-        b = [{type: "text", text: b}];
+        b = [{ type: "text", text: b }];
     }
     if (Array.isArray(a) && Array.isArray(b)) {
         return mergeLists(a, b);
@@ -147,48 +157,46 @@ const mergeLists = (left, right) => {
 
     const hasOwnProperty = Object.prototype.hasOwnProperty;
 
-    for (const e of right) {
-        if (e === null || e === undefined) {
+    for (const part of right) {
+        if (part === null || part === undefined) {
             continue;
         }
-        if (typeof e !== "object") {
-            merged.push(e);
+        if (typeof part !== "object") {
+            merged.push(part);
             continue;
         }
-        if (Array.isArray(e)) {
-            merged.push(...e);
+        if (Array.isArray(part)) {
+            // Should not happen
+            merged.push(...part);
             continue;
         }
-        if (!hasOwnProperty.call(e, "index") || !Number.isInteger(e.index)) {
-            merged.push(e);
+        if (!hasOwnProperty.call(part, "index") || !Number.isInteger(part.index)) {
+            merged.push(part);
             continue;
         }
         // 如果是，则尝试在 merged 列表中查找具有相同 index 的元素。
         const toMergeIndex = merged.findIndex(eLeft =>
             // 确保 merged 中的元素也是带有 index 的普通对象，然后进行比较。
-            typeof eLeft === 'object' && eLeft !== null && !Array.isArray(eLeft) &&
-            hasOwnProperty.call(eLeft, 'index') && eLeft.index === e.index
+            typeof eLeft === "object" && eLeft !== null && !Array.isArray(eLeft) &&
+            hasOwnProperty.call(eLeft, "index") && eLeft.index === part.index && eLeft.type === part.type
         );
         if (toMergeIndex === -1) {
-            merged.push(e);
+            merged.push(part);
             continue;
         }
-        // handling for 'type'.
-        const newE = (hasOwnProperty.call(e, 'type'))
-            // 创建一个新对象，复制 e 的所有属性，除了 'type'
-            ? Object.keys(e).reduce((obj, key) => {
-                if (key !== 'type') {
-                    obj[key] = e[key];
+
+        const newPart = (hasOwnProperty.call(part, "type"))
+            // 创建一个新对象，复制 part 的所有属性，除了 'type' 和 'index'
+            ? Object.keys(part).reduce((obj, key) => {
+                if (key !== "type" && key !== "index") {
+                    obj[key] = part[key];
                 }
                 return obj;
             }, {})
-            : e; // 如果没有 'type'，则使用元素本身进行合并
+            : part; // 如果没有 'type'，则使用元素本身进行合并
 
-        // 使用 mergeObjects 函数合并对象。
-        // 用合并结果替换 merged 列表中的元素。
-        merged[toMergeIndex] = deepMerge(merged[toMergeIndex], newE);
+        merged[toMergeIndex] = deepMerge(merged[toMergeIndex], newPart);
     }
-
-    // 返回最终合并后的列表。
+    console.log("Merged lists: ", merged);
     return merged;
 };
