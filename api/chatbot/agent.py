@@ -68,11 +68,24 @@ def create_agent(
                 input={"messages": [last_message]}
             )
             if flag == "unsafe" and category is not None:
-                # patch the hazard category to the last message
-                last_message.additional_kwargs = last_message.additional_kwargs | {
-                    "hazard": category
+                return {
+                    "messages": [
+                        SystemMessage(
+                            content=[
+                                {
+                                    "type": "guard_content",
+                                    "guard_content": {
+                                        "category": category,
+                                        "text": f"""The user input may contain inproper content related to:
+{hazard_categories.get(category)}
+
+Please respond with care and professionalism. Avoid engaging with harmful or unethical content. Instead, guide the user towards more constructive and respectful communication.""",
+                                    },
+                                }
+                            ]
+                        )
+                    ]
                 }
-                return {"messages": [last_message]}
         return {"messages": []}
 
     async def run_output_guard(state: MessagesState) -> MessagesState:
@@ -103,22 +116,8 @@ Current date: {date}
             ]
         )
 
-        # I don't want this hint message to be persisted, so I'm not adding it to the state.
-        hint_message = None
-        if hazard := state["messages"][-1].additional_kwargs.get("hazard"):
-            hint_message = SystemMessage(
-                content=f"""The user input may contain inproper content related to:
-{hazard_categories.get(hazard)}
-
-Please respond with care and professionalism. Avoid engaging with harmful or unethical content. Instead, guide the user towards more constructive and respectful communication."""
-            )
-
-        all_messages = (
-            state["messages"] + hint_message if hint_message else state["messages"]
-        )
-
         windowed_messages: list[BaseMessage] = trim_messages(
-            all_messages,
+            state["messages"],
             token_counter=token_counter,
             max_tokens=max_input_tokens,
             start_on="human",  # This means that the first message should be from the user after trimming.
