@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 class MessageChunk(TypedDict):
     data: str
     type: Literal["text", "thought"]
+    index: int
 
 
 class StreamThinkingProcessor(Serializable):
@@ -45,6 +46,7 @@ class StreamThinkingProcessor(Serializable):
     _buffering_signature: str | None = PrivateAttr(default=None)
     """The current buffering signature. None means not buffering."""
     _buffer: str = PrivateAttr(default="")
+    _index: int = PrivateAttr(default=0)
 
     @classmethod
     def is_lc_serializable(cls) -> bool:
@@ -63,6 +65,7 @@ class StreamThinkingProcessor(Serializable):
         self.thinking = self.default_thinking
         self._buffer = ""
         self._buffering_signature = None
+        self._index = 0
 
     def on_token(self, token: str) -> MessageChunk | None:
         """Processes a single token from the stream.
@@ -105,42 +108,53 @@ class StreamThinkingProcessor(Serializable):
         if self._buffering_signature is None:
             # Not currently buffering
             if token == signature:
-                self.thinking = chunk_type_after_match == "thought"
+                self._toggle_mode(chunk_type_after_match == "thought")
                 return None
             elif token.startswith(signature):
                 # token is longer than the signature
-                self.thinking = chunk_type_after_match == "thought"
+                self._toggle_mode(chunk_type_after_match == "thought")
                 return {
                     "data": token.removeprefix(signature),
                     "type": chunk_type_after_match,
+                    "index": self._index,
                 }
             elif signature.startswith(token):
                 # token is shorter than the signature
                 self._start_buffering(token, signature)
                 return None
             else:
-                return {"data": token, "type": chunk_type}
+                return {"data": token, "type": chunk_type, "index": self._index}
         else:
             # Currently buffering
             self._buffer += token
             if self._buffer == signature:
                 # Buffer matches the signature exactly
-                self.thinking = chunk_type_after_match == "thought"
+                self._toggle_mode(chunk_type_after_match == "thought")
                 self._clear_buffer()
                 return None
             elif self._buffer.startswith(signature):
                 # Buffer is longer than the signature
-                self.thinking = chunk_type_after_match == "thought"
+                self._toggle_mode(chunk_type_after_match == "thought")
                 remaining = self._buffer.removeprefix(signature)
                 self._clear_buffer()
-                return {"data": remaining, "type": chunk_type_after_match}
+                return {
+                    "data": remaining,
+                    "type": chunk_type_after_match,
+                    "index": self._index,
+                }
             elif signature.startswith(self._buffer):
                 # Buffer is shorter than the signature, continue buffering
                 return None
             else:
-                chunk = {"data": self._buffer, "type": chunk_type}
+                chunk = {"data": self._buffer, "type": chunk_type, "index": self._index}
                 self._clear_buffer()
                 return chunk
+
+    def _toggle_mode(self, entering_thinking: bool) -> None:
+        """Toggles the thinking mode and increments the index on mode change."""
+        if self.thinking != entering_thinking:
+            self._index += 1  # Increment index on mode change
+        self.thinking = entering_thinking
 
     def _start_buffering(self, token: str, signature: str) -> None:
         """Starts buffering for a signature."""
@@ -252,17 +266,35 @@ class ReasoningChatOpenai(ChatOpenAI):
             token  # record the raw output before we determine the type
         )
         if not message_chunk:
-            # If there's `ChatGenerationChunk` but no message_chunk after processing token,
-            # it means the token **might** be part of the thinking prefix / suffix.
-            # We need to return this chunk for the `raw_content` field.
-            chunk.message.content = ""
+            # If a `ChatGenerationChunk` exists but no `message_chunk` is produced after processing the token,
+            # it indicates the token might be part of the thinking prefix or suffix.
+            # In other words, we are either "entering" or "exiting" the thinking mode.
+            # It is essential to yield this chunk; otherwise, part of the `raw_content` will be lost.
+            # NOTE: The content must NOT include a 'text' field because `langchain_core.outputs.chat_generation.ChatGeneration`
+            # will use the first text part as its `text` attribute, and `langchain_core.output_parsers.StrOutputParser`
+            # will treat that attribute as the output.
+            # See <https://github.com/langchain-ai/langchain/blob/8b145d5dc3409f57e24e153f2038c0de5b07b3a0/libs/core/langchain_core/outputs/chat_generation.py#L36-L51>
+            # While this approach works for now, it should be considered a temporary solution.
+            chunk.message.content = [{"type": "foo", "foo": "", "index": -1}]
         elif message_chunk["type"] == "text":
             # Even it's a text, the content might be modified by the thinking processor.
-            # We return the content after the processing.
-            chunk.message.content = message_chunk["data"]
+            chunk.message.content = [
+                {
+                    "type": "text",
+                    "text": message_chunk["data"],
+                    "index": message_chunk["index"],
+                }
+            ]
         elif message_chunk["type"] == "thought":
-            chunk.message.content = ""
-            chunk.message.additional_kwargs["thought"] = message_chunk["data"]
+            # We need an index to merge dicts.
+            # See <https://github.com/langchain-ai/langchain/blob/d4f77a8c8fae9a6a33e55d572ee9e034c762eeb0/libs/core/langchain_core/utils/_merge.py#L92C1-L93C1>
+            chunk.message.content = [
+                {
+                    "type": "thinking",
+                    "thinking": message_chunk["data"],
+                    "index": message_chunk["index"],
+                }
+            ]
         else:
             logger.warning("Unknown message type: %s", message_chunk["type"])
         return chunk

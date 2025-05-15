@@ -106,19 +106,15 @@ const ChatMessage = ({ convId, message }) => {
                 <div className={styles.messageTitleName}>{myMessage ? "You" : "AI"}</div>
             </div>
             <div className={styles.messageBody}>
-                {message.additional_kwargs && message.additional_kwargs.thought && (
-                    <PeekDetails
-                        summary="Thoughts"
-                        content={message.additional_kwargs.thought}
-                    >
-                        <MarkdownContent content={message.additional_kwargs.thought} />
-                    </PeekDetails>
-                )}
                 {typeof message.content === "string" && <MarkdownContent content={message.content || ""} />}
                 {Array.isArray(message.content) && message.content.map((chunk, index) => {
                     switch (chunk.type) {
                     case "text":
                         return <MarkdownContent key={index} content={chunk.text} />;
+                    case "thinking":
+                        return <PeekDetails key={index} summary="Thoughts">
+                            <MarkdownContent content={chunk.thinking} />
+                        </PeekDetails>
                     // TODO: support other types of content, e.g. image_url, video_url, etc.
                     // And maybe thoughts as well.
                     default:
