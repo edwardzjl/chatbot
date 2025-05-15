@@ -24,8 +24,7 @@ export const messagesReducer = (messages, action) => {
             ...messages.slice(0, match),
             {
                 ...messages[match],
-                // TODO: content can be string or array of objects. Need to consider how to merge
-                content: messages[match].content + action.message.content,
+                content: mergeContent(messages[match].content, action.message.content),
                 additional_kwargs: deepMerge(messages[match].additional_kwargs, action.message.additional_kwargs)
             },
             ...messages.slice(match + 1)
@@ -102,4 +101,94 @@ export const deepMerge = (a, b) => {
     }
 
     return result;
+};
+
+
+export const mergeContent = (a, b) => {
+    if (typeof a === "string" && typeof b === "string") {
+        return a + b;
+    }
+    if (typeof a === "string") {
+        a = [{type: "text", text: a}];
+    }
+    if (typeof b === "string") {
+        b = [{type: "text", text: b}];
+    }
+    if (Array.isArray(a) && Array.isArray(b)) {
+        return mergeLists(a, b);
+    }
+    // Should not happen
+    console.error(`Cannot merge contents. a: ${a}, b: ${b}`);
+    return a;
+};
+
+
+/**
+ * 合并两个列表，处理 null/undefined 以及根据 index 合并字典类对象。
+ *
+ * 如果两个列表中都包含带有整数 'index' 键的对象，
+ * 则使用 mergeObjects 合并具有相同 index 的元素。
+ * 否则，将 right 中的元素添加到 left 的副本中。
+ *
+ * @param {Array<any> | null | undefined} left 要合并的第一个列表。
+ * @param {Array<any> | null | undefined} right 要合并到第一个列表中的第二个列表。
+ * @returns {Array<any> | null | undefined} 合并后的列表。返回 left 的副本，如果 left 是 null/undefined 则返回 right 的副本，如果两者都是 null/undefined 则返回 null/undefined。
+ */
+const mergeLists = (left, right) => {
+    if (left === null) {
+        return [...right];
+    }
+
+    let merged = [...left];
+
+    if (right === null || right === undefined) {
+        return merged;
+    }
+
+    const hasOwnProperty = Object.prototype.hasOwnProperty;
+
+    for (const e of right) {
+        if (e === null || e === undefined) {
+            continue;
+        }
+        if (typeof e !== "object") {
+            merged.push(e);
+            continue;
+        }
+        if (Array.isArray(e)) {
+            merged.push(...e);
+            continue;
+        }
+        if (!hasOwnProperty.call(e, "index") || !Number.isInteger(e.index)) {
+            merged.push(e);
+            continue;
+        }
+        // 如果是，则尝试在 merged 列表中查找具有相同 index 的元素。
+        const toMergeIndex = merged.findIndex(eLeft =>
+            // 确保 merged 中的元素也是带有 index 的普通对象，然后进行比较。
+            typeof eLeft === 'object' && eLeft !== null && !Array.isArray(eLeft) &&
+            hasOwnProperty.call(eLeft, 'index') && eLeft.index === e.index
+        );
+        if (toMergeIndex === -1) {
+            merged.push(e);
+            continue;
+        }
+        // handling for 'type'.
+        const newE = (hasOwnProperty.call(e, 'type'))
+            // 创建一个新对象，复制 e 的所有属性，除了 'type'
+            ? Object.keys(e).reduce((obj, key) => {
+                if (key !== 'type') {
+                    obj[key] = e[key];
+                }
+                return obj;
+            }, {})
+            : e; // 如果没有 'type'，则使用元素本身进行合并
+
+        // 使用 mergeObjects 函数合并对象。
+        // 用合并结果替换 merged 列表中的元素。
+        merged[toMergeIndex] = deepMerge(merged[toMergeIndex], newE);
+    }
+
+    // 返回最终合并后的列表。
+    return merged;
 };

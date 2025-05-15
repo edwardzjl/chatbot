@@ -70,7 +70,7 @@ const Root = () => {
                 if (message.content.type === "title-generated") {
                     dispatchConv({ type: "renamed", convId: message.conversation, title: message.content.payload });
                 } else {
-                    console.log("unhandled info message", message);
+                    console.debug("unhandled info message", message);
                 }
                 break;
             case "error":
