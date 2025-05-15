@@ -143,19 +143,20 @@ async def chat(
                     config={"metadata": chain_metadata},
                 )
                 title = title_raw.strip('"')
-                conv.title = title
-                async with session_maker() as session:
-                    conv = await session.merge(conv)
-                    await session.commit()
+                if title:
+                    conv.title = title
+                    async with session_maker() as session:
+                        conv = await session.merge(conv)
+                        await session.commit()
 
-                info_message = InfoMessage(
-                    conversation=message.conversation,
-                    content={
-                        "type": "title-generated",
-                        "payload": title,
-                    },
-                )
-                await websocket.send_text(info_message.model_dump_json())
+                    info_message = InfoMessage(
+                        conversation=message.conversation,
+                        content={
+                            "type": "title-generated",
+                            "payload": title,
+                        },
+                    )
+                    await websocket.send_text(info_message.model_dump_json())
         except WebSocketDisconnect:
             logger.info("websocket disconnected")
             connected_clients.dec()
