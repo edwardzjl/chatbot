@@ -259,17 +259,19 @@ class ReasoningChatOpenai(ChatOpenAI):
         )
         if not message_chunk:
             # If there's `ChatGenerationChunk` but no message_chunk after processing token,
-            # it means the token might be part of the thinking prefix / suffix.
+            # it means the token **might** be part of the thinking prefix / suffix.
+            # We need to return this chunk for the `raw_content` field.
             chunk.message.content = ""
-            return chunk
-        if message_chunk["type"] == "text":
+        elif message_chunk["type"] == "text":
             # Even it's a text, the content might be modified by the thinking processor.
+            # We return the content after the processing.
             chunk.message.content = message_chunk["data"]
-            return chunk
-        else:
+        elif message_chunk["type"] == "thought":
             chunk.message.content = ""
             chunk.message.additional_kwargs["thought"] = message_chunk["data"]
-            return chunk
+        else:
+            logger.warning("Unknown message type: %s", message_chunk["type"])
+        return chunk
 
     def _truncate_multi_modal_contents(self, messages: list[dict]) -> list[dict]:
         """Limit the number of multimodal content in the messages.
