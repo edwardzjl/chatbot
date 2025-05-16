@@ -17,7 +17,6 @@ from chatbot.agent import create_agent
 from chatbot.dependencies.commons import SettingsDep
 from chatbot.dependencies.db import SqlalchemyEngineDep, get_raw_conn
 from chatbot.http_client import HttpClient
-from chatbot.llm.providers import llm_provider_factory
 from chatbot.tools.geo import GeoLocationTool
 from chatbot.tools.search.serpapi import SearchTool
 from chatbot.tools.weather import WeatherTool
@@ -88,28 +87,18 @@ async def get_checkpointer(
         yield InMemorySaver()
 
 
-async def get_agent(
+def get_agent(
     checkpointer: Annotated[BaseCheckpointSaver, Depends(get_checkpointer)],
     tools: Annotated[list[BaseTool], Depends(get_tools)],
     settings: SettingsDep,
-    http_client: Annotated[HttpClient, Depends(get_http_client)],
     select_model: Annotated[str | None, ModelHeader()] = None,
 ) -> AsyncGenerator[CompiledGraph, None]:
     llm = settings.must_get_llm(select_model)
-
-    provider = (llm.metadata or {}).get("provider")
-    llm_provider = await llm_provider_factory(
-        llm.openai_api_base, provider, http_client
-    )
-    context_length = await llm_provider.get_max_tokens(llm.model_name)
-    token_counter = llm_provider.get_token_counter(llm.model_name)
 
     return create_agent(
         llm,
         safety_model=settings.safety_llm,
         checkpointer=checkpointer,
-        token_counter=token_counter,
-        context_length=context_length,
         tools=tools,
     )
 
@@ -121,9 +110,8 @@ def get_agent_wrapper(
     checkpointer: Annotated[BaseCheckpointSaver, Depends(get_checkpointer)],
     tools: Annotated[list[BaseTool], Depends(get_tools)],
     settings: SettingsDep,
-    http_client: Annotated[HttpClient, Depends(get_http_client)],
 ) -> partial:
-    return partial(get_agent, checkpointer, tools, settings, http_client)
+    return partial(get_agent, checkpointer, tools, settings)
 
 
 AgentWrapperDep = Annotated[partial, Depends(get_agent_wrapper)]

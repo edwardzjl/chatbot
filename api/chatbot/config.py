@@ -7,8 +7,7 @@ from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field, PostgresDsn, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from chatbot.llm.client import ReasoningChatOpenai
-
+from chatbot.llm_client import ReasoningChatOpenai, llm_client_factory
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +62,18 @@ class Settings(BaseSettings):
             for item in value
         ]
 
-        return [ReasoningChatOpenai(**v) for v in processed]
+        clients = []
+        for item in processed:
+            try:
+                clz = llm_client_factory(
+                    item["base_url"], (item.get("metadata") or {}).get("provider")
+                )
+                clients.append(clz(**item))
+            except:  # noqa: E722
+                logger.exception("Error guessing provider for %s", item)
+                clients.append(ReasoningChatOpenai(**item))
+
+        return clients
 
     @field_validator("safety_llm", mode="before")
     @classmethod

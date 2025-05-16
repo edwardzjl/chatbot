@@ -5,7 +5,17 @@ from chatbot.config import Settings
 
 class TestSettings(unittest.TestCase):
     def _create_settings(self, **kwargs) -> Settings:
-        llms = kwargs.pop("llms", [{"api_key": "test_key"}])
+        # NOTE: add base_url and "metadata" to avoid field validator guessing the provider
+        llms = kwargs.pop(
+            "llms",
+            [
+                {
+                    "base_url": "foo.com",
+                    "api_key": "test_key",
+                    "metadata": {"provider": "vllm"},
+                }
+            ],
+        )
         s3 = kwargs.pop("s3", {"bucket": "test_bucket"})
 
         return Settings(llms=llms, s3=s3, **kwargs)

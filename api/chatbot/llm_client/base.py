@@ -236,7 +236,7 @@ class ReasoningChatOpenai(ChatOpenAI):
         # It seems that we are safe to manipulate the `lc_messages` here for the following reasons:
         # - `langchain_core.prompt_values.ChatPromptValue.to_messages` calls `list(self.messages)`, which will create a new list.
         for lc_message in messages:
-            patch_content(lc_message)
+            self.patch_content(lc_message)
 
         # endsection my patch 1
 
@@ -364,16 +364,16 @@ class ReasoningChatOpenai(ChatOpenAI):
 
         return messages
 
+    def patch_content(self, lc_message: BaseMessage) -> None:
+        if (
+            isinstance(lc_message, AIMessage)
+            and (raw_content := lc_message.additional_kwargs.get("raw_content"))
+            is not None
+        ):
+            lc_message.content = raw_content
 
-def patch_content(lc_message: BaseMessage) -> None:
-    if (
-        isinstance(lc_message, AIMessage)
-        and (raw_content := lc_message.additional_kwargs.get("raw_content")) is not None
-    ):
-        lc_message.content = raw_content
-
-    if attachments := lc_message.additional_kwargs.get("attachments"):
-        lc_message.content = attach_attachments(lc_message.content, attachments)
+        if attachments := lc_message.additional_kwargs.get("attachments"):
+            lc_message.content = attach_attachments(lc_message.content, attachments)
 
 
 def attach_attachments(content: str | list[dict[str, Any]], attachments: list) -> list:
