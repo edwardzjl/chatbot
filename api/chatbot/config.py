@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import Any, Self
 
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field, PostgresDsn, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing_extensions import Self
 
 from chatbot.llm.client import ReasoningChatOpenai
 
@@ -19,7 +18,7 @@ class S3Settings(BaseModel):
     access_key: str | None = None
     secret_key: str | None = None
     secure: bool = True
-    bucket: str = "chatbot"  # TODO: this default value is for easy testing
+    bucket: str
 
 
 class Settings(BaseSettings):

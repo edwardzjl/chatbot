@@ -6,8 +6,9 @@ from chatbot.config import Settings
 class TestSettings(unittest.TestCase):
     def _create_settings(self, **kwargs) -> Settings:
         llms = kwargs.pop("llms", [{"api_key": "test_key"}])
+        s3 = kwargs.pop("s3", {"bucket": "test_bucket"})
 
-        return Settings(llms=llms, **kwargs)
+        return Settings(llms=llms, s3=s3, **kwargs)
 
     def test_db_primary_url_default(self):
         settings = self._create_settings()
