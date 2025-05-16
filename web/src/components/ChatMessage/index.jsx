@@ -116,7 +116,6 @@ const ChatMessage = ({ convId, message }) => {
                             <MarkdownContent content={chunk.thinking} />
                         </PeekDetails>
                     // TODO: support other types of content, e.g. image_url, video_url, etc.
-                    // And maybe thoughts as well.
                     default:
                         return null;
                     }
