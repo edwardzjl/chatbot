@@ -1,4 +1,4 @@
-from functools import lru_cache
+from functools import cache
 from typing import Annotated
 
 from fastapi import Depends, Request, WebSocket
@@ -7,7 +7,7 @@ from chatbot.config import Settings
 from chatbot.http_client import HttpClient
 
 
-@lru_cache
+@cache
 def get_settings() -> Settings:
     return Settings(_env_file=[".env"], _env_file_encoding="utf-8")
 
