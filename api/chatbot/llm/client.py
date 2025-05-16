@@ -113,6 +113,8 @@ class StreamThinkingProcessor(Serializable):
         Returns:
             MessageChunk | None: A dictionary with "data" and "type" keys, or None if buffering.
         """
+        if token == "":
+            return MessageChunk(data="", type=chunk_type, index=self._index)
         if self._buffering_signature is None:
             # Not currently buffering
             if token == signature:
@@ -281,12 +283,7 @@ class ReasoningChatOpenai(ChatOpenAI):
             # it indicates the token might be part of the thinking prefix or suffix.
             # In other words, we are either "entering" or "exiting" the thinking mode.
             # It is essential to yield this chunk; otherwise, part of the `raw_content` will be lost.
-            # TODO: While this approach works for now, it should be considered a temporary solution.
-            # The content must NOT include a 'text' field because `langchain_core.outputs.chat_generation.ChatGeneration`
-            # will use the first text part as its `text` attribute, and `langchain_core.output_parsers.StrOutputParser`
-            # will treat that attribute as the output.
-            # See <https://github.com/langchain-ai/langchain/blob/8b145d5dc3409f57e24e153f2038c0de5b07b3a0/libs/core/langchain_core/outputs/chat_generation.py#L36-L51>
-            chunk.message.content = [{"type": "foo", "foo": "", "index": -1}]
+            chunk.message.content = []
         elif message_chunk["type"] == "text":
             # Even it's a text, the content might be modified by the thinking processor.
             chunk.message.content = [
