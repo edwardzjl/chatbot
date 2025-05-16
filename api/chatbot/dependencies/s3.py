@@ -1,4 +1,4 @@
-from functools import lru_cache
+from functools import cache
 from typing import Annotated
 
 from fastapi import Depends
@@ -7,7 +7,7 @@ from minio import Minio
 from chatbot.dependencies.commons import SettingsDep
 
 
-@lru_cache
+@cache
 def get_s3_client(settings: SettingsDep) -> Minio:
     client = Minio(
         endpoint=settings.s3.endpoint,

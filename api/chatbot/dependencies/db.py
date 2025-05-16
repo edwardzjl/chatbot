@@ -1,6 +1,6 @@
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from functools import lru_cache
+from functools import cache
 from typing import Annotated, Any
 
 from fastapi import Depends
@@ -11,7 +11,7 @@ from sqlalchemy.pool import NullPool
 from chatbot.dependencies.commons import SettingsDep
 
 
-@lru_cache
+@cache
 def create_engine(settings: SettingsDep) -> AsyncEngine:
     return create_async_engine(
         str(settings.db_primary_url),
@@ -22,7 +22,7 @@ def create_engine(settings: SettingsDep) -> AsyncEngine:
 SqlalchemyEngineDep = Annotated[AsyncEngine, Depends(create_engine)]
 
 
-@lru_cache
+@cache
 def create_sessionmaker(engine: SqlalchemyEngineDep) -> sessionmaker:
     return sessionmaker(
         engine,
@@ -60,7 +60,7 @@ async def get_raw_conn(engine: SqlalchemyEngineDep) -> AsyncGenerator[Any, None]
         yield raw_asyncio_connection
 
 
-@lru_cache
+@cache
 def create_ro_engine(settings: SettingsDep) -> AsyncEngine:
     return create_async_engine(
         str(settings.db_standby_url),
@@ -68,7 +68,7 @@ def create_ro_engine(settings: SettingsDep) -> AsyncEngine:
     )
 
 
-@lru_cache
+@cache
 def create_ro_sessionmaker(
     engine: Annotated[AsyncEngine, Depends(create_ro_engine)],
 ) -> sessionmaker:
