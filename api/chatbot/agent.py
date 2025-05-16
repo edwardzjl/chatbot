@@ -32,7 +32,7 @@ def create_agent(
     token_counter: (
         Callable[[list[BaseMessage]], int] | Callable[[BaseMessage], int] | None
     ) = None,
-    context_length: int = 20,
+    context_length: int | None = None,
     tools: list[BaseTool] = None,
 ) -> CompiledGraph:
     if token_counter is None:
@@ -45,7 +45,13 @@ def create_agent(
             token_counter = len
 
     if context_length is None:
-        raise ValueError("`None` passed as `context_length` which is not allowed")
+        try:
+            context_length = chat_model.get_context_length()
+        except AttributeError:
+            logger.warning(
+                "Could not get context length from chat model, meanwhile not providing one."
+            )
+            context_length = 20
 
     try:
         # `ChatOpenAI.max_tokens` is actually `max_completion_tokens` i.e. Maximum number of tokens to generate.

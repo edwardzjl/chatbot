@@ -59,7 +59,7 @@ async def chat(
                 raise WebSocketException(code=3403, reason="authorization error")
 
             selected_model = message.additional_kwargs.get("model_name")
-            agent = await agent_wrapper(selected_model)
+            agent = agent_wrapper(selected_model)
 
             chain_metadata = {
                 "conversation_id": message.conversation,
