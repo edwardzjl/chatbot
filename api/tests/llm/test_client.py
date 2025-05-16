@@ -10,10 +10,10 @@ class TestStreamThinkingProcessor(unittest.TestCase):
     def test_text_only(self):
         tokens = ["Hello", " ", "world", "!"]
         expected_chunks = [
-            {"data": "Hello", "type": "text"},
-            {"data": " ", "type": "text"},
-            {"data": "world", "type": "text"},
-            {"data": "!", "type": "text"},
+            {"data": "Hello", "type": "text", "index": 0},
+            {"data": " ", "type": "text", "index": 0},
+            {"data": "world", "type": "text", "index": 0},
+            {"data": "!", "type": "text", "index": 0},
         ]
         actual_chunks = []
         for token in tokens:
@@ -25,13 +25,13 @@ class TestStreamThinkingProcessor(unittest.TestCase):
     def test_simple_thinking(self):
         tokens = ["<think>", "This", " ", "is", " ", "a", " ", "thought", "</think>"]
         expected_chunks = [
-            {"data": "This", "type": "thought"},
-            {"data": " ", "type": "thought"},
-            {"data": "is", "type": "thought"},
-            {"data": " ", "type": "thought"},
-            {"data": "a", "type": "thought"},
-            {"data": " ", "type": "thought"},
-            {"data": "thought", "type": "thought"},
+            {"data": "This", "type": "thought", "index": 1},
+            {"data": " ", "type": "thought", "index": 1},
+            {"data": "is", "type": "thought", "index": 1},
+            {"data": " ", "type": "thought", "index": 1},
+            {"data": "a", "type": "thought", "index": 1},
+            {"data": " ", "type": "thought", "index": 1},
+            {"data": "thought", "type": "thought", "index": 1},
         ]
         actual_chunks = []
         for token in tokens:
@@ -54,14 +54,14 @@ class TestStreamThinkingProcessor(unittest.TestCase):
             "thinking",
         ]
         expected_chunks = [
-            {"data": "Before", "type": "text"},
-            {"data": " ", "type": "text"},
-            {"data": "Thinking", "type": "thought"},
-            {"data": " ", "type": "thought"},
-            {"data": "text", "type": "thought"},
-            {"data": "After", "type": "text"},
-            {"data": " ", "type": "text"},
-            {"data": "thinking", "type": "text"},
+            {"data": "Before", "type": "text", "index": 0},
+            {"data": " ", "type": "text", "index": 0},
+            {"data": "Thinking", "type": "thought", "index": 1},
+            {"data": " ", "type": "thought", "index": 1},
+            {"data": "text", "type": "thought", "index": 1},
+            {"data": "After", "type": "text", "index": 2},
+            {"data": " ", "type": "text", "index": 2},
+            {"data": "thinking", "type": "text", "index": 2},
         ]
         actual_chunks = []
         for token in tokens:
@@ -73,13 +73,17 @@ class TestStreamThinkingProcessor(unittest.TestCase):
     def test_thinking_signature_prefix_not_tag(self):
         tokens = ["<th", "is", " ", "not", " ", "a", " ", "tag"]
         expected_chunks = [
-            {"data": "<this", "type": "text"},  # the first two tokens will be merged
-            {"data": " ", "type": "text"},
-            {"data": "not", "type": "text"},
-            {"data": " ", "type": "text"},
-            {"data": "a", "type": "text"},
-            {"data": " ", "type": "text"},
-            {"data": "tag", "type": "text"},
+            {
+                "data": "<this",
+                "type": "text",
+                "index": 0,
+            },  # the first two tokens will be merged
+            {"data": " ", "type": "text", "index": 0},
+            {"data": "not", "type": "text", "index": 0},
+            {"data": " ", "type": "text", "index": 0},
+            {"data": "a", "type": "text", "index": 0},
+            {"data": " ", "type": "text", "index": 0},
+            {"data": "tag", "type": "text", "index": 0},
         ]
         actual_chunks = []
         for token in tokens:
@@ -91,16 +95,16 @@ class TestStreamThinkingProcessor(unittest.TestCase):
     def test_stop_thinking_signature_prefix_not_tag(self):
         tokens = ["</th", "is", " ", "also", " ", "not", " ", "a", " ", "tag"]
         expected_chunks = [
-            {"data": "</th", "type": "text"},
-            {"data": "is", "type": "text"},
-            {"data": " ", "type": "text"},
-            {"data": "also", "type": "text"},
-            {"data": " ", "type": "text"},
-            {"data": "not", "type": "text"},
-            {"data": " ", "type": "text"},
-            {"data": "a", "type": "text"},
-            {"data": " ", "type": "text"},
-            {"data": "tag", "type": "text"},
+            {"data": "</th", "type": "text", "index": 0},
+            {"data": "is", "type": "text", "index": 0},
+            {"data": " ", "type": "text", "index": 0},
+            {"data": "also", "type": "text", "index": 0},
+            {"data": " ", "type": "text", "index": 0},
+            {"data": "not", "type": "text", "index": 0},
+            {"data": " ", "type": "text", "index": 0},
+            {"data": "a", "type": "text", "index": 0},
+            {"data": " ", "type": "text", "index": 0},
+            {"data": "tag", "type": "text", "index": 0},
         ]
         actual_chunks = []
         for token in tokens:
@@ -123,12 +127,12 @@ class TestStreamThinkingProcessor(unittest.TestCase):
             "</think>",
         ]
         expected_chunks = [
-            {"data": "First", "type": "thought"},
-            {"data": " ", "type": "thought"},
-            {"data": "thought", "type": "thought"},
-            {"data": "Second", "type": "thought"},
-            {"data": " ", "type": "thought"},
-            {"data": "thought", "type": "thought"},
+            {"data": "First", "type": "thought", "index": 1},
+            {"data": " ", "type": "thought", "index": 1},
+            {"data": "thought", "type": "thought", "index": 1},
+            {"data": "Second", "type": "thought", "index": 3},
+            {"data": " ", "type": "thought", "index": 3},
+            {"data": "thought", "type": "thought", "index": 3},
         ]
         actual_chunks = []
         for token in tokens:
@@ -150,9 +154,9 @@ class TestStreamThinkingProcessor(unittest.TestCase):
     def test_thinking_tag_split_tokens(self):
         tokens = ["<th", "ink", ">", "Splitted", " ", "tag", "</", "think", ">"]
         expected_chunks = [
-            {"data": "Splitted", "type": "thought"},
-            {"data": " ", "type": "thought"},
-            {"data": "tag", "type": "thought"},
+            {"data": "Splitted", "type": "thought", "index": 1},
+            {"data": " ", "type": "thought", "index": 1},
+            {"data": "tag", "type": "thought", "index": 1},
         ]
         actual_chunks = []
         for token in tokens:
@@ -167,9 +171,9 @@ class TestStreamThinkingProcessor(unittest.TestCase):
         )
         tokens = ["[思考开始]", "Custom", " ", "thinking", "[思考结束]"]
         expected_chunks = [
-            {"data": "Custom", "type": "thought"},
-            {"data": " ", "type": "thought"},
-            {"data": "thinking", "type": "thought"},
+            {"data": "Custom", "type": "thought", "index": 1},
+            {"data": " ", "type": "thought", "index": 1},
+            {"data": "thinking", "type": "thought", "index": 1},
         ]
         actual_chunks = []
         for token in tokens:
@@ -191,13 +195,13 @@ class TestStreamThinkingProcessor(unittest.TestCase):
             "</think>",
         ]
         expected_chunks = [
-            {"data": "Outer", "type": "thought"},
-            {"data": " ", "type": "thought"},
-            {"data": "<think>", "type": "thought"},
-            {"data": "Inner", "type": "thought"},
-            {"data": " ", "type": "text"},
-            {"data": "outer", "type": "text"},
-            {"data": "</think>", "type": "text"},
+            {"data": "Outer", "type": "thought", "index": 1},
+            {"data": " ", "type": "thought", "index": 1},
+            {"data": "<think>", "type": "thought", "index": 1},
+            {"data": "Inner", "type": "thought", "index": 1},
+            {"data": " ", "type": "text", "index": 2},
+            {"data": "outer", "type": "text", "index": 2},
+            {"data": "</think>", "type": "text", "index": 2},
         ]
         actual_chunks = []
         for token in tokens:
@@ -209,9 +213,9 @@ class TestStreamThinkingProcessor(unittest.TestCase):
     def test_thinking_tag_with_extra_content_immediately_after_start_tag(self):
         tokens = ["<think>ExtraContent", " ", "thought", "</think>"]
         expected_chunks = [
-            {"data": "ExtraContent", "type": "thought"},
-            {"data": " ", "type": "thought"},
-            {"data": "thought", "type": "thought"},
+            {"data": "ExtraContent", "type": "thought", "index": 1},
+            {"data": " ", "type": "thought", "index": 1},
+            {"data": "thought", "type": "thought", "index": 1},
         ]
         actual_chunks = []
         for token in tokens:
@@ -227,10 +231,11 @@ class TestStreamThinkingProcessor(unittest.TestCase):
             "</think>ExtraContent",
         ]  # immediately after stop tag
         expected_chunks = [
-            {"data": "thought", "type": "thought"},
+            {"data": "thought", "type": "thought", "index": 1},
             {
                 "data": "ExtraContent",
                 "type": "text",
+                "index": 2,
             },  # extra content after stop tag is still considered thought because of current logic, can adjust if needed.
         ]
         actual_chunks = []
@@ -255,9 +260,9 @@ class TestStreamThinkingProcessor(unittest.TestCase):
 
         chunks2 = []
         expected_chunks2 = [
-            {"data": "Text", "type": "text"},
-            {"data": "after", "type": "text"},
-            {"data": "reset", "type": "text"},
+            {"data": "Text", "type": "text", "index": 0},
+            {"data": "after", "type": "text", "index": 0},
+            {"data": "reset", "type": "text", "index": 0},
         ]
         for token in tokens2:
             chunk = processor.on_token(token)
