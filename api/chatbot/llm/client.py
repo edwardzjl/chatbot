@@ -96,15 +96,19 @@ class StreamThinkingProcessor(Serializable):
             )
 
     def _process_token(
-        self, token: str, chunk_type: str, signature: str, chunk_type_after_match: str
+        self,
+        token: str,
+        chunk_type: Literal["text", "thought"],
+        signature: str,
+        chunk_type_after_match: Literal["text", "thought"],
     ) -> MessageChunk | None:
         """Handles token processing for entering or exiting a mode.
 
         Args:
             token (str): The token to process.
-            chunk_type (str): The type of chunk when exiting the mode.
+            chunk_type (Literal["text", "thought"]): The type of chunk when exiting the mode.
             signature (str): The signature to detect. For example, "<think>" or "</think>".
-            chunk_type_after_match (str): The type of chunk after matching the signature.
+            chunk_type_after_match (Literal["text", "thought"]): The type of chunk after matching the signature.
 
         Returns:
             MessageChunk | None: A dictionary with "data" and "type" keys, or None if buffering.
@@ -117,17 +121,17 @@ class StreamThinkingProcessor(Serializable):
             elif token.startswith(signature):
                 # token is longer than the signature
                 self._toggle_mode(chunk_type_after_match == "thought")
-                return {
-                    "data": token.removeprefix(signature),
-                    "type": chunk_type_after_match,
-                    "index": self._index,
-                }
+                return MessageChunk(
+                    data=token.removeprefix(signature),
+                    type=chunk_type_after_match,
+                    index=self._index,
+                )
             elif signature.startswith(token):
                 # token is shorter than the signature
                 self._start_buffering(token, signature)
                 return None
             else:
-                return {"data": token, "type": chunk_type, "index": self._index}
+                return MessageChunk(data=token, type=chunk_type, index=self._index)
         else:
             # Currently buffering
             self._buffer += token
@@ -141,16 +145,18 @@ class StreamThinkingProcessor(Serializable):
                 self._toggle_mode(chunk_type_after_match == "thought")
                 remaining = self._buffer.removeprefix(signature)
                 self._clear_buffer()
-                return {
-                    "data": remaining,
-                    "type": chunk_type_after_match,
-                    "index": self._index,
-                }
+                return MessageChunk(
+                    data=remaining,
+                    type=chunk_type_after_match,
+                    index=self._index,
+                )
             elif signature.startswith(self._buffer):
                 # Buffer is shorter than the signature, continue buffering
                 return None
             else:
-                chunk = {"data": self._buffer, "type": chunk_type, "index": self._index}
+                chunk = MessageChunk(
+                    data=self._buffer, type=chunk_type, index=self._index
+                )
                 self._clear_buffer()
                 return chunk
 
@@ -390,7 +396,7 @@ def attach_attachments(content: str | list[dict[str, Any]], attachments: list) -
         "video/": "video_url",
     }
 
-    def process_attachment(attachment: dict[str, Any]) -> dict[str, str] | None:
+    def process_attachment(attachment: dict[str, Any]) -> dict[str, Any] | None:
         mimetype: str = attachment.get("mimetype")
         if not mimetype:
             logger.warning(

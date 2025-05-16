@@ -3,9 +3,9 @@ from contextlib import asynccontextmanager
 from typing import AsyncGenerator, Literal, TypeAlias, TYPE_CHECKING
 
 import requests
-from aiohttp import ClientSession
+from aiohttp import ClientSession, ClientConnectionError
 from aiohttp.client import _RequestContextManager
-from requests.exceptions import Timeout
+from requests.exceptions import Timeout, ConnectionError
 from tenacity import retry, retry_if_exception_type, stop_after_attempt
 
 
@@ -15,6 +15,13 @@ HttpMethod: TypeAlias = Literal[
 
 sync_methods = ["get", "post", "put", "patch", "delete", "head", "options"]
 async_methods = [f"a{method}" for method in sync_methods]
+
+
+SYNC_RETRYABLE_EXCEPTIONS = (Timeout, ConnectionError)
+# For async, we retry on timeouts and connection errors.
+# ClientResponseError (for 4xx/5xx) will be raised by raise_for_status=True on the session,
+# and typically shouldn't be retried by default unless specifically configured.
+ASYNC_RETRYABLE_EXCEPTIONS = (TimeoutError, ClientConnectionError)
 
 
 class HttpClient:
@@ -59,7 +66,7 @@ class HttpClient:
         self.asession = asession
 
     @retry(
-        retry=retry_if_exception_type(Timeout),
+        retry=retry_if_exception_type(SYNC_RETRYABLE_EXCEPTIONS),
         stop=stop_after_attempt(3),
         reraise=True,
     )
@@ -80,7 +87,7 @@ class HttpClient:
                 yield session
 
     @retry(
-        retry=retry_if_exception_type(TimeoutError),
+        retry=retry_if_exception_type(ASYNC_RETRYABLE_EXCEPTIONS),
         stop=stop_after_attempt(3),
         reraise=True,
     )
@@ -94,7 +101,9 @@ class HttpClient:
     def __getattr__(self, name: str):
         """Dynamically handle HTTP methods like get(), post(), etc."""
         # Handle sync methods (e.g., get(), post(), etc.)
-        if name.lower() in sync_methods:
+        method_name_lower = name.lower()
+
+        if method_name_lower in sync_methods:
 
             def method(*args, **kwargs):
                 return self.request(name.upper(), *args, **kwargs)
@@ -102,7 +111,7 @@ class HttpClient:
             return method
 
         # Handle async methods (e.g., aget(), apost(), etc.)
-        if name.lower() in async_methods:
+        if method_name_lower in async_methods:
 
             def method(*args, **kwargs):
                 return self.arequest(name[1:].upper(), *args, **kwargs)
@@ -115,86 +124,30 @@ class HttpClient:
 
     if TYPE_CHECKING:
 
-        def get(
-            self,
-            url: str,
-            **kwargs,
-        ) -> requests.Response: ...
+        def get(self, url: str, **kwargs) -> requests.Response: ...
 
-        def options(
-            self,
-            url: str,
-            **kwargs,
-        ) -> requests.Response: ...
+        def options(self, url: str, **kwargs) -> requests.Response: ...
 
-        def head(
-            self,
-            url: str,
-            **kwargs,
-        ) -> requests.Response: ...
+        def head(self, url: str, **kwargs) -> requests.Response: ...
 
-        def post(
-            self,
-            url: str,
-            **kwargs,
-        ) -> requests.Response: ...
+        def post(self, url: str, **kwargs) -> requests.Response: ...
 
-        def put(
-            self,
-            url: str,
-            **kwargs,
-        ) -> requests.Response: ...
+        def put(self, url: str, **kwargs) -> requests.Response: ...
 
-        def patch(
-            self,
-            url: str,
-            **kwargs,
-        ) -> requests.Response: ...
+        def patch(self, url: str, **kwargs) -> requests.Response: ...
 
-        def delete(
-            self,
-            url: str,
-            **kwarg,
-        ) -> requests.Response: ...
+        def delete(self, url: str, **kwargs) -> requests.Response: ...
 
-        async def aget(
-            self,
-            url: str,
-            **kwargs,
-        ) -> _RequestContextManager: ...
+        async def aget(self, url: str, **kwargs) -> _RequestContextManager: ...
 
-        async def aoptions(
-            self,
-            url: str,
-            **kwargs,
-        ) -> _RequestContextManager: ...
+        async def aoptions(self, url: str, **kwargs) -> _RequestContextManager: ...
 
-        async def ahead(
-            self,
-            url: str,
-            **kwargs,
-        ) -> _RequestContextManager: ...
+        async def ahead(self, url: str, **kwargs) -> _RequestContextManager: ...
 
-        async def apost(
-            self,
-            url: str,
-            **kwargs,
-        ) -> _RequestContextManager: ...
+        async def apost(self, url: str, **kwargs) -> _RequestContextManager: ...
 
-        async def aput(
-            self,
-            url: str,
-            **kwargs,
-        ) -> _RequestContextManager: ...
+        async def aput(self, url: str, **kwargs) -> _RequestContextManager: ...
 
-        async def apatch(
-            self,
-            url: str,
-            **kwargs,
-        ) -> _RequestContextManager: ...
+        async def apatch(self, url: str, **kwargs) -> _RequestContextManager: ...
 
-        async def adelete(
-            self,
-            url: str,
-            **kwargs,
-        ) -> _RequestContextManager: ...
+        async def adelete(self, url: str, **kwargs) -> _RequestContextManager: ...

@@ -5,6 +5,7 @@ from functools import partial
 from typing import Any, Callable, override
 from urllib.parse import urljoin
 
+from langchain_core.messages import BaseMessage
 from langchain_core.messages.utils import convert_to_openai_messages
 
 from chatbot.http_client import HttpClient
@@ -32,12 +33,14 @@ class VLLMProvider(LLMProvider):
         return model_info.get("max_model_len")
 
     @override
-    def get_token_counter(self, model_name: str) -> Callable[[list], int] | None:
+    def get_token_counter(
+        self, model_name: str
+    ) -> Callable[[list[BaseMessage]], int] | None:
         return partial(self.token_counter_lc, model_name)
 
     # NOTE: this function is used as the `token_counter` parameter of langchain's `langchain_core.messages.utils.trim_messages` function.
     # So it must be a synchronous function.
-    def token_counter_lc(self, model_name: str, messages: list) -> int:
+    def token_counter_lc(self, model_name: str, messages: list[BaseMessage]) -> int:
         """Get the number of tokens for a list of messages.
 
         Args:
