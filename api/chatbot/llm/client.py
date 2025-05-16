@@ -47,6 +47,10 @@ class StreamThinkingProcessor(Serializable):
     """The current buffering signature. None means not buffering."""
     _buffer: str = PrivateAttr(default="")
     _index: int = PrivateAttr(default=0)
+    """The index of each chunk. Chunks with the same index should be merged together.
+    See <https://github.com/langchain-ai/langchain/blob/d4f77a8c8fae9a6a33e55d572ee9e034c762eeb0/libs/core/langchain_core/utils/_merge.py#L92C1-L93C1>
+    This is not strictly increasing one by one.
+    """
 
     @classmethod
     def is_lc_serializable(cls) -> bool:
@@ -260,21 +264,22 @@ class ReasoningChatOpenai(ChatOpenAI):
     def _process(self, chunk: ChatGenerationChunk) -> ChatGenerationChunk:
         token = chunk.message.content
         if not isinstance(token, str):
+            logger.warning("LLM generated non string content: %s", token)
             return chunk
+        # record the raw output before we determine the type
+        chunk.message.additional_kwargs["raw_content"] = token
+
         message_chunk = self.thinking_processor.on_token(token)
-        chunk.message.additional_kwargs["raw_content"] = (
-            token  # record the raw output before we determine the type
-        )
         if not message_chunk:
             # If a `ChatGenerationChunk` exists but no `message_chunk` is produced after processing the token,
             # it indicates the token might be part of the thinking prefix or suffix.
             # In other words, we are either "entering" or "exiting" the thinking mode.
             # It is essential to yield this chunk; otherwise, part of the `raw_content` will be lost.
-            # NOTE: The content must NOT include a 'text' field because `langchain_core.outputs.chat_generation.ChatGeneration`
+            # TODO: While this approach works for now, it should be considered a temporary solution.
+            # The content must NOT include a 'text' field because `langchain_core.outputs.chat_generation.ChatGeneration`
             # will use the first text part as its `text` attribute, and `langchain_core.output_parsers.StrOutputParser`
             # will treat that attribute as the output.
             # See <https://github.com/langchain-ai/langchain/blob/8b145d5dc3409f57e24e153f2038c0de5b07b3a0/libs/core/langchain_core/outputs/chat_generation.py#L36-L51>
-            # While this approach works for now, it should be considered a temporary solution.
             chunk.message.content = [{"type": "foo", "foo": "", "index": -1}]
         elif message_chunk["type"] == "text":
             # Even it's a text, the content might be modified by the thinking processor.
@@ -286,8 +291,6 @@ class ReasoningChatOpenai(ChatOpenAI):
                 }
             ]
         elif message_chunk["type"] == "thought":
-            # We need an index to merge dicts.
-            # See <https://github.com/langchain-ai/langchain/blob/d4f77a8c8fae9a6a33e55d572ee9e034c762eeb0/libs/core/langchain_core/utils/_merge.py#L92C1-L93C1>
             chunk.message.content = [
                 {
                     "type": "thinking",
