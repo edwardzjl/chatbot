@@ -92,36 +92,19 @@ const Conversation = () => {
 
         // Send the init message if there's any.
         const message = JSON.parse(initMsg);
-        const attemptSend = async () => {
-            const MAX_RETRIES = 5;
-            const interval = 500;  // milliseconds
-            let retries = 0;
-
-            while (retries < MAX_RETRIES) {
-                try {
-                    const toSend = { ...message, additional_kwargs: { ...(message.additional_kwargs || {}), require_summarization: true } }
-                    send(JSON.stringify(toSend));
-                    sessionStorage.removeItem(initMsgKey);
-                    dispatch({
-                        type: "added",
-                        message: message,
-                    });
-                    break;
-                } catch (error) {
-                    if (error.name === "InvalidStateError") {
-                        console.warn(`WebSocket not ready, retrying in 0.5 second... (${retries + 1}/${MAX_RETRIES})`);
-                        retries++;
-                        await new Promise(resolve => setTimeout(resolve, interval));
-                    } else {
-                        console.error("Error sending init message:", error);
-                        break;
-                    }
-                }
-            }
-        }
-
-        attemptSend();
-
+        const toSend = {
+            ...message,
+            additional_kwargs: {
+                ...(message.additional_kwargs || {}),
+                require_summarization: true,
+            },
+        };
+        send(toSend);
+        sessionStorage.removeItem(initMsgKey);
+        dispatch({
+            type: "added",
+            message: message,
+        });
     }, [conversation, dispatch, send]);
 
     const sendMessage = async (message) => {
@@ -132,7 +115,7 @@ const Conversation = () => {
         };
         // `send` may throw an `InvalidStateError` if `WebSocket.readyState` is `CONNECTING`.
         // See <https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/send>
-        send(JSON.stringify(payload));
+        send(payload);
         // append user input to chatlog
         dispatch({
             type: "added",
