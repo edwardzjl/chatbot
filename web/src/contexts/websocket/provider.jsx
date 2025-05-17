@@ -52,6 +52,28 @@ export const WebsocketProvider = ({ children }) => {
         };
     }, [messageHandlers]);
 
+    const send = useCallback(async (message) => {
+        const MAX_RETRIES = 5;
+        const interval = 500;  // milliseconds
+        let retries = 0;
+
+        while (retries < MAX_RETRIES) {
+            try {
+                ws.current?.send(JSON.stringify(message));
+                break;
+            } catch (error) {
+                if (error.name === "InvalidStateError") {
+                    console.warn(`WebSocket not ready, retrying in 0.5 second... (${retries + 1}/${MAX_RETRIES})`);
+                    retries++;
+                    await new Promise(resolve => setTimeout(resolve, interval));
+                } else {
+                    console.error("Error sending init message:", error);
+                    break;
+                }
+            }
+        }
+    }, []);
+
     const registerMessageHandler = useCallback((handler) => {
         setMessageHandlers(prev => [...prev, handler]);
         return handler; // Return for unregistration reference
@@ -65,7 +87,7 @@ export const WebsocketProvider = ({ children }) => {
         <WebsocketContext.Provider
             value={{
                 ready: isReady,
-                send: useCallback((...args) => ws.current?.send(...args), []),
+                send,
                 registerMessageHandler,
                 unregisterMessageHandler,
             }}
