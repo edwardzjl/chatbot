@@ -103,7 +103,11 @@ async def chat(
                     )
                     await websocket.send_text(msg.model_dump_json())
                 if evt == "on_chat_model_stream":
-                    msg = ChatMessage.from_lc(event["data"]["chunk"])
+                    msg = ChatMessage.from_lc(
+                        event["data"]["chunk"],
+                        parent_id=message.id,
+                        conversation=message.conversation,
+                    )
                     await websocket.send_text(msg.model_dump_json())
                 if evt == "on_chat_model_end":
                     msg: AIMessage = event["data"]["output"]
