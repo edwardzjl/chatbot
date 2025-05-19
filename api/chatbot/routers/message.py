@@ -29,6 +29,10 @@ async def thumbup(
     agent: AgentForStateDep,
 ) -> None:
     conv: ORMConversation = await session.get(ORMConversation, conversation_id)
+    if not conv:
+        raise HTTPException(
+            status_code=404, detail=f"Conversation {conversation_id} not found"
+        )
     if conv.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
 
@@ -57,6 +61,10 @@ async def thumbdown(
     agent: AgentForStateDep,
 ) -> None:
     conv: ORMConversation = await session.get(ORMConversation, conversation_id)
+    if not conv:
+        raise HTTPException(
+            status_code=404, detail=f"Conversation {conversation_id} not found"
+        )
     if conv.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
 
