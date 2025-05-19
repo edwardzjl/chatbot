@@ -59,7 +59,6 @@ async def chat(
                 raise WebSocketException(code=3403, reason="authorization error")
 
             selected_model = message.additional_kwargs.get("model_name")
-            agent = agent_wrapper(selected_model)
 
             chain_metadata = {
                 "conversation_id": message.conversation,
@@ -69,98 +68,99 @@ async def chat(
 
             runtime_configuration = {"thread_id": message.conversation}
 
-            async for event in agent.astream_events(
-                input={"messages": [message.to_lc()]},
-                config={
-                    "run_name": "chat",
-                    "metadata": chain_metadata,
-                    "configurable": runtime_configuration,
-                },
-                version="v2",
-            ):
-                event_name: str = event["name"]
-                if event_name.startswith("_"):
-                    # events starts with "_" are langchain's internal events, for example '_Exception'
-                    # skip for mainly 2 reasons:
-                    # 1. we don't want to expose internal event to the user (websocket or history)
-                    # 2. we want to keep the conversation history as short as possible
-                    continue
+            async with agent_wrapper(selected_model) as agent:
+                async for event in agent.astream_events(
+                    input={"messages": [message.to_lc()]},
+                    config={
+                        "run_name": "chat",
+                        "metadata": chain_metadata,
+                        "configurable": runtime_configuration,
+                    },
+                    version="v2",
+                ):
+                    event_name: str = event["name"]
+                    if event_name.startswith("_"):
+                        # events starts with "_" are langchain's internal events, for example '_Exception'
+                        # skip for mainly 2 reasons:
+                        # 1. we don't want to expose internal event to the user (websocket or history)
+                        # 2. we want to keep the conversation history as short as possible
+                        continue
 
-                tags: list[str] = event["tags"]
-                if "internal" in tags:
-                    # Our internal events are not supposed to be exposed to the user.
-                    continue
+                    tags: list[str] = event["tags"]
+                    if "internal" in tags:
+                        # Our internal events are not supposed to be exposed to the user.
+                        continue
 
-                logger.debug("event: %s", event)
-                evt: str = event["event"]
-                if evt == "on_chat_model_start":
-                    # Send an empty non-chunk message to start the streaming.
-                    msg = AIChatMessage(
-                        parent_id=message.id,
-                        id=f"run--{event['run_id']}",
-                        conversation=message.conversation,
-                        content="",  # Tired of handling null / undefined in js, simply sending an empty string.
+                    logger.debug("event: %s", event)
+                    evt: str = event["event"]
+                    if evt == "on_chat_model_start":
+                        # Send an empty non-chunk message to start the streaming.
+                        msg = AIChatMessage(
+                            parent_id=message.id,
+                            id=f"run--{event['run_id']}",
+                            conversation=message.conversation,
+                            content="",  # Tired of handling null / undefined in js, simply sending an empty string.
+                        )
+                        await websocket.send_text(msg.model_dump_json())
+                    if evt == "on_chat_model_stream":
+                        msg = ChatMessage.from_lc(
+                            event["data"]["chunk"],
+                            parent_id=message.id,
+                            conversation=message.conversation,
+                        )
+                        await websocket.send_text(msg.model_dump_json())
+                    if evt == "on_chat_model_end":
+                        msg: AIMessage = event["data"]["output"]
+                        if (usage_metadata := msg.usage_metadata) is not None:
+                            model_name = msg.response_metadata.get("model_name")
+                            input_tokens.labels(
+                                user_id=userid,
+                                model_name=model_name,
+                            ).inc(usage_metadata["input_tokens"])
+                            output_tokens.labels(
+                                user_id=userid,
+                                model_name=model_name,
+                            ).inc(usage_metadata["output_tokens"])
+
+                conv.last_message_at = utcnow()
+                async with session_maker() as session:
+                    conv = await session.merge(conv)
+                    await session.commit()
+
+                # summarize if required
+                if message.additional_kwargs and message.additional_kwargs.get(
+                    "require_summarization", False
+                ):
+                    smry_chain = smry_chain_wrapper(selected_model)
+                    config = {"configurable": {"thread_id": message.conversation}}
+                    state = await agent.aget_state(config)
+                    msgs: list[BaseMessage] = state.values.get("messages", [])
+
+                    windowed_messages = trim_messages(
+                        msgs,
+                        token_counter=len,
+                        max_tokens=20,
+                        start_on="human",  # This means that the first message should be from the user after trimming.
                     )
-                    await websocket.send_text(msg.model_dump_json())
-                if evt == "on_chat_model_stream":
-                    msg = ChatMessage.from_lc(
-                        event["data"]["chunk"],
-                        parent_id=message.id,
-                        conversation=message.conversation,
+                    title_raw: str = await smry_chain.ainvoke(
+                        input={"messages": windowed_messages},
+                        config={"metadata": chain_metadata},
                     )
-                    await websocket.send_text(msg.model_dump_json())
-                if evt == "on_chat_model_end":
-                    msg: AIMessage = event["data"]["output"]
-                    if (usage_metadata := msg.usage_metadata) is not None:
-                        model_name = msg.response_metadata.get("model_name")
-                        input_tokens.labels(
-                            user_id=userid,
-                            model_name=model_name,
-                        ).inc(usage_metadata["input_tokens"])
-                        output_tokens.labels(
-                            user_id=userid,
-                            model_name=model_name,
-                        ).inc(usage_metadata["output_tokens"])
+                    title = title_raw.strip('"')
+                    if title:
+                        conv.title = title
+                        async with session_maker() as session:
+                            conv = await session.merge(conv)
+                            await session.commit()
 
-            conv.last_message_at = utcnow()
-            async with session_maker() as session:
-                conv = await session.merge(conv)
-                await session.commit()
-
-            # summarize if required
-            if message.additional_kwargs and message.additional_kwargs.get(
-                "require_summarization", False
-            ):
-                smry_chain = smry_chain_wrapper(selected_model)
-                config = {"configurable": {"thread_id": message.conversation}}
-                state = await agent.aget_state(config)
-                msgs: list[BaseMessage] = state.values.get("messages", [])
-
-                windowed_messages = trim_messages(
-                    msgs,
-                    token_counter=len,
-                    max_tokens=20,
-                    start_on="human",  # This means that the first message should be from the user after trimming.
-                )
-                title_raw: str = await smry_chain.ainvoke(
-                    input={"messages": windowed_messages},
-                    config={"metadata": chain_metadata},
-                )
-                title = title_raw.strip('"')
-                if title:
-                    conv.title = title
-                    async with session_maker() as session:
-                        conv = await session.merge(conv)
-                        await session.commit()
-
-                    info_message = InfoMessage(
-                        conversation=message.conversation,
-                        content={
-                            "type": "title-generated",
-                            "payload": title,
-                        },
-                    )
-                    await websocket.send_text(info_message.model_dump_json())
+                        info_message = InfoMessage(
+                            conversation=message.conversation,
+                            content={
+                                "type": "title-generated",
+                                "payload": title,
+                            },
+                        )
+                        await websocket.send_text(info_message.model_dump_json())
         except WebSocketDisconnect:
             logger.info("websocket disconnected")
             connected_clients.dec()

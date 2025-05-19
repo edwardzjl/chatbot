@@ -7,7 +7,7 @@ from sqlalchemy import select
 from starlette.requests import Request
 
 from chatbot.dependencies import (
-    AgentDep,
+    AgentForStateDep,
     SqlalchemyROSessionDep,
     SqlalchemySessionDep,
     UserIdHeaderDep,
@@ -45,7 +45,7 @@ async def get_shares(
 async def get_share(
     share_id: UUID,
     session: SqlalchemyROSessionDep,
-    agent: AgentDep,
+    agent: AgentForStateDep,
 ) -> Share:
     """Get a share by id"""
     share: ORMShare = await session.get(ORMShare, share_id)
@@ -65,7 +65,7 @@ async def create_share(
     request: Request,
     userid: UserIdHeaderDep,
     session: SqlalchemySessionDep,
-    agent: AgentDep,
+    agent: AgentForStateDep,
 ) -> Share:
     # TODO: maybe only get the conv.owner
     conv: ORMConv = await session.get(ORMConv, payload.source_id)

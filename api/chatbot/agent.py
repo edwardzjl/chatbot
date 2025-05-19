@@ -53,11 +53,14 @@ def create_agent(
             )
             context_length = 20
 
+    # TODO: need to consider if `token_counter` is len.
     try:
         # `ChatOpenAI.max_tokens` is actually `max_completion_tokens` i.e. Maximum number of tokens to generate.
         max_input_tokens = context_length - chat_model.max_tokens
     except AttributeError:
         # Otherwise, leave 0.2 for new tokens
+        max_input_tokens = int(context_length * 0.8)
+    except TypeError:
         max_input_tokens = int(context_length * 0.8)
 
     tool_picker = create_tool_picker(chat_model, tools) if tools else None
