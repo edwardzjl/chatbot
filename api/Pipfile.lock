@@ -918,12 +918,12 @@
         },
         "langchain-core": {
             "hashes": [
-                "sha256:052a37cf298c505144f007e5aeede6ecff2dc92c827525d1ef59101eb3a4551c",
-                "sha256:9686baaff43f2c8175535da13faf40e6866769015e93130c3c1e4243e7244d70"
+                "sha256:2ccdf06b12e699b1b0962bc02837056c075b4981c3d13f82a4d4c30bb22ea3dc",
+                "sha256:63dd1bdf7939816115399522661ca85a2f3686a61440f2f46ebd86d1b028595b"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.9'",
-            "version": "==0.3.59"
+            "version": "==0.3.60"
         },
         "langchain-openai": {
             "hashes": [
@@ -945,11 +945,11 @@
         },
         "langgraph-checkpoint": {
             "hashes": [
-                "sha256:23416a0f5bc9dd712ac10918fc13e8c9c4530c419d2985a441df71a38fc81602",
-                "sha256:77a63cab7b5f84dec1d49db561326ec28bdd48bcefb7fe4ac372069d2609287b"
+                "sha256:2b800195532d5efb079db9754f037281225ae175f7a395523f4bf41223cbc9d6",
+                "sha256:ad4907858ed320a208e14ac037e4b9244ec1cb5aa54570518166ae8b25752cec"
             ],
-            "markers": "python_full_version >= '3.9.0' and python_full_version < '4.0.0'",
-            "version": "==2.0.25"
+            "markers": "python_version >= '3.9'",
+            "version": "==2.0.26"
         },
         "langgraph-checkpoint-postgres": {
             "hashes": [
@@ -962,12 +962,12 @@
         },
         "langgraph-checkpoint-sqlite": {
             "hashes": [
-                "sha256:344f307c0840a1cbd85a18dcd6daac8e989947979c1a43c2bdc6c6f4ed12084a",
-                "sha256:b04decd8c3f7c2966ca63b4fa11eb789a03b27001e4d855ccd132c50da59812b"
+                "sha256:89d1d2201fe26aa52f1a9c03e1015d226635649be596b26542a5de78f8cc6c9f",
+                "sha256:c8a55a268b857761dc77f123df48addaf8e9a40b72c4eaddb7c551ddced1c5b6"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.9'",
-            "version": "==2.0.7"
+            "version": "==2.0.10"
         },
         "langgraph-prebuilt": {
             "hashes": [
@@ -1967,6 +1967,16 @@
             ],
             "markers": "python_version >= '3.7'",
             "version": "==2.0.40"
+        },
+        "sqlite-vec": {
+            "hashes": [
+                "sha256:77491bcaa6d496f2acb5cc0d0ff0b8964434f141523c121e313f9a7d8088dee3",
+                "sha256:7b0519d9cd96164cd2e08e8eed225197f9cd2f0be82cb04567692a0a4be02da3",
+                "sha256:823b0493add80d7fe82ab0fe25df7c0703f4752941aee1c7b2b02cec9656cb24",
+                "sha256:c65bcfd90fa2f41f9000052bcb8bb75d38240b2dae49225389eca6c3136d3f0c",
+                "sha256:fdca35f7ee3243668a055255d4dee4dea7eed5a06da8cad409f89facf4595361"
+            ],
+            "version": "==0.1.6"
         },
         "starlette": {
             "hashes": [
