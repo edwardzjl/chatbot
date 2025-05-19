@@ -35,6 +35,10 @@ const ChatTab = ({ chat, onShareClick, onDeleteClick }) => {
     const buttonRef = useRef(null);
 
     useEffect(() => {
+        setTitleText(chat.title);
+    }, [chat.title]);
+
+    useEffect(() => {
         if (!titleReadOnly) {
             titleRef.current.focus();
         }
