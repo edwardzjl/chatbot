@@ -49,6 +49,8 @@ async def get_share(
 ) -> Share:
     """Get a share by id"""
     share: ORMShare = await session.get(ORMShare, share_id)
+    if not share:
+        raise HTTPException(status_code=404, detail=f"Share {share_id} not found")
     res = Share.model_validate(share)
 
     config = {"configurable": share.snapshot_ref}
@@ -69,6 +71,10 @@ async def create_share(
 ) -> Share:
     # TODO: maybe only get the conv.owner
     conv: ORMConv = await session.get(ORMConv, payload.source_id)
+    if not conv:
+        raise HTTPException(
+            status_code=404, detail=f"Conversation {payload.source_id} not found"
+        )
     if conv.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
 
@@ -99,6 +105,8 @@ async def delete_share(
 ) -> None:
     # TODO: maybe only get the share.owner
     share: ORMShare = await session.get(ORMShare, share_id)
+    if not share:
+        return
     if share.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
 
