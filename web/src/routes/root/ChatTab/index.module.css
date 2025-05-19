@@ -10,6 +10,7 @@
   display: flex;
   flex-direction: row;
   align-items: center;
+  cursor: pointer;
 }
 
 .sidebarButton:hover {
@@ -32,7 +33,6 @@
   justify-content: left;
   align-items: center;
   overflow: hidden;
-  cursor: pointer;
 }
 
 .chatTitle {
@@ -41,6 +41,7 @@
   height: 1.3rem;
   line-height: 1.3rem;
   color: var(--text-primary);
+  background-color: transparent;
   border: none;
   text-align: left;
   /* the following 3 lines ellipsis text */
@@ -48,11 +49,12 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: pointer;
 }
 
-.chatTitle:focus {
-  outline: none !important;
-  border: none;
+/* Edit mode */
+.chatTitle:not([readOnly]) {
+  cursor: text;
   border-bottom: 1px solid var(--text-primary);
 }
 
@@ -69,6 +71,10 @@
   background: transparent;
   border: none;
   color: var(--text-primary);
+}
+
+.chatOpMenuIcon:hover {
+  background-color: var(--bg-primary);
 }
 
 .chatOpMenuList {
