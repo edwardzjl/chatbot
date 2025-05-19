@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from contextlib import asynccontextmanager
 from functools import partial
 from typing import TYPE_CHECKING, Annotated
 
@@ -9,6 +10,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import Runnable
 from langchain_core.tools import BaseTool
+from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.graph.graph import CompiledGraph
 from langgraph.types import StateSnapshot
@@ -66,6 +68,7 @@ def get_tools(
     return tools
 
 
+@asynccontextmanager
 async def get_checkpointer(
     settings: SettingsDep,
     engine: SqlalchemyEngineDep,
@@ -87,37 +90,63 @@ async def get_checkpointer(
         yield InMemorySaver()
 
 
-def get_agent(
-    checkpointer: Annotated[BaseCheckpointSaver, Depends(get_checkpointer)],
+@asynccontextmanager
+async def get_agent(
+    engine: SqlalchemyEngineDep,
     tools: Annotated[list[BaseTool], Depends(get_tools)],
     settings: SettingsDep,
     select_model: Annotated[str | None, ModelHeader()] = None,
 ) -> AsyncGenerator[CompiledGraph, None]:
     llm = settings.must_get_llm(select_model)
 
-    return create_agent(
-        llm,
-        safety_model=settings.safety_llm,
-        checkpointer=checkpointer,
-        tools=tools,
-    )
-
-
-AgentDep = Annotated[CompiledGraph, Depends(get_agent)]
+    async with get_checkpointer(settings, engine) as checkpointer:
+        # Cannot use return here, or the connection will be closed.
+        yield create_agent(
+            llm,
+            safety_model=settings.safety_llm,
+            checkpointer=checkpointer,
+            tools=tools,
+        )
 
 
 def get_agent_wrapper(
-    checkpointer: Annotated[BaseCheckpointSaver, Depends(get_checkpointer)],
+    engine: SqlalchemyEngineDep,
     tools: Annotated[list[BaseTool], Depends(get_tools)],
     settings: SettingsDep,
 ) -> partial:
-    return partial(get_agent, checkpointer, tools, settings)
+    return partial(get_agent, engine, tools, settings)
 
 
 AgentWrapperDep = Annotated[partial, Depends(get_agent_wrapper)]
 
 
-async def get_agent_state(conversation_id: str, agent: AgentDep) -> StateSnapshot:
+async def get_agent_for_state(
+    engine: SqlalchemyEngineDep,
+    settings: SettingsDep,
+):
+    """Get an agent only for accessing the state.
+
+    Only the checkpointer is needed in such usecase.
+
+    Do NOT use this agent for any other purpose.
+    """
+    # A whatever LLM.
+    llm = ChatOpenAI(openai_api_key="whatever")
+    async with get_checkpointer(settings, engine) as checkpointer:
+        # Cannot use return here, or the connection will be closed.
+        yield create_agent(
+            llm,
+            checkpointer=checkpointer,
+        )
+
+
+AgentForStateDep = Annotated[CompiledGraph, Depends(get_agent_for_state)]
+
+
+# A simple wrapper when you have access to `conversation_id` in the endpoint.
+async def get_agent_state(
+    conversation_id: str, agent: AgentForStateDep
+) -> StateSnapshot:
     config = {"configurable": {"thread_id": conversation_id}}
     return await agent.aget_state(config)
 

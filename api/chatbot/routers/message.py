@@ -1,8 +1,13 @@
 from typing import TYPE_CHECKING
+from uuid import UUID
 
 from fastapi import APIRouter, HTTPException
 
-from chatbot.dependencies import AgentDep, SqlalchemyROSessionDep, UserIdHeaderDep
+from chatbot.dependencies import (
+    AgentForStateDep,
+    SqlalchemyROSessionDep,
+    UserIdHeaderDep,
+)
 from chatbot.models import Conversation as ORMConversation
 
 if TYPE_CHECKING:
@@ -17,11 +22,11 @@ router = APIRouter(
 # TODO: merge thumbup and thumbdown into one endpoint called feedback?
 @router.put("/{message_id}/thumbup")
 async def thumbup(
-    conversation_id: str,
+    conversation_id: UUID,
     message_id: str,
     userid: UserIdHeaderDep,
     session: SqlalchemyROSessionDep,
-    agent: AgentDep,
+    agent: AgentForStateDep,
 ) -> None:
     conv: ORMConversation = await session.get(ORMConversation, conversation_id)
     if conv.owner != userid:
@@ -36,8 +41,7 @@ async def thumbup(
     ]
     for message in messages:
         message.additional_kwargs["feedback"] = "thumbup"
-    # TODO: IDK why but partial updating works
-    # See <https://langchain-ai.github.io/langgraph/how-tos/human_in_the_loop/time-travel/#branch-off-a-past-state>
+
     await agent.aupdate_state(
         config,
         {"messages": messages},
@@ -46,11 +50,11 @@ async def thumbup(
 
 @router.put("/{message_id}/thumbdown")
 async def thumbdown(
-    conversation_id: str,
+    conversation_id: UUID,
     message_id: str,
     userid: UserIdHeaderDep,
     session: SqlalchemyROSessionDep,
-    agent: AgentDep,
+    agent: AgentForStateDep,
 ) -> None:
     conv: ORMConversation = await session.get(ORMConversation, conversation_id)
     if conv.owner != userid:
@@ -65,8 +69,7 @@ async def thumbdown(
     ]
     for message in messages:
         message.additional_kwargs["feedback"] = "thumbdown"
-    # TODO: IDK why but partial updating works
-    # See <https://langchain-ai.github.io/langgraph/how-tos/human_in_the_loop/time-travel/#branch-off-a-past-state>
+
     await agent.aupdate_state(
         config,
         {"messages": messages},
