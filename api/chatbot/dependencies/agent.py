@@ -113,7 +113,7 @@ def get_agent_wrapper(
     engine: SqlalchemyEngineDep,
     tools: Annotated[list[BaseTool], Depends(get_tools)],
     settings: SettingsDep,
-) -> partial:
+) -> partial[AsyncGenerator[CompiledGraph, None]]:
     return partial(get_agent, engine, tools, settings)
 
 
