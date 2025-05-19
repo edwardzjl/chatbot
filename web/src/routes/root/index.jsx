@@ -57,12 +57,14 @@ const Root = () => {
             case "ai":
                 dispatch({
                     type: "added",
+                    convId: message.conversation,
                     message: message,
                 });
                 break;
             case "AIMessageChunk":
                 dispatch({
                     type: "appended",
+                    convId: message.conversation,
                     message: message,
                 });
                 break;

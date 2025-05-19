@@ -67,24 +67,35 @@ const Conversation = () => {
     const { groupedConvs, dispatch: dispatchConv } = useContext(ConversationContext);
     const { username } = useContext(UserContext);
     const { send } = useContext(WebsocketContext);
-    const { messages, dispatch } = useContext(MessageContext);
+    const { currentConv, dispatch } = useContext(MessageContext);
     // Only rendering messages of the following types
     const rendering_messages = new Set(["human", "ai"]);
 
 
     useEffect(() => {
+        if (conversation.id === currentConv.id) {
+            return;
+        }
         // Update the message context.
         dispatch({
             type: "replaceAll",
+            convId: conversation.id,
             messages: conversation.messages,
         });
-        if (conversation.messages && conversation.messages.length > 0) {
-            // Already has messages, no need to check for init message.
+    }, [conversation, currentConv, dispatch]);
+
+    useEffect(() => {
+        // `currentConv.id !== conversation.id` means that the `replaceAll` action is finished.
+        if (currentConv.id !== conversation.id) {
+            return;
+        }
+        // Already has messages, no need to check for init message.
+        if (currentConv.messages && currentConv.messages.length > 0) {
             return;
         }
 
         // Check if there's an init message to send.
-        const initMsgKey = `init-msg:${conversation.id}`;
+        const initMsgKey = `init-msg:${currentConv.id}`;
         const initMsg = sessionStorage.getItem(initMsgKey);
         if (initMsg === undefined || initMsg === null) {
             return;
@@ -103,9 +114,10 @@ const Conversation = () => {
         sessionStorage.removeItem(initMsgKey);
         dispatch({
             type: "added",
+            convId: conversation.id,
             message: message,
         });
-    }, [conversation, dispatch, send]);
+    }, [conversation, currentConv, dispatch, send]);
 
     const sendMessage = async (message) => {
         const payload = {
@@ -119,6 +131,7 @@ const Conversation = () => {
         // append user input to chatlog
         dispatch({
             type: "added",
+            convId: conversation.id,
             message: payload,
         });
         // update last_message_at of the conversation to re-order conversations
@@ -141,7 +154,7 @@ const Conversation = () => {
             <ChatboxHeader />
             <ChatLog>
                 {/* We ignore system messages when displaying. */}
-                {conversation && messages?.filter(message => rendering_messages.has(message.type)).map((message, index) => (
+                {conversation && currentConv?.messages?.filter(message => rendering_messages.has(message.type)).map((message, index) => (
                     <ChatMessage key={index} convId={conversation.id} message={message} />
                 ))}
             </ChatLog>

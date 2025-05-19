@@ -2,9 +2,9 @@ import { createContext } from "react";
 
 
 /**
- * messages, dispatch
+ * currentConv, dispatch
  */
 export const MessageContext = createContext({
-    messages: [],
+    currentConv: {id: null, messages: []},
     dispatch: () => { },
 });
