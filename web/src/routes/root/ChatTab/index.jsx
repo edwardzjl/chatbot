@@ -14,6 +14,7 @@ import ShareIcon from '@mui/icons-material/Share';
 
 import { Dropdown, DropdownButton, DropdownMenu } from "@/components/DropdownMenu";
 import { ConversationContext } from "@/contexts/conversation";
+import { SnackbarContext } from "@/contexts/snackbar";
 
 /**
  *
@@ -27,6 +28,7 @@ const ChatTab = ({ chat, onShareClick, onDeleteClick }) => {
     const params = useParams();
 
     const { dispatch } = useContext(ConversationContext);
+    const { setSnackbar } = useContext(SnackbarContext);
     const titleRef = useRef(null);
     const [titleText, setTitleText] = useState(chat.title);
     const [titleReadOnly, setTitleReadonly] = useState(true);
@@ -55,8 +57,12 @@ const ChatTab = ({ chat, onShareClick, onDeleteClick }) => {
             try {
                 await renameChat(titleText);
                 setTitleReadonly(true);
-            } catch {
-                //
+            } catch (error) {
+                setSnackbar({
+                    open: true,
+                    severity: "error",
+                    message: `Error renaming conversation: ${error}`,
+                });
             }
         }
     };
@@ -88,8 +94,11 @@ const ChatTab = ({ chat, onShareClick, onDeleteClick }) => {
             const data = await res.json();
             setTitleReadonly(data.title);
         } catch (error) {
-            console.error("Error generating title", error);
-            // TODO: Show snackbar or toast notification
+            setSnackbar({
+                open: true,
+                severity: "error",
+                message: `Error generating conversation title: ${error}`,
+            });
         }
     }
 
