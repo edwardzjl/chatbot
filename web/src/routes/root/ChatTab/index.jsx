@@ -187,7 +187,7 @@ const ChatTab = ({ chat, onShareClick, onDeleteClick }) => {
                         </button>
                     </li>
                     <li>
-                        <button className={styles.chatOpMenuItem} onClick={() => onDeleteClick(chat.id, titleRef.current?.innerText)}>
+                        <button className={styles.chatOpMenuItem} onClick={() => onDeleteClick(chat.id, titleText)}>
                             <DeleteOutlineIcon />
                             <span className={styles.chatOpMenuItemText}>Delete</span>
                         </button>
