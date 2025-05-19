@@ -71,9 +71,10 @@ export const groupConvs = (conversations) => {
             return "pinned";
         }
         const itemDate = new Date(item.last_message_at);
-        if (itemDate.toDateString() === today.toDateString()) {
+        const itemDateStr = itemDate.toDateString();
+        if (itemDateStr === today.toDateString()) {
             return "Today";
-        } else if (itemDate.toDateString() === yesterday.toDateString()) {
+        } else if (itemDateStr === yesterday.toDateString()) {
             return "Yesterday";
         } else if (itemDate > lastSevenDays) {
             return "Last seven days";
