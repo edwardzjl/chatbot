@@ -918,12 +918,12 @@
         },
         "langchain-core": {
             "hashes": [
-                "sha256:052a37cf298c505144f007e5aeede6ecff2dc92c827525d1ef59101eb3a4551c",
-                "sha256:9686baaff43f2c8175535da13faf40e6866769015e93130c3c1e4243e7244d70"
+                "sha256:2ccdf06b12e699b1b0962bc02837056c075b4981c3d13f82a4d4c30bb22ea3dc",
+                "sha256:63dd1bdf7939816115399522661ca85a2f3686a61440f2f46ebd86d1b028595b"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.9'",
-            "version": "==0.3.59"
+            "version": "==0.3.60"
         },
         "langchain-openai": {
             "hashes": [
