@@ -71,6 +71,7 @@ const ChatMessage = ({ convId, message }) => {
             });
             dispatch({
                 type: "updated",
+                convId: convId,
                 message: { ...message, feedback: feedback },
             });
             setFeedbackTooltipTitles((prev) => ({ ...prev, [feedback]: "thanks!" }));

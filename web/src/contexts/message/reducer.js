@@ -1,55 +1,85 @@
 
-export const messagesReducer = (messages, action) => {
+/**
+ * This is actually a messages reducer.
+ *
+ * But I need to expose the conversation field to verify that the `replaceAll` action is finished.
+ */
+export const messagesReducer = (currentConv, action) => {
     switch (action.type) {
     case "added": {
         console.debug("Adding message: ", action.message);
+        if (action.convId !== currentConv.id) {
+            console.warn(
+                `Message ${action.message.id} belongs to conversation ${action.convId}, not (${currentConv.id}), skip adding...`
+            );
+            return currentConv;
+        }
         // find reversly could potentially be faster as the full message usually is the last one (streamed).
-        const match = messages.findLastIndex(message => message.id === action.message.id);
+        const match = currentConv.messages.findLastIndex(message => message.id === action.message.id);
         if (match !== -1) {
             console.warn(`Message with id ${action.message.id} already exists, skip adding...`);
-            return messages;
+            return currentConv;
         }
-        return [...messages, { ...action.message }];
+        return { ...currentConv, messages: [...currentConv.messages, { ...action.message }] };
     }
     case "appended": {
         console.debug("Appending message: ", action.message);
-        const match = messages.findLastIndex(message => message.id === action.message.id);
+        if (action.convId !== currentConv.id) {
+            console.warn(
+                `Message ${action.message.id} belongs to conversation ${action.convId}, not current conversation (${currentConv.id}), skip appending...`
+            );
+            return currentConv;
+        }
+        const match = currentConv.messages.findLastIndex(message => message.id === action.message.id);
         if (match === -1) {
             // we don't have this message, ignore it
             // this could happen when the user switch to another conversation and switch back
             console.warn(`Message with id ${action.message.id} not found, skip appending...`);
-            return messages;
+            return currentConv;
         }
-        return [
-            ...messages.slice(0, match),
-            {
-                ...messages[match],
-                content: mergeContentChunks(messages[match].content, action.message.content),
-                additional_kwargs: deepMerge(messages[match].additional_kwargs, action.message.additional_kwargs)
-            },
-            ...messages.slice(match + 1)
-        ];
+        const matched = currentConv.messages[match];
+        return {
+            ...currentConv,
+            messages: [
+                ...currentConv.messages.slice(0, match),
+                {
+                    ...matched,
+                    content: mergeContentChunks(matched.content, action.message.content),
+                    additional_kwargs: deepMerge(matched.additional_kwargs, action.message.additional_kwargs)
+                },
+                ...currentConv.messages.slice(match + 1)
+            ]
+        }
     }
     case "updated": {
         console.debug("Updating message: ", action.message);
+        if (action.convId !== currentConv.id) {
+            console.warn(
+                `Message ${action.message.id} belongs to conversation ${action.convId}, not (${currentConv.id}), skip updating...`
+            );
+            return currentConv;
+        }
         // find reversly could potentially be faster as the full message usually is the last one (streamed).
-        const match = messages.findLastIndex(message => message.id === action.message.id);
+        const match = currentConv.messages.findLastIndex(message => message.id === action.message.id);
         if (match === -1) {
             console.warn(`Message with id ${action.message.id} not found, skip updating...`);
-            return messages;
+            return currentConv;
         }
-        return [
-            ...messages.slice(0, match),
-            { ...messages[match], ...action.message },
-            ...messages.slice(match + 1)
-        ];
+        return {
+            ...currentConv,
+            messages: [
+                ...currentConv.messages.slice(0, match),
+                { ...currentConv.messages[match], ...action.message },
+                ...currentConv.messages.slice(match + 1)
+            ]
+        };
     }
     case "replaceAll": {
-        return [...action.messages]
+        return {id: action.convId, messages: [...action.messages]};
     }
     default: {
         console.error("Unknown action: ", action);
-        return messages;
+        return currentConv;
     }
     }
 };
@@ -197,6 +227,5 @@ const mergeLists = (left, right) => {
 
         merged[toMergeIndex] = deepMerge(merged[toMergeIndex], newPart);
     }
-    console.log("Merged lists: ", merged);
     return merged;
 };
