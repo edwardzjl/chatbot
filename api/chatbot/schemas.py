@@ -39,7 +39,7 @@ class ChatMessage(BaseModel):
     additional_kwargs: dict[str, Any] | None = None
 
     @staticmethod
-    def from_lc(lc_message: BaseMessage) -> ChatMessage:
+    def from_lc(lc_message: BaseMessage, **kwargs) -> ChatMessage:
         additional_kwargs = deepcopy(lc_message.additional_kwargs)
 
         # NOTE: By this we extend the `type` field of langchain message to support more types.
@@ -48,7 +48,7 @@ class ChatMessage(BaseModel):
         msg_class = message_class_map.get(msg_type, ChatMessage)
 
         sent_at = additional_kwargs.pop("sent_at", None)
-        kwargs = {
+        _kwargs = {
             "parent_id": additional_kwargs.pop("parent_id", None),
             "id": lc_message.id or str(uuid4()),
             "conversation": additional_kwargs.pop("session_id", None),
@@ -60,12 +60,13 @@ class ChatMessage(BaseModel):
         }
 
         if feedback := additional_kwargs.pop("feedback", None):
-            kwargs["feedback"] = feedback
+            _kwargs["feedback"] = feedback
 
         if attachments := additional_kwargs.pop("attachments", None):
-            kwargs["attachments"] = attachments
+            _kwargs["attachments"] = attachments
 
-        return msg_class(**kwargs)
+        _kwargs = _kwargs | kwargs
+        return msg_class(**_kwargs)
 
     def to_lc(self) -> BaseMessage:
         """Convert to langchain message."""
