@@ -28,44 +28,56 @@ const ChatTab = ({ chat, onShareClick, onDeleteClick }) => {
 
     const { dispatch } = useContext(ConversationContext);
     const titleRef = useRef(null);
-    const [titleEditable, setTitleEditable] = useState("false");
+    const [titleText, setTitleText] = useState(chat.title);
+    const [titleReadOnly, setTitleReadonly] = useState(true);
     const buttonRef = useRef(null);
 
     useEffect(() => {
-        if (titleEditable === "plaintext-only") {
+        if (!titleReadOnly) {
             titleRef.current.focus();
         }
-    }, [titleEditable]);
+    }, [titleReadOnly]);
+
+    const onTitleClick = (e) => {
+        if (!titleReadOnly) {
+            // Current editing
+            e.stopPropagation();
+        }
+    };
 
     const handleKeyDown = async (e) => {
-        // TODO: this will trigger in Chinese IME on OSX
+        // <https://developer.mozilla.org/zh-CN/docs/Web/API/Element/keydown_event>
+        if (e.isComposing || e.keyCode === 229) {
+            return;
+        }
         if (e.key === "Enter") {
             e.preventDefault();
-            await renameChat(titleRef.current.innerText);
+            try {
+                await renameChat(titleText);
+                setTitleReadonly(true);
+            } catch {
+                //
+            }
         }
     };
 
     const renameChat = async (title) => {
-        setTitleEditable("false");
         const resp = await fetch(`/api/conversations/${chat.id}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-                title: title,
-            }),
+            body: JSON.stringify({ title: title }),
         });
         if (!resp.ok) {
-            console.error("error updating conversation", resp);
-            // TODO: handle error
-            // Maybe set snackbar to inform user?
+            // throw client errors
+            throw new Error(`Error renaming conversation: ${resp}`);
         }
-        titleRef.current.innerText = title;
     };
+
     const onUpdateClick = (e) => {
         e.preventDefault();
-        setTitleEditable("plaintext-only");
+        setTitleReadonly(false);
         setTimeout(() => titleRef.current.focus(), 100);
     };
 
@@ -74,7 +86,7 @@ const ChatTab = ({ chat, onShareClick, onDeleteClick }) => {
         try {
             const res = await fetch(`/api/conversations/${chat.id}/summarization`, { method: "POST" });
             const data = await res.json();
-            titleRef.current.innerText = data.title;
+            setTitleReadonly(data.title);
         } catch (error) {
             console.error("Error generating title", error);
             // TODO: Show snackbar or toast notification
@@ -107,25 +119,22 @@ const ChatTab = ({ chat, onShareClick, onDeleteClick }) => {
         <div
             className={`${styles.sidebarButton} ${params.convId === chat.id ? styles.active : ""}`}
         >
-            <Tooltip title={titleRef.current?.innerText}>
+            <Tooltip title={titleText}>
                 <div
                     className={styles.titleContainer}
                     onClick={() => navigate(`/conversations/${chat.id}`)}
                 >
-                    {/* contentEditable moves control out of react, so useState won't work correctly.
-                      * I use ref to get the value instead.
-                    */}
-                    <span
+                    <input
                         aria-label="chat title"
                         ref={titleRef}
                         className={styles.chatTitle}
-                        contentEditable={titleEditable}
-                        suppressContentEditableWarning={true}  // TODO: I'm not sure whether I can ignore this warning
+                        readOnly={titleReadOnly}
                         onKeyDown={handleKeyDown}
-                        onBlur={() => setTitleEditable("false")}
-                    >
-                        {chat.title}
-                    </span>
+                        onBlur={() => { setTitleReadonly(true); setTitleText(chat.title) }} // reset title on blur
+                        onClick={onTitleClick}
+                        value={titleText}
+                        onChange={(e) => setTitleText(e.target.value)}
+                    />
                 </div>
             </Tooltip>
             <Dropdown className={styles.chatOpMenu}>
