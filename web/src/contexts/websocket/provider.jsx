@@ -6,7 +6,7 @@ import { WebsocketContext } from "./index";
 
 export const WebsocketProvider = ({ children }) => {
     const [isReady, setIsReady] = useState(false);
-    const [messageHandlers, setMessageHandlers] = useState([]);
+    const messageHandlers = useRef([]);
 
     const ws = useRef(null);
 
@@ -32,7 +32,7 @@ export const WebsocketProvider = ({ children }) => {
                 ws.current.close();
             };
             ws.current.onmessage = (event) => {
-                messageHandlers.forEach(handler => {
+                messageHandlers.current.forEach(handler => {
                     try {
                         handler(event.data);
                     } catch (error) {
@@ -50,7 +50,7 @@ export const WebsocketProvider = ({ children }) => {
                 ws.current.close();
             }
         };
-    }, [messageHandlers]);
+    }, []);
 
     const send = useCallback(async (message) => {
         const MAX_RETRIES = 5;
@@ -75,12 +75,12 @@ export const WebsocketProvider = ({ children }) => {
     }, []);
 
     const registerMessageHandler = useCallback((handler) => {
-        setMessageHandlers(prev => [...prev, handler]);
+        messageHandlers.current.push(handler);
         return handler; // Return for unregistration reference
     }, []);
 
     const unregisterMessageHandler = useCallback((handler) => {
-        setMessageHandlers(prev => prev.filter(h => h !== handler));
+        messageHandlers.current = messageHandlers.current.filter(h => h !== handler);
     }, []);
 
     return (
