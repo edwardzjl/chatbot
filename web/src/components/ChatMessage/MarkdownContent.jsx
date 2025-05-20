@@ -1,6 +1,6 @@
 import styles from "./MarkdownContent.module.css";
 
-import { useContext, useState } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
 
 import Markdown from "react-markdown";
@@ -13,11 +13,11 @@ import Tooltip from "@mui/material/Tooltip";
 
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 
-import { ThemeContext } from "@/contexts/theme";
+import { useTheme } from "@/contexts/theme/hook";
 
 
 const MarkdownContent = ({content}) => {
-    const { codeTheme } = useContext(ThemeContext);
+    const { codeTheme } = useTheme();
     const [copyTooltipTitle, setCopyTooltipTitle] = useState("copy content");
 
     /**
