@@ -150,7 +150,7 @@ const Conversation = () => {
     };
 
     return (
-        <section className={`${styles.chatbox} ${navigation.state === "loading" ? "loading" : ""}`}>
+        <section className={`${styles.chatbox} ${navigation.state === "loading" ? styles.loading : ""}`}>
             <ChatboxHeader />
             <ChatLog>
                 {/* We ignore system messages when displaying. */}

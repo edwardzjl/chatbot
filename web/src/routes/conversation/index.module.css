@@ -8,9 +8,42 @@
 }
 
 .chatbox.loading {
-  opacity: 0.25;
-  transition: opacity 200ms;
-  transition-delay: 200ms;
+}
+
+.chatbox.loading::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.2); /* 半透明白色背景 */
+  z-index: 1000; /* 确保在内容之上 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(1px); /* 增加模糊效果，可选 */
+  -webkit-backdrop-filter: blur(1px); /* Safari 兼容 */
+}
+
+.chatbox.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 50px; /* 加载动画的宽度 */
+  height: 50px; /* 加载动画的高度 */
+  border: 5px solid #f3f3f3; /* 浅色边框 */
+  border-top: 5px solid #3498db; /* 蓝色旋转部分 */
+  border-radius: 50%; /* 圆形 */
+  animation: spin 1s linear infinite; /* 旋转动画 */
+  z-index: 1001; /* 确保在蒙层之上 */
+}
+
+@keyframes spin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
 .inputBottom {
