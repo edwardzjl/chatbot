@@ -1,6 +1,5 @@
 import styles from "./index.module.css";
 
-import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 
 import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
@@ -8,13 +7,13 @@ import GitHubIcon from "@mui/icons-material/GitHub";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import MailOutlineIcon from "@mui/icons-material/MailOutline";
 
-import { ConversationContext } from "@/contexts/conversation";
+import { useConversations } from "@/contexts/conversation/hook";
 
 import ChatTab from "../ChatTab";
 
 
 const Sidebar = () => {
-    const { groupedConvs } = useContext(ConversationContext);
+    const { groupedConvs } = useConversations();
     const navigate = useNavigate();
 
     return (

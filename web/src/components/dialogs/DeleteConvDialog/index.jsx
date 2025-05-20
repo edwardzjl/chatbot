@@ -1,17 +1,17 @@
 import styles from "./index.module.css";
 
-import { useContext, useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 
-import { ConversationContext } from "@/contexts/conversation";
+import { useConversations } from "@/contexts/conversation/hook";
 import { useDialog } from "@/contexts/dialog/hook";
 
 
 const DeleteConvDialog = ({ id }) => {
     const dialogRef = useRef(null);
     const navigate = useNavigate();
-    const { dispatch } = useContext(ConversationContext);
+    const { dispatch } = useConversations();
 
     const { dialogState, closeDialog, registerDialogRef } = useDialog();
 

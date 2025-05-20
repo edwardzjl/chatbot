@@ -1,6 +1,6 @@
 import styles from "./index.module.css";
 
-import { useContext, useEffect } from "react";
+import { useEffect } from "react";
 import { redirect, useLoaderData, useNavigation } from "react-router-dom";
 
 import ChatboxHeader from "@/components/ChatboxHeader";
@@ -8,7 +8,7 @@ import ChatLog from "@/components/ChatLog";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
 
-import { ConversationContext } from "@/contexts/conversation";
+import { useConversations } from "@/contexts/conversation/hook";
 import { useCurrentConv } from "@/contexts/message/hook";
 import { useUserProfile } from "@/contexts/user/hook";
 import { useWebsocket } from "@/contexts/websocket/hook";
@@ -64,7 +64,7 @@ async function loader({ params }) {
 const Conversation = () => {
     const { conversation } = useLoaderData();
     const navigation = useNavigation();
-    const { groupedConvs, dispatch: dispatchConv } = useContext(ConversationContext);
+    const { groupedConvs, dispatch: dispatchConv } = useConversations();
     const { username } = useUserProfile();
     const { send } = useWebsocket();
     const { currentConv, dispatch } = useCurrentConv();

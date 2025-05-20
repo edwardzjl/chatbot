@@ -1,6 +1,6 @@
 import "./index.css";
 
-import { useCallback, useContext, useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { Outlet, redirect } from "react-router-dom";
 
 import Snackbar from "@mui/material/Snackbar";
@@ -8,7 +8,7 @@ import MuiAlert from "@mui/material/Alert";
 
 import { useSnackbar } from "@/contexts/snackbar/hook";
 import { useTheme } from "@/contexts/theme/hook";
-import { ConversationContext } from "@/contexts/conversation";
+import { useConversations } from "@/contexts/conversation/hook";
 import { useCurrentConv } from "@/contexts/message/hook";
 import { useWebsocket } from "@/contexts/websocket/hook";
 
@@ -32,7 +32,7 @@ async function action({ request }) {
 }
 
 const Root = () => {
-    const { dispatch: dispatchConv } = useContext(ConversationContext);
+    const { dispatch: dispatchConv } = useConversations();
 
     const { theme } = useTheme();
     const { snackbar, setSnackbar, closeSnackbar  } = useSnackbar();
