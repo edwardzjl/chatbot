@@ -183,7 +183,7 @@ class Share(BaseModel):
 
 class CreateShare(BaseModel):
     title: str
-    source_id: str
+    source_id: UUID
 
 
 class UserProfile(BaseModel):
