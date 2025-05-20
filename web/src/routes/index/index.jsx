@@ -6,14 +6,14 @@ import { useNavigate } from "react-router-dom";
 import ChatboxHeader from "@/components/ChatboxHeader";
 import ChatInput from "@/components/ChatInput";
 
-import { UserContext } from "@/contexts/user";
+import { useUserProfile } from "@/contexts/user/hook";
 import { ConversationContext } from "@/contexts/conversation";
 
 import { DEFAULT_CONV_TITLE } from "@/commons";
 
 
 const Conversation = () => {
-    const { username } = useContext(UserContext);
+    const { username } = useUserProfile();
     const { dispatch } = useContext(ConversationContext);
     const navigate = useNavigate();
 
