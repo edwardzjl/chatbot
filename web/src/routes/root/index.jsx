@@ -10,7 +10,7 @@ import { useSnackbar } from "@/contexts/snackbar/hook";
 import { useTheme } from "@/contexts/theme/hook";
 import { ConversationContext } from "@/contexts/conversation";
 import { MessageContext } from "@/contexts/message";
-import { WebsocketContext } from "@/contexts/websocket";
+import { useWebsocket } from "@/contexts/websocket/hook";
 
 import ShareConvDialog from "@/components/dialogs/ShareConvDialog";
 import ConvSharedDialog from "@/components/dialogs/ConvSharedDialog";
@@ -37,7 +37,7 @@ const Root = () => {
     const { theme } = useTheme();
     const { snackbar, setSnackbar, closeSnackbar  } = useSnackbar();
     const { dispatch } = useContext(MessageContext);
-    const { registerMessageHandler, unregisterMessageHandler } = useContext(WebsocketContext);
+    const { registerMessageHandler, unregisterMessageHandler } = useWebsocket();
 
     const handleWebSocketMessage = useCallback((data) => {
         if (data === null || data === undefined) {
@@ -86,7 +86,7 @@ const Root = () => {
     useEffect(() => {
         // Register the message handler when component mounts
         registerMessageHandler(handleWebSocketMessage);
-        
+
         // Unregister when component unmounts
         return () => {
             unregisterMessageHandler(handleWebSocketMessage);

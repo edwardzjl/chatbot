@@ -11,7 +11,7 @@ import ChatInput from "@/components/ChatInput";
 import { ConversationContext } from "@/contexts/conversation";
 import { MessageContext } from "@/contexts/message";
 import { UserContext } from "@/contexts/user";
-import { WebsocketContext } from "@/contexts/websocket";
+import { useWebsocket } from "@/contexts/websocket/hook";
 
 
 async function loader({ params }) {
@@ -27,7 +27,7 @@ async function loader({ params }) {
  * Conversation Component
  *
  * This component handles the rendering and functionality of a single conversation in the chat application.
- * It integrates with multiple contexts to manage conversation data, user messages, WebSocket communication, 
+ * It integrates with multiple contexts to manage conversation data, user messages, WebSocket communication,
  * and UI updates. The component is designed to display messages, handle message input, and manage WebSocket interactions.
  *
  * Loader:
@@ -45,7 +45,7 @@ async function loader({ params }) {
  * - Handles sending an "init message" if present in `sessionStorage`, and removes it after sending.
  *
  * Functions:
- * - sendMessage: Sends a message via WebSocket and updates the UI with the user's message. 
+ * - sendMessage: Sends a message via WebSocket and updates the UI with the user's message.
  *   Also reorders conversations based on the latest message timestamp.
  *
  * UI Components:
@@ -66,7 +66,7 @@ const Conversation = () => {
     const navigation = useNavigation();
     const { groupedConvs, dispatch: dispatchConv } = useContext(ConversationContext);
     const { username } = useContext(UserContext);
-    const { send } = useContext(WebsocketContext);
+    const { send } = useWebsocket();
     const { currentConv, dispatch } = useContext(MessageContext);
     // Only rendering messages of the following types
     const rendering_messages = new Set(["human", "ai"]);
