@@ -1,6 +1,6 @@
 import styles from "./index.module.css";
 
-import { useContext, useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import PropTypes from "prop-types";
 import Tooltip from "@mui/material/Tooltip";
@@ -13,7 +13,7 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import ShareIcon from '@mui/icons-material/Share';
 
 import { Dropdown, DropdownButton, DropdownMenu } from "@/components/DropdownMenu";
-import { ConversationContext } from "@/contexts/conversation";
+import { useConversations } from "@/contexts/conversation/hook";
 import { useSnackbar } from "@/contexts/snackbar/hook";
 import { useDialog } from "@/contexts/dialog/hook";
 
@@ -30,7 +30,7 @@ const ChatTab = ({ chat }) => {
     const params = useParams();
     const { openDialog } = useDialog();
 
-    const { dispatch } = useContext(ConversationContext);
+    const { dispatch } = useConversations();
     const { setSnackbar } = useSnackbar();
     const titleRef = useRef(null);
     const [titleText, setTitleText] = useState(chat.title);

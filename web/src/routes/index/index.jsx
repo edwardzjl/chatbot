@@ -1,20 +1,19 @@
 import styles from './index.module.css';
 
-import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 
 import ChatboxHeader from "@/components/ChatboxHeader";
 import ChatInput from "@/components/ChatInput";
 
 import { useUserProfile } from "@/contexts/user/hook";
-import { ConversationContext } from "@/contexts/conversation";
+import { useConversations } from "@/contexts/conversation/hook";
 
 import { DEFAULT_CONV_TITLE } from "@/commons";
 
 
 const Conversation = () => {
     const { username } = useUserProfile();
-    const { dispatch } = useContext(ConversationContext);
+    const { dispatch } = useConversations();
     const navigate = useNavigate();
 
     const handleSubmit = async (message) => {
