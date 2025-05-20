@@ -1,6 +1,6 @@
 import styles from "./index.module.css";
 
-import { useContext, useState } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
 
 import Avatar from "@mui/material/Avatar";
@@ -14,7 +14,7 @@ import ThumbDownOutlined from "@mui/icons-material/ThumbDownOutlined";
 import ThermostatIcon from "@mui/icons-material/Thermostat";
 import TravelExploreIcon from '@mui/icons-material/TravelExplore';
 
-import { MessageContext } from "@/contexts/message";
+import { useCurrentConv } from "@/contexts/message/hook";
 import { useSnackbar } from "@/contexts/snackbar/hook";
 import { useUserProfile } from "@/contexts/user/hook";
 
@@ -40,7 +40,7 @@ import MarkdownContent from "./MarkdownContent";
 const ChatMessage = ({ convId, message }) => {
     const { username, avatar } = useUserProfile();
     const { setSnackbar } = useSnackbar();
-    const { dispatch } = useContext(MessageContext);
+    const { dispatch } = useCurrentConv();
     const [copyTooltipTitle, setCopyTooltipTitle] = useState("copy content");
     const [feedbackTooltipTitles, setFeedbackTooltipTitles] = useState({ thumbup: "I like it!", thumbdown: "Not so good" });
 
