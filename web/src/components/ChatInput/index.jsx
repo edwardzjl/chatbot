@@ -1,6 +1,6 @@
 import styles from "./index.module.css";
 
-import { useContext, useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useParams } from "react-router";
 import PropTypes from "prop-types";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -13,7 +13,7 @@ import PreviewImage from "@/components/PreviewImage";
 
 import { useConfig } from "@/contexts/config/hook";
 import { useSnackbar } from "@/contexts/snackbar/hook";
-import { WebsocketContext } from "@/contexts/websocket";
+import { useWebsocket } from "@/contexts/websocket/hook";
 
 import { toLocalISOString } from "@/commons";
 
@@ -22,9 +22,9 @@ import { uploadFile } from "./utils";
 /**
  * ChatInput Component
  *
- * This component renders a chat input form with a dynamically resizing textarea and a submit button. 
+ * This component renders a chat input form with a dynamically resizing textarea and a submit button.
  * It integrates with a WebSocket context to disable the submit button when the WebSocket is not ready.
- * The component also focuses on the textarea when the conversation ID changes and supports keyboard 
+ * The component also focuses on the textarea when the conversation ID changes and supports keyboard
  * shortcuts for submitting the input.
  *
  * Props:
@@ -58,7 +58,7 @@ import { uploadFile } from "./utils";
  */
 const ChatInput = ({ onSubmit }) => {
     const params = useParams();
-    const { ready } = useContext(WebsocketContext);
+    const { ready } = useWebsocket();
     const { setSnackbar } = useSnackbar();
     const { models, selectedModel } = useConfig();
 
