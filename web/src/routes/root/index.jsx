@@ -6,7 +6,7 @@ import { Outlet, redirect } from "react-router-dom";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 
-import { SnackbarContext } from "@/contexts/snackbar";
+import { useSnackbar } from "@/contexts/snackbar/hook";
 import { ThemeContext } from "@/contexts/theme";
 import { ConversationContext } from "@/contexts/conversation";
 import { MessageContext } from "@/contexts/message";
@@ -35,7 +35,7 @@ const Root = () => {
     const { dispatch: dispatchConv } = useContext(ConversationContext);
 
     const { theme } = useContext(ThemeContext);
-    const { snackbar, setSnackbar, closeSnackbar  } = useContext(SnackbarContext);
+    const { snackbar, setSnackbar, closeSnackbar  } = useSnackbar();
     const { dispatch } = useContext(MessageContext);
     const { registerMessageHandler, unregisterMessageHandler } = useContext(WebsocketContext);
 

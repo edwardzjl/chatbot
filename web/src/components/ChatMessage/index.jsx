@@ -15,7 +15,7 @@ import ThermostatIcon from "@mui/icons-material/Thermostat";
 import TravelExploreIcon from '@mui/icons-material/TravelExplore';
 
 import { MessageContext } from "@/contexts/message";
-import { SnackbarContext } from "@/contexts/snackbar";
+import { useSnackbar } from "@/contexts/snackbar/hook";
 import { UserContext } from "@/contexts/user";
 
 import PeekDetails from "@/components/PeekDetails";
@@ -39,7 +39,7 @@ import MarkdownContent from "./MarkdownContent";
  */
 const ChatMessage = ({ convId, message }) => {
     const { username, avatar } = useContext(UserContext);
-    const { setSnackbar } = useContext(SnackbarContext);
+    const { setSnackbar } = useSnackbar();
     const { dispatch } = useContext(MessageContext);
     const [copyTooltipTitle, setCopyTooltipTitle] = useState("copy content");
     const [feedbackTooltipTitles, setFeedbackTooltipTitles] = useState({ thumbup: "I like it!", thumbdown: "Not so good" });

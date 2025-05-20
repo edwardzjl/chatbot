@@ -1,9 +1,9 @@
 import styles from "./index.module.css";
 
-import { useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import PropTypes from "prop-types";
 
-import { SnackbarContext } from "@/contexts/snackbar";
+import { useSnackbar } from "@/contexts/snackbar/hook";
 import { useDialog } from "@/contexts/dialog/hook";
 
 
@@ -16,7 +16,7 @@ const ShareConvDialog = ({ id }) => {
         return dialogProps.convData || {};
     }, [dialogProps.convData]);
 
-    const { setSnackbar } = useContext(SnackbarContext);
+    const { setSnackbar } = useSnackbar();
 
     const [title, setTitle] = useState(targetConv?.title || "");
 
