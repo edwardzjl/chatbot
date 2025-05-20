@@ -1,15 +1,13 @@
 import styles from "./index.module.css";
 
-import { useContext } from "react";
-
 import Avatar from "@mui/material/Avatar";
 
 import { Dropdown, DropdownButton, DropdownMenu } from "@/components/DropdownMenu";
-import { UserContext } from "@/contexts/user";
+import { useUserProfile } from "@/contexts/user/hook";
 
 
 const UserMenu = () => {
-    const { username, avatar } = useContext(UserContext);
+    const { username, avatar } = useUserProfile();
 
     const handleLogout = async (e) => {
         e.preventDefault();

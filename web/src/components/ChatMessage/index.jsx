@@ -16,7 +16,7 @@ import TravelExploreIcon from '@mui/icons-material/TravelExplore';
 
 import { MessageContext } from "@/contexts/message";
 import { useSnackbar } from "@/contexts/snackbar/hook";
-import { UserContext } from "@/contexts/user";
+import { useUserProfile } from "@/contexts/user/hook";
 
 import PeekDetails from "@/components/PeekDetails";
 import PreviewImage from "@/components/PreviewImage";
@@ -38,7 +38,7 @@ import MarkdownContent from "./MarkdownContent";
  * @returns {JSX.Element} The rendered ChatMessage component.
  */
 const ChatMessage = ({ convId, message }) => {
-    const { username, avatar } = useContext(UserContext);
+    const { username, avatar } = useUserProfile();
     const { setSnackbar } = useSnackbar();
     const { dispatch } = useContext(MessageContext);
     const [copyTooltipTitle, setCopyTooltipTitle] = useState("copy content");
