@@ -132,7 +132,7 @@ const ChatTab = ({ chat, onShareClick, onDeleteClick }) => {
         <div
             className={`${styles.sidebarButton} ${params.convId === chat.id ? styles.active : ""}`}
         >
-            <Tooltip title={titleText}>
+            <Tooltip title={titleText} placement="right-start">
                 <div
                     className={styles.titleContainer}
                     onClick={() => navigate(`/conversations/${chat.id}`)}
