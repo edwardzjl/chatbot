@@ -9,7 +9,7 @@ import MuiAlert from "@mui/material/Alert";
 import { useSnackbar } from "@/contexts/snackbar/hook";
 import { useTheme } from "@/contexts/theme/hook";
 import { ConversationContext } from "@/contexts/conversation";
-import { MessageContext } from "@/contexts/message";
+import { useCurrentConv } from "@/contexts/message/hook";
 import { useWebsocket } from "@/contexts/websocket/hook";
 
 import ShareConvDialog from "@/components/dialogs/ShareConvDialog";
@@ -36,7 +36,7 @@ const Root = () => {
 
     const { theme } = useTheme();
     const { snackbar, setSnackbar, closeSnackbar  } = useSnackbar();
-    const { dispatch } = useContext(MessageContext);
+    const { dispatch } = useCurrentConv();
     const { registerMessageHandler, unregisterMessageHandler } = useWebsocket();
 
     const handleWebSocketMessage = useCallback((data) => {

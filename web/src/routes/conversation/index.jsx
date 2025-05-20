@@ -9,7 +9,7 @@ import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
 
 import { ConversationContext } from "@/contexts/conversation";
-import { MessageContext } from "@/contexts/message";
+import { useCurrentConv } from "@/contexts/message/hook";
 import { useUserProfile } from "@/contexts/user/hook";
 import { useWebsocket } from "@/contexts/websocket/hook";
 
@@ -67,7 +67,7 @@ const Conversation = () => {
     const { groupedConvs, dispatch: dispatchConv } = useContext(ConversationContext);
     const { username } = useUserProfile();
     const { send } = useWebsocket();
-    const { currentConv, dispatch } = useContext(MessageContext);
+    const { currentConv, dispatch } = useCurrentConv();
     // Only rendering messages of the following types
     const rendering_messages = new Set(["human", "ai"]);
 
