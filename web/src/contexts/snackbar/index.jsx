@@ -8,4 +8,5 @@ export const SnackbarContext = createContext({
         message: "",
     },
     setSnackbar: () => { },
+    closeSnackbar: () => { },
 });
