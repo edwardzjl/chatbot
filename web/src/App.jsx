@@ -12,6 +12,7 @@ import Sharing from "@/routes/sharing";
 
 import { ConfigProvider } from "@/contexts/config/provider";
 import { ConversationProvider } from "@/contexts/conversation/provider";
+import { DialogProvider } from "@/contexts/dialog/provider";
 import { MessageProvider } from "@/contexts/message/provider";
 import { SnackbarProvider } from "@/contexts/snackbar/provider";
 import { ThemeProvider } from "@/contexts/theme/provider";
@@ -64,7 +65,9 @@ function App() {
                         <ConversationProvider>
                             <WebsocketProvider>
                                 <MessageProvider>
-                                    <RouterProvider router={router} />
+                                    <DialogProvider>
+                                        <RouterProvider router={router} />
+                                    </DialogProvider>
                                 </MessageProvider>
                             </WebsocketProvider>
                         </ConversationProvider>
