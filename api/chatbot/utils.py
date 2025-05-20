@@ -22,3 +22,8 @@ def is_public_ip(ip_str: str):
     except ValueError:
         # Invalid IP address
         return False
+
+
+def is_valid_positive_int(value: int | None) -> bool:
+    """Helper to check if a value is a positive integer."""
+    return isinstance(value, int) and value > 0
