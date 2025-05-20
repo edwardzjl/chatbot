@@ -15,6 +15,8 @@ import ShareIcon from '@mui/icons-material/Share';
 import { Dropdown, DropdownButton, DropdownMenu } from "@/components/DropdownMenu";
 import { ConversationContext } from "@/contexts/conversation";
 import { SnackbarContext } from "@/contexts/snackbar";
+import { useDialog } from "@/contexts/dialog/hook";
+
 
 /**
  *
@@ -23,9 +25,10 @@ import { SnackbarContext } from "@/contexts/snackbar";
  * @param {string} chat.title
  * @returns
  */
-const ChatTab = ({ chat, onShareClick, onDeleteClick }) => {
+const ChatTab = ({ chat }) => {
     const navigate = useNavigate();
     const params = useParams();
+    const { openDialog } = useDialog();
 
     const { dispatch } = useContext(ConversationContext);
     const { setSnackbar } = useContext(SnackbarContext);
@@ -106,6 +109,14 @@ const ChatTab = ({ chat, onShareClick, onDeleteClick }) => {
         }
     }
 
+    const handleShareClick = () => {
+        openDialog('share-conv-dialog', { convData: chat });
+    };
+
+    const handleDeleteClick = () => {
+        openDialog('del-conv-dialog', { convData: chat });
+    };
+
     const flipPin = async (e) => {
         e.preventDefault();
         const resp = await fetch(`/api/conversations/${chat.id}`, {
@@ -181,13 +192,13 @@ const ChatTab = ({ chat, onShareClick, onDeleteClick }) => {
                         </button>
                     </li>
                     <li>
-                        <button className={styles.chatOpMenuItem} onClick={() => onShareClick(chat.id, chat.title)}>
+                        <button className={styles.chatOpMenuItem} onClick={handleShareClick}>
                             <ShareIcon />
                             <span className={styles.chatOpMenuItemText}>Share</span>
                         </button>
                     </li>
                     <li>
-                        <button className={styles.chatOpMenuItem} onClick={() => onDeleteClick(chat.id, titleText)}>
+                        <button className={styles.chatOpMenuItem} onClick={handleDeleteClick}>
                             <DeleteOutlineIcon />
                             <span className={styles.chatOpMenuItemText}>Delete</span>
                         </button>
@@ -204,8 +215,6 @@ ChatTab.propTypes = {
         title: PropTypes.string.isRequired,
         pinned: PropTypes.bool.isRequired,
     }).isRequired,
-    onShareClick: PropTypes.func.isRequired,
-    onDeleteClick: PropTypes.func.isRequired,
 };
 
 export default ChatTab;

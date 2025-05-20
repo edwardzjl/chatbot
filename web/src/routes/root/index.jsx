@@ -1,7 +1,7 @@
 import "./index.css";
 
-import { useCallback, useContext, useEffect, useState } from "react";
-import { Outlet, redirect, useNavigate } from "react-router-dom";
+import { useCallback, useContext, useEffect } from "react";
+import { Outlet, redirect } from "react-router-dom";
 
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
@@ -12,10 +12,12 @@ import { ConversationContext } from "@/contexts/conversation";
 import { MessageContext } from "@/contexts/message";
 import { WebsocketContext } from "@/contexts/websocket";
 
+import ShareConvDialog from "@/components/dialogs/ShareConvDialog";
+import ConvSharedDialog from "@/components/dialogs/ConvSharedDialog";
+import DeleteConvDialog from "@/components/dialogs/DeleteConvDialog";
+
 import Sidebar from "./Sidebar";
-import ShareConvDialog from "./ShareConvDialog";
-import ConvSharedDialog from "./ConvSharedDialog";
-import DeleteConvDialog from "./DeleteConvDialog";
+
 
 const Alert = (props, ref) => {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -36,14 +38,6 @@ const Root = () => {
     const { snackbar, setSnackbar } = useContext(SnackbarContext);
     const { dispatch } = useContext(MessageContext);
     const { registerMessageHandler, unregisterMessageHandler } = useContext(WebsocketContext);
-
-    const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
-    const [isSharedDialogOpen, setIsSharedDialogOpen] = useState(false);
-    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-    // A transient state to store the target conversation to be shared or deleted
-    const [targetConv, setTargetConv] = useState({});
-
-    const navigate = useNavigate();
 
     const handleWebSocketMessage = useCallback((data) => {
         if (data === null || data === undefined) {
@@ -99,44 +93,6 @@ const Root = () => {
         };
     }, [registerMessageHandler, unregisterMessageHandler, handleWebSocketMessage]);
 
-    const onShareClick = (id, title) => {
-        setTargetConv({ id, title });
-        setIsShareDialogOpen(true);
-    };
-
-    const onDeleteClick = (id, title) => {
-        setTargetConv({ id, title });
-        setIsDeleteDialogOpen(true);
-    };
-
-    const deleteConv = async (id) => {
-        await fetch(`/api/conversations/${id}`, { method: "DELETE" });
-        dispatchConv({ type: "deleted", convId: id });
-        setIsDeleteDialogOpen(false);
-        setTargetConv({});
-        navigate("/");
-    };
-
-    const shareConv = async (id, title) => {
-        const response = await fetch(`/api/shares`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ title: title, source_id: id }),
-        });
-        if (response.ok) {
-            const data = await response.json();
-            setTargetConv({ title: data.title, url: data.url });
-            setIsShareDialogOpen(false);
-            setIsSharedDialogOpen(true);
-        } else {
-            setSnackbar({
-                open: true,
-                severity: "error",
-                message: "Failed to share conversation",
-            });
-        }
-    };
-
     const closeSnackbar = (event, reason) => {
         if (reason === "clickaway") {
             return;
@@ -146,25 +102,11 @@ const Root = () => {
 
     return (
         <div className={`App theme-${theme}`}>
-            <Sidebar onShareClick={onShareClick} onDeleteClick={onDeleteClick} />
+            <Sidebar />
             <Outlet />
-            <ShareConvDialog
-                isOpen={isShareDialogOpen}
-                onClose={() => setIsShareDialogOpen(false)}
-                targetConv={targetConv}
-                onShare={shareConv}
-            />
-            <ConvSharedDialog
-                isOpen={isSharedDialogOpen}
-                onClose={() => setIsSharedDialogOpen(false)}
-                targetConv={targetConv}
-            />
-            <DeleteConvDialog
-                isOpen={isDeleteDialogOpen}
-                onClose={() => setIsDeleteDialogOpen(false)}
-                targetConv={targetConv}
-                onDelete={deleteConv}
-            />
+            <ShareConvDialog id="share-conv-dialog" />
+            <ConvSharedDialog id="conv-shared-dialog" />
+            <DeleteConvDialog id="del-conv-dialog" />
             <Snackbar
                 open={snackbar.open}
                 autoHideDuration={3000}

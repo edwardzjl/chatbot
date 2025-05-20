@@ -2,7 +2,6 @@ import styles from "./index.module.css";
 
 import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import PropTypes from "prop-types";
 
 import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
 import GitHubIcon from "@mui/icons-material/GitHub";
@@ -14,7 +13,7 @@ import { ConversationContext } from "@/contexts/conversation";
 import ChatTab from "../ChatTab";
 
 
-const Sidebar = ({ onShareClick, onDeleteClick }) => {
+const Sidebar = () => {
     const { groupedConvs } = useContext(ConversationContext);
     const navigate = useNavigate();
 
@@ -32,7 +31,7 @@ const Sidebar = ({ onShareClick, onDeleteClick }) => {
                             <div key={grp}>
                                 <div className={styles.sidebarDateGroup}>{grp}</div>
                                 {convs.map((conv) => (
-                                    <ChatTab key={conv.id} chat={conv} onShareClick={onShareClick} onDeleteClick={onDeleteClick} />
+                                    <ChatTab key={conv.id} chat={conv} />
                                 ))}
                             </div>
                         ]
@@ -54,11 +53,6 @@ const Sidebar = ({ onShareClick, onDeleteClick }) => {
             </div>
         </aside>
     );
-};
-
-Sidebar.propTypes = {
-    onShareClick: PropTypes.func.isRequired,
-    onDeleteClick: PropTypes.func.isRequired,
 };
 
 export default Sidebar;
