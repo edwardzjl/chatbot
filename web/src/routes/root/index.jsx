@@ -35,7 +35,7 @@ const Root = () => {
     const { dispatch: dispatchConv } = useContext(ConversationContext);
 
     const { theme } = useContext(ThemeContext);
-    const { snackbar, setSnackbar } = useContext(SnackbarContext);
+    const { snackbar, setSnackbar, closeSnackbar  } = useContext(SnackbarContext);
     const { dispatch } = useContext(MessageContext);
     const { registerMessageHandler, unregisterMessageHandler } = useContext(WebsocketContext);
 
@@ -92,13 +92,6 @@ const Root = () => {
             unregisterMessageHandler(handleWebSocketMessage);
         };
     }, [registerMessageHandler, unregisterMessageHandler, handleWebSocketMessage]);
-
-    const closeSnackbar = (event, reason) => {
-        if (reason === "clickaway") {
-            return;
-        }
-        setSnackbar({ ...snackbar, open: false });
-    };
 
     return (
         <div className={`App theme-${theme}`}>

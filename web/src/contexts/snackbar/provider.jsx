@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import PropTypes from "prop-types";
 
 import { SnackbarContext } from "./index";
@@ -17,8 +17,15 @@ export const SnackbarProvider = ({ children }) => {
         }
     );
 
+    const closeSnackbar = useCallback((event, reason) => {
+        if (reason === "clickaway") {
+            return;
+        }
+        setSnackbar(prevSnackbar => ({ ...prevSnackbar, open: false }));
+    }, []);
+
     return (
-        <SnackbarContext.Provider value={{ snackbar, setSnackbar }}>
+        <SnackbarContext.Provider value={{ snackbar, setSnackbar, closeSnackbar }}>
             {children}
         </SnackbarContext.Provider>
     );
