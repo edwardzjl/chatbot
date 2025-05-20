@@ -14,7 +14,7 @@ import ShareIcon from '@mui/icons-material/Share';
 
 import { Dropdown, DropdownButton, DropdownMenu } from "@/components/DropdownMenu";
 import { ConversationContext } from "@/contexts/conversation";
-import { SnackbarContext } from "@/contexts/snackbar";
+import { useSnackbar } from "@/contexts/snackbar/hook";
 import { useDialog } from "@/contexts/dialog/hook";
 
 
@@ -31,7 +31,7 @@ const ChatTab = ({ chat }) => {
     const { openDialog } = useDialog();
 
     const { dispatch } = useContext(ConversationContext);
-    const { setSnackbar } = useContext(SnackbarContext);
+    const { setSnackbar } = useSnackbar();
     const titleRef = useRef(null);
     const [titleText, setTitleText] = useState(chat.title);
     const [titleReadOnly, setTitleReadonly] = useState(true);

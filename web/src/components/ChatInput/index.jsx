@@ -12,7 +12,7 @@ import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import PreviewImage from "@/components/PreviewImage";
 
 import { useConfig } from "@/contexts/config/hook";
-import { SnackbarContext } from "@/contexts/snackbar";
+import { useSnackbar } from "@/contexts/snackbar/hook";
 import { WebsocketContext } from "@/contexts/websocket";
 
 import { toLocalISOString } from "@/commons";
@@ -59,7 +59,7 @@ import { uploadFile } from "./utils";
 const ChatInput = ({ onSubmit }) => {
     const params = useParams();
     const { ready } = useContext(WebsocketContext);
-    const { setSnackbar } = useContext(SnackbarContext);
+    const { setSnackbar } = useSnackbar();
     const { models, selectedModel } = useConfig();
 
     const [input, setInput] = useState("");
