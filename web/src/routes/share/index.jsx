@@ -1,11 +1,10 @@
 import styles from "./index.module.css";
 
-import { useContext } from "react";
 import { useLoaderData, redirect } from "react-router-dom";
 
 import ChatLog from "@/components/ChatLog";
 import ChatMessage from "@/components/ChatMessage";
-import { ThemeContext } from "@/contexts/theme";
+import { useTheme } from "@/contexts/theme/hook";
 
 import { formatTimestamp } from "@/commons";
 
@@ -21,7 +20,7 @@ async function loader({ params }) {
 
 const Share = () => {
     const { share } = useLoaderData();
-    const { theme } = useContext(ThemeContext);
+    const { theme } = useTheme();
     const rendering_messages = new Set(["human", "ai"]);
 
     const goHome = () => {

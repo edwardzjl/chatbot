@@ -1,6 +1,5 @@
 import styles from "./index.module.css";
 
-import { useContext } from "react";
 import PropTypes from "prop-types";
 
 import BrightnessMediumIcon from "@mui/icons-material/BrightnessMedium";
@@ -8,7 +7,7 @@ import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 
 import { Dropdown, DropdownButton, DropdownMenu } from "@/components/DropdownMenu";
-import { ThemeContext } from "@/contexts/theme";
+import { useTheme } from "@/contexts/theme/hook";
 
 
 const ThemeIcon = ({ theme }) => {
@@ -27,7 +26,7 @@ ThemeIcon.propTypes = {
 
 
 const ThemeSelector = () => {
-    const { theme, setTheme } = useContext(ThemeContext);
+    const { theme, setTheme } = useTheme();
 
     return (
         <Dropdown>

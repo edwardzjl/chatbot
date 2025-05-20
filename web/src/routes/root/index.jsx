@@ -7,7 +7,7 @@ import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 
 import { useSnackbar } from "@/contexts/snackbar/hook";
-import { ThemeContext } from "@/contexts/theme";
+import { useTheme } from "@/contexts/theme/hook";
 import { ConversationContext } from "@/contexts/conversation";
 import { MessageContext } from "@/contexts/message";
 import { WebsocketContext } from "@/contexts/websocket";
@@ -34,7 +34,7 @@ async function action({ request }) {
 const Root = () => {
     const { dispatch: dispatchConv } = useContext(ConversationContext);
 
-    const { theme } = useContext(ThemeContext);
+    const { theme } = useTheme();
     const { snackbar, setSnackbar, closeSnackbar  } = useSnackbar();
     const { dispatch } = useContext(MessageContext);
     const { registerMessageHandler, unregisterMessageHandler } = useContext(WebsocketContext);

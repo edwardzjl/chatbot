@@ -1,13 +1,12 @@
 import styles from "./index.module.css";
 
-import { useContext } from "react";
 import { useRouteError, useNavigate } from "react-router-dom";
 
-import { ThemeContext } from "@/contexts/theme";
+import { useTheme } from "@/contexts/theme/hook";
 
 const ErrorPage = () => {
     const navigate = useNavigate();
-    const { theme } = useContext(ThemeContext);
+    const { theme } = useTheme();
     const error = useRouteError();
     console.error(error);
 
