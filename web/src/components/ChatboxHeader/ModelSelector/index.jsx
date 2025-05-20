@@ -1,14 +1,12 @@
 import styles from "./index.module.css";
 
-import { useContext } from "react";
-
-import { ConfigContext } from "@/contexts/config";
+import { useConfig } from "@/contexts/config/hook";
 
 import { Dropdown, DropdownButton, DropdownMenu, DropdownIndicator } from "@/components/DropdownMenu";
 
 
 const ModelSelector = () => {
-    const { models, selectedModel, setSelectedModel } = useContext(ConfigContext);
+    const { models, selectedModel, setSelectedModel } = useConfig();
 
     return (
         <Dropdown>
