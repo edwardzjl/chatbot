@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from typing import Any
 from uuid import UUID, uuid4
 
-from sqlalchemy import JSON, Boolean, DateTime, Text, TypeDecorator, Uuid
+from sqlalchemy import JSON, Boolean, DateTime, Index, Text, TypeDecorator, Uuid
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 from chatbot.utils import utcnow
@@ -36,8 +36,8 @@ class Conversation(Base):
 
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, insert_default=uuid4)
     title: Mapped[str] = mapped_column(Text)
-    owner: Mapped[str] = mapped_column(Text, index=True)
-    pinned: Mapped[bool] = mapped_column(Boolean, insert_default=False, index=True)
+    owner: Mapped[str] = mapped_column(Text, index=True)  # keep this index
+    pinned: Mapped[bool] = mapped_column(Boolean, insert_default=False)
     created_at: Mapped[datetime] = mapped_column(
         TZDateTime,
         nullable=False,
@@ -48,6 +48,16 @@ class Conversation(Base):
         nullable=False,
         insert_default=utcnow,
     )
+    # And this composite index is for pagination performance.
+    __table_args__ = (
+        Index(
+            "ix_conversation_owner_pinned_last_message_at_id",
+            "owner",
+            "pinned",
+            "last_message_at",
+            "id",
+        ),
+    )
 
 
 class Share(Base):
@@ -55,11 +65,14 @@ class Share(Base):
 
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, insert_default=uuid4)
     title: Mapped[str] = mapped_column(Text)
-    owner: Mapped[str] = mapped_column(Text, index=True)
+    owner: Mapped[str] = mapped_column(Text, index=True)  # keep this index
     url: Mapped[str] = mapped_column(Text)
     snapshot_ref: Mapped[dict[str, Any]] = mapped_column(JSON)
     created_at: Mapped[datetime] = mapped_column(
         TZDateTime,
         nullable=False,
         insert_default=utcnow,
+    )
+    __table_args__ = (
+        Index("ix_share_owner_created_at_id", "owner", "created_at", "id"),
     )
