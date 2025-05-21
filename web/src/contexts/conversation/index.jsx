@@ -1,9 +1,9 @@
 import { createContext } from "react";
 
 /**
- * messages, dispatch
+ * groupedConvsArray, dispatch
  */
 export const ConversationContext = createContext({
-    groupedConvs: {},
+    groupedConvsArray: [],
     dispatch: () => { },
 });

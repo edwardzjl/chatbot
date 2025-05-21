@@ -1,15 +1,181 @@
 
+export const conversationReducer = (groupedConvsArray, action) => {
+    switch (action.type) {
+    case "added": {
+        const { conv } = action;
+        const { groupKey, sortValue } = getConversationGroupingInfo(conv);
+
+        const nextGroupedConvsArray = [...groupedConvsArray];
+        for (let i = 0; i < nextGroupedConvsArray.length; i++) {
+            const currentGroup = nextGroupedConvsArray[i];
+
+            if (groupKey === currentGroup.key) {
+                // target group found, insert the conversation
+                const updatedConversations = sortConvs([conv, ...currentGroup.conversations]);
+                nextGroupedConvsArray[i] = {
+                    ...currentGroup,
+                    conversations: updatedConversations,
+                };
+                return nextGroupedConvsArray;
+            } else if (sortValue > currentGroup.sortValue) {
+                // found a group with a smaller sort value, insert before it
+                const newGroup = {
+                    key: groupKey,
+                    conversations: [conv],
+                    sortValue: sortValue
+                };
+                nextGroupedConvsArray.splice(i, 0, newGroup);
+                return nextGroupedConvsArray;
+            }
+        }
+
+        // no group found with a smaller sort value, add to the end
+        const newGroup = {
+            groupKey: groupKey,
+            sortValue: sortValue,
+            conversations: [conv],
+        };
+        nextGroupedConvsArray.push(newGroup);
+
+        return nextGroupedConvsArray;
+    }
+    case "deleted": {
+        const { conv } = action;
+        const nextGroupedConvsArray = [...groupedConvsArray];
+
+        for (let i = 0; i < nextGroupedConvsArray.length; i++) {
+            const currentGroup = nextGroupedConvsArray[i];
+            const updatedConversations = currentGroup.conversations.filter(c => c.id !== conv.id);
+
+            if (updatedConversations.length < currentGroup.conversations.length) {
+                nextGroupedConvsArray[i] = {
+                    ...currentGroup,
+                    conversations: updatedConversations,
+                };
+                // early return if we found and removed the conversation
+                return nextGroupedConvsArray.filter(group => group.conversations.length > 0);
+            }
+        }
+
+        console.warn(`Conversation with id ${conv.id} not found in any group for deletion.`);
+        return groupedConvsArray;
+    }
+    case "renamed": {
+        const { conv } = action;
+        const nextGroupedConvsArray = [...groupedConvsArray];
+
+        for (let i = 0; i < nextGroupedConvsArray.length; i++) {
+            const currentGroup = nextGroupedConvsArray[i];
+            const convIndex = currentGroup.conversations.findIndex(c => c.id === conv.id);
+
+            if (convIndex !== -1) {
+                const updatedConversations = [...currentGroup.conversations];
+                updatedConversations[convIndex] = {
+                    ...updatedConversations[convIndex],
+                    title: conv.title,
+                };
+
+                nextGroupedConvsArray[i] = {
+                    ...currentGroup,
+                    conversations: updatedConversations,
+                };
+
+                return nextGroupedConvsArray;
+            }
+        }
+
+        console.warn(`Conversation with id ${conv.id} not found in any group for renaming.`);
+        return groupedConvsArray;
+    }
+    case "reordered": {
+        const { conv } = action;
+        const currentAllConvs = getAllConvsFromState(groupedConvsArray);
+
+        const updatedConvs = currentAllConvs.map((c) => {
+            if (c.id === conv.id) {
+                return { ...c, last_message_at: conv.last_message_at, pinned: conv.pinned };
+            }
+            return c;
+        });
+
+        const rawGroupedConvs = groupConvs(updatedConvs);
+        return flattenAndSortGroupedConvs(rawGroupedConvs);
+    }
+    case "replaceAll": {
+        const grouped = groupConvs(action.convs);
+        return flattenAndSortGroupedConvs(grouped);
+    }
+    default: {
+        console.error("Unknown action: ", action);
+        return groupedConvsArray;
+    }
+    }
+};
+
 /**
- * Flattens a grouped conversation object into a single array of conversations.
+ * Groups an array of conversations based on their pinned status and the date of the last message.
  * 
- * The function takes an object where the keys represent group identifiers, and the values are arrays of conversations.
- * It returns a new array containing all the individual conversations from the grouped object, preserving their order.
+ * The function categorizes conversations into the following groups:
+ * - "pinned": for pinned conversations
+ * - "Today": for conversations with the latest message sent today
+ * - "Yesterday": for conversations with the latest message sent yesterday
+ * - "Last seven days": for conversations with the latest message sent within the last seven days
+ * - A month-year format (e.g., "January 2024") for conversations older than seven days
  * 
- * @param {Object} groupedConvs - An object where each key is a group identifier, and each value is an array of conversations.
- * @returns {Array} A flattened array containing all conversations from the input object.
+ * This is achieved by comparing the `last_message_at` timestamp of each conversation with the current date, yesterday's date, and a week-old date.
+ * 
+ * @param {Array} conversations - An array of conversation objects, where each object contains at least a `last_message_at` timestamp and a `pinned` boolean.
+ * @returns {Object} An object where each key is a group label and each value is an array of conversations that belong to that group.
  */
-export const flatConvs = (groupedConvs) => {
-    return Object.values(groupedConvs).flatMap(convs => [...convs]);
+export const groupConvs = (conversations) => {
+    const datesCache = getGroupComparisonDates();
+
+    const grouped = {};
+    conversations.forEach((item) => {
+        const { groupKey, sortValue } = getConversationGroupingInfo(item, datesCache);
+
+        if (!grouped[groupKey]) {
+            grouped[groupKey] = {
+                conversations: [],
+                sortValue: sortValue
+            };
+        }
+        grouped[groupKey].conversations.push(item);
+    });
+
+    return grouped;
+};
+
+/**
+ * Transforms and sorts a grouped conversations object into a flattened array
+ * suitable for rendering. All groups are sorted in descending order of their `groupSortValue`.
+ *
+ * @param {Object} groupedConvs - The object returned by `groupConvs`,
+ * where each value is an object { conversations: Array, groupSortValue: number }.
+ * @returns {Array<Object>} A sorted array of group objects, each containing
+ * `key` (group name) and `conversations` (array of convs).
+ */
+export const flattenAndSortGroupedConvs = (groupedConvs) => {
+    if (!groupedConvs) {
+        return [];
+    }
+
+    const groupEntries = Object.entries(groupedConvs)
+        .map(([key, value]) => ({
+            key: key,
+            conversations: value.conversations || [],
+            sortValue: value.sortValue,
+        }))
+        .filter(group => group.conversations && group.conversations.length > 0);
+
+    groupEntries.sort((a, b) => b.sortValue - a.sortValue);
+
+    // sort conversations within each group
+    groupEntries.forEach(group => {
+        group.conversations = sortConvs(group.conversations);
+    });
+
+    return groupEntries;
 };
 
 /**
@@ -45,94 +211,82 @@ export const sortConvs = (conversations) => {
 };
 
 /**
- * Groups an array of conversations based on their pinned status and the date of the last message.
- * 
- * The function categorizes conversations into the following groups:
- * - "pinned": for pinned conversations
- * - "Today": for conversations with the latest message sent today
- * - "Yesterday": for conversations with the latest message sent yesterday
- * - "Last seven days": for conversations with the latest message sent within the last seven days
- * - A month-year format (e.g., "January 2024") for conversations older than seven days
- * 
- * This is achieved by comparing the `last_message_at` timestamp of each conversation with the current date, yesterday's date, and a week-old date.
- * 
- * @param {Array} conversations - An array of conversation objects, where each object contains at least a `last_message_at` timestamp and a `pinned` boolean.
- * @returns {Object} An object where each key is a group label and each value is an array of conversations that belong to that group.
+ * Calculates and returns key date objects for grouping conversations.
+ * All returned Date objects are set to 00:00:00 for accurate day-level comparison.
+ *
+ * @returns {Object} An object containing:
+ * - today: Date object for the current day at 00:00:00.
+ * - yesterday: Date object for yesterday at 00:00:00.
+ * - lastSevenDays: Date object for 7 days ago at 00:00:00.
  */
-export const groupConvs = (conversations) => {
+export const getGroupComparisonDates = () => {
     const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
+
     const lastSevenDays = new Date(today);
     lastSevenDays.setDate(lastSevenDays.getDate() - 7);
 
-    return Object.groupBy(conversations, (item) => {
-        if (item.pinned) {
-            return "pinned";
-        }
-        const itemDate = new Date(item.last_message_at);
-        const itemDateStr = itemDate.toDateString();
-        if (itemDateStr === today.toDateString()) {
-            return "Today";
-        } else if (itemDateStr === yesterday.toDateString()) {
-            return "Yesterday";
-        } else if (itemDate > lastSevenDays) {
-            return "Last seven days";
-        } else {
-            return `${itemDate.toLocaleString("default", { month: "long" })} ${itemDate.getFullYear()}`;
-        }
-    });
+    return {
+        today,
+        yesterday,
+        lastSevenDays,
+    };
 };
 
-
-export const conversationReducer = (groupedConvs, action) => {
-    switch (action.type) {
-    case "added": {
-        // NOTE: To save computation, this does not sort nor group the convs.
-        // It simply insert the new conv to the first element of group 'Today'.
-        // So the returnning order matters.
-
-        // action.conv: { id, title, created_at, last_message_at, owner, pinned }
-        const { conv } = action;
-
-        if (!groupedConvs.Today) {
-            return { Today: [conv], ...groupedConvs };
-        } else {
-            const updatedGroupedConvs = { ...groupedConvs };
-            updatedGroupedConvs.Today = [conv, ...updatedGroupedConvs.Today];
-            return updatedGroupedConvs;
+/**
+ * Determines the group key and a numerical sort value for a given conversation.
+ * The sort value allows for consistent chronological ordering of groups, with 'pinned' having the highest priority.
+ *
+ * @param {Object} conv - The conversation object, must contain `pinned` (boolean) and `last_message_at` (timestamp or Date string).
+ * @param {Object} [datesCache] - Optional: An object containing pre-calculated comparison dates (`today`, `yesterday`, `lastSevenDays`).
+ * If not provided, `getGroupComparisonDates()` will be called.
+ * @returns {{groupKey: string, sortValue: number}} An object containing the determined group key and its corresponding sort value.
+ */
+export const getConversationGroupingInfo = (conv, datesCache) => {
+    if (conv.pinned) {
+        return {
+            groupKey: "pinned",
+            sortValue: Number.MAX_SAFE_INTEGER,
+        };
+    }
+    const { today, yesterday, lastSevenDays } = datesCache || getGroupComparisonDates();
+    const itemDate = new Date(conv.last_message_at);
+    itemDate.setHours(0, 0, 0, 0);
+    if (itemDate.getTime() === today.getTime()) {
+        return {
+            groupKey: "Today",
+            sortValue: today.getTime(),
+        };
+    }
+    if (itemDate.getTime() === yesterday.getTime()) {
+        return {
+            groupKey: "Yesterday",
+            sortValue: yesterday.getTime(),
+        };
+    }
+    if (itemDate.getTime() >= lastSevenDays.getTime()) {
+        return {
+            groupKey: "Last Seven Days",
+            sortValue: lastSevenDays.getTime(),
         }
     }
-    case "deleted": {
-        const convs = flatConvs(groupedConvs);
-        return groupConvs(convs.filter((conv) => conv.id !== action.convId));
+    return {
+        groupKey: `${itemDate.toLocaleString("default", { month: "long" })} ${itemDate.getFullYear()}`,
+        sortValue: new Date(itemDate.getFullYear(), itemDate.getMonth(), 1).getTime(),
     }
-    case "renamed": {
-        const convs = flatConvs(groupedConvs);
-        return groupConvs(convs.map((conv) => {
-            if (conv.id === action.convId) {
-                return { ...conv, title: action.title };
-            }
-            return conv;
-        }));
+};
+
+/**
+ * Helper function to extract all flattened conversations from the grouped state array.
+ * @param {Array<Object>} groupedConvsArray - The reducer's state, an array of grouped conversations.
+ * @returns {Array<Object>} A flat array of all conversation objects.
+ */
+const getAllConvsFromState = (groupedConvsArray) => {
+    if (!groupedConvsArray || groupedConvsArray.length === 0) {
+        return [];
     }
-    case "reordered": {
-        const convs = flatConvs(groupedConvs);
-        const updatedConvs = convs.map((conv) => {
-            if (conv.id === action.conv.id) {
-                return { ...conv, ...action.conv };
-            }
-            return conv;
-        });
-        const sortedConvs = sortConvs(updatedConvs);
-        return groupConvs(sortedConvs);
-    }
-    case "replaceAll": {
-        return { ...action.groupedConvs };
-    }
-    default: {
-        console.error("Unknown action: ", action);
-        return groupedConvs;
-    }
-    }
+    return groupedConvsArray.flatMap(group => group.conversations);
 };

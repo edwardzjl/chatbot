@@ -64,7 +64,7 @@ async function loader({ params }) {
 const Conversation = () => {
     const { conversation } = useLoaderData();
     const navigation = useNavigation();
-    const { groupedConvs, dispatch: dispatchConv } = useConversations();
+    const { groupedConvsArray: convs, dispatch: dispatchConv } = useConversations();
     const { username } = useUserProfile();
     const { send } = useWebsocket();
     const { currentConv, dispatch } = useCurrentConv();
@@ -134,19 +134,23 @@ const Conversation = () => {
             convId: conversation.id,
             message: payload,
         });
-        // update last_message_at of the conversation to re-order conversations
-        // TODO: this seems buggy
-        if (conversation.pinned && groupedConvs.pinned && groupedConvs.pinned[0]?.id !== conversation.id) {
-            dispatchConv({
-                type: "reordered",
-                conv: { id: conversation.id, last_message_at: message.sent_at },
-            });
-        } else if (groupedConvs.Today && groupedConvs.Today[0]?.id !== conversation.id) {
-            dispatchConv({
-                type: "reordered",
-                conv: { id: conversation.id, last_message_at: message.sent_at },
-            });
+        // re-order conversations
+        // NOTE: this will sometimes skip the update of last_message_at, which might cause issue in the future.
+        if (conversation.pinned && convs[0].key === "Pinned" && convs[0].conversations[0]?.id === conversation.id) {
+            return;
         }
+        if (!conversation.pinned) {
+            if (convs[0].key === "Today" && convs[0].conversations[0]?.id === conversation.id) {
+                return;
+            }
+            if (convs[1].key === "Today" && convs[1].conversations[0]?.id === conversation.id) {
+                return;
+            }
+        }
+        dispatchConv({
+            type: "reordered",
+            conv: { ...conversation, last_message_at: message.sent_at },
+        });
     };
 
     return (

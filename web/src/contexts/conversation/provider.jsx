@@ -2,16 +2,16 @@ import { useEffect, useReducer } from "react";
 import PropTypes from "prop-types";
 
 import { ConversationContext } from "./index";
-import { conversationReducer, groupConvs } from "./reducer";
+import { conversationReducer } from "./reducer";
 
 
 export const ConversationProvider = ({ children }) => {
 
     // It seems that I can't use async function as the `init` param.
     // So I opt to use `useEffect` instead.
-    const [groupedConvs, dispatch] = useReducer(
+    const [groupedConvsArray, dispatch] = useReducer(
         conversationReducer,
-        {},
+        [],
     );
 
     useEffect(() => {
@@ -19,13 +19,9 @@ export const ConversationProvider = ({ children }) => {
             const convs = await fetch("/api/conversations", {
             }).then((res) => res.json());
 
-            // This assumes that the convs are already sorted by the server.
-            // Otherwise, I need to call `sortConvs` first.
-            const groupedConvs = groupConvs(convs);
-
             dispatch({
                 type: "replaceAll",
-                groupedConvs
+                convs: convs
             });
         };
 
@@ -33,7 +29,7 @@ export const ConversationProvider = ({ children }) => {
     }, []);
 
     return (
-        <ConversationContext.Provider value={{ groupedConvs, dispatch }}>
+        <ConversationContext.Provider value={{ groupedConvsArray, dispatch }}>
             {children}
         </ConversationContext.Provider>
     );
