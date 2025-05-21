@@ -1,4 +1,4 @@
-import { useEffect, useReducer } from "react";
+import { useCallback, useEffect, useReducer, useState } from "react";
 import PropTypes from "prop-types";
 
 import { ConversationContext } from "./index";
@@ -14,22 +14,57 @@ export const ConversationProvider = ({ children }) => {
         [],
     );
 
-    useEffect(() => {
-        const init = async () => {
-            const convs = await fetch("/api/conversations", {
-            }).then((res) => res.json());
+    const [nextCursor, setNextCursor] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const fetchMoreConvs = useCallback(async () => {
+        if (isLoading) {
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            const queryParams = new URLSearchParams();
+            queryParams.append("size", "50");
+
+            if (nextCursor) {
+                queryParams.append("cursor", nextCursor);
+            }
+
+            const response = await fetch(`/api/conversations?${queryParams.toString()}`);
+            const data = await response.json();
 
             dispatch({
-                type: "replaceAll",
-                convs: convs
+                type: "added_all",
+                convs: data.items
             });
-        };
 
-        init();
+            setNextCursor(data.next_page);
+        } catch (error) {
+            console.error("Failed to fetch conversations:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [isLoading, nextCursor]);
+
+    useEffect(() => {
+        // const init = async () => {
+        //     const convs = await fetch("/api/conversations", {
+        //     }).then((res) => res.json());
+
+        //     dispatch({
+        //         type: "replaceAll",
+        //         convs: convs
+        //     });
+        // };
+
+        // init();
+        fetchMoreConvs();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (
-        <ConversationContext.Provider value={{ groupedConvsArray, dispatch }}>
+        <ConversationContext.Provider value={{ groupedConvsArray, dispatch, isLoading, fetchMoreConvs }}>
             {children}
         </ConversationContext.Provider>
     );
