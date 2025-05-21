@@ -13,7 +13,7 @@ import ChatTab from "../ChatTab";
 
 
 const Sidebar = () => {
-    const { groupedConvs } = useConversations();
+    const { groupedConvsArray: convs } = useConversations();
     const navigate = useNavigate();
 
     return (
@@ -23,17 +23,15 @@ const Sidebar = () => {
                 New Chat
             </button>
             <nav className={styles.convList}>
-                {groupedConvs && Object.entries(groupedConvs)
-                    .filter(([, convs]) => convs && convs.length > 0) // Filter out empty lists
-                    .flatMap(([grp, convs]) => (
-                        [
-                            <div key={grp}>
-                                <div className={styles.sidebarDateGroup}>{grp}</div>
-                                {convs.map((conv) => (
-                                    <ChatTab key={conv.id} chat={conv} />
-                                ))}
-                            </div>
-                        ]
+                {convs && convs
+                    .filter(group => group.conversations && group.conversations.length > 0) // Filter out empty lists
+                    .map(group => (
+                        <div key={group.key}>
+                            <div className={styles.sidebarDateGroup}>{group.key}</div>
+                            {group.conversations.map((conv) => (
+                                <ChatTab key={conv.id} chat={conv} />
+                            ))}
+                        </div>
                     ))}
             </nav>
             <hr className={styles.sidebarBottom} />

@@ -38,7 +38,7 @@ const DeleteConvDialog = ({ id }) => {
 
     const deleteConv = async () => {
         await fetch(`/api/conversations/${targetConv.id}`, { method: "DELETE" });
-        dispatch({ type: "deleted", convId: targetConv.id });
+        dispatch({ type: "deleted", conv: targetConv });
         closeDialog(id);
         navigate("/");
     };
