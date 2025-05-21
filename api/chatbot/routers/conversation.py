@@ -1,4 +1,6 @@
 from fastapi import APIRouter, HTTPException
+from fastapi_pagination.cursor import CursorPage
+from fastapi_pagination.ext.sqlalchemy import paginate
 from langchain_core.messages import BaseMessage, trim_messages
 from sqlalchemy import select
 from uuid import UUID
@@ -29,14 +31,14 @@ router = APIRouter(
 async def get_conversations(
     userid: UserIdHeaderDep,
     session: SqlalchemyROSessionDep,
-) -> list[Conversation]:
-    # TODO: support pagination
+) -> CursorPage[Conversation]:
     stmt = (
         select(ORMConversation)
         .where(ORMConversation.owner == userid)
         .order_by(ORMConversation.pinned.desc(), ORMConversation.last_message_at.desc())
     )
-    return (await session.scalars(stmt)).all()
+    page = await paginate(session, stmt)
+    return page
 
 
 @router.get("/{conversation_id}")

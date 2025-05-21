@@ -14,6 +14,7 @@ from fastapi.requests import Request
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from fastapi_pagination import add_pagination
 from langgraph.checkpoint.base import BaseCheckpointSaver
 from prometheus_client import make_asgi_app
 from requests_cache import CachedSession
@@ -100,6 +101,9 @@ app.include_router(conversation_router)
 app.include_router(message_router)
 app.include_router(share_router)
 app.include_router(files_router)
+
+
+add_pagination(app)
 
 
 @app.get("/api/healthz")
