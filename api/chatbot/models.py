@@ -47,7 +47,6 @@ class Conversation(Base):
         TZDateTime,
         nullable=False,
         default=utcnow,
-        onupdate=utcnow,
     )
 
 
