@@ -34,26 +34,26 @@ class Base(DeclarativeBase):
 class Conversation(Base):
     __tablename__ = "conversation"
 
-    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, insert_default=uuid4)
     title: Mapped[str] = mapped_column(Text)
     owner: Mapped[str] = mapped_column(Text, index=True)
-    pinned: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+    pinned: Mapped[bool] = mapped_column(Boolean, insert_default=False, index=True)
     created_at: Mapped[datetime] = mapped_column(
         TZDateTime,
         nullable=False,
-        default=utcnow,
+        insert_default=utcnow,
     )
     last_message_at: Mapped[datetime] = mapped_column(
         TZDateTime,
         nullable=False,
-        default=utcnow,
+        insert_default=utcnow,
     )
 
 
 class Share(Base):
     __tablename__ = "share"
 
-    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, insert_default=uuid4)
     title: Mapped[str] = mapped_column(Text)
     owner: Mapped[str] = mapped_column(Text, index=True)
     url: Mapped[str] = mapped_column(Text)
@@ -61,5 +61,5 @@ class Share(Base):
     created_at: Mapped[datetime] = mapped_column(
         TZDateTime,
         nullable=False,
-        default=utcnow,
+        insert_default=utcnow,
     )
