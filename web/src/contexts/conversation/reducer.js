@@ -105,6 +105,14 @@ export const conversationReducer = (groupedConvsArray, action) => {
         const grouped = groupConvs(action.convs);
         return flattenAndSortGroupedConvs(grouped);
     }
+    case "added_all": {
+        const { convs: newConvs } = action;
+        const newGroupedConvs = groupConvs(newConvs);
+        const newFlattenAndSortGroupedConvs = flattenAndSortGroupedConvs(newGroupedConvs);
+        // Merge groupedConvsArray, newFlattenAndSortGroupedConvs
+        // Note that old should be the first parameter
+        return mergeGroupedConvs(groupedConvsArray, newFlattenAndSortGroupedConvs);
+    }
     default: {
         console.error("Unknown action: ", action);
         return groupedConvsArray;
@@ -193,21 +201,29 @@ export const sortConvs = (conversations) => {
     // sort by pinned and last_message_at
     // See <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/toSorted>
     // and <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#sorting_array_of_objects>
-    return conversations.toSorted((a, b) => {
-        if (a.pinned && !b.pinned) {
-            return -1;
-        }
-        if (!a.pinned && b.pinned) {
-            return 1;
-        }
-        if (a.last_message_at > b.last_message_at) {
-            return -1;
-        }
-        if (a.last_message_at < b.last_message_at) {
-            return 1;
-        }
-        return 0;
-    });
+    return conversations.toSorted(compareConvs);
+};
+
+/**
+ * Compare two conversations based on their pinned status and the last message timestamp.
+ *
+ * The function first compare conversations by whether they are pinned, with pinned conversations appearing first.
+ * If two conversations have the same pinned status, they are then compared by the `last_message_at` timestamp, with the most recent messages appearing first.
+ */
+export const compareConvs = (a, b) => {
+    if (a.pinned && !b.pinned) {
+        return -1;
+    }
+    if (!a.pinned && b.pinned) {
+        return 1;
+    }
+    if (a.last_message_at > b.last_message_at) {
+        return -1;
+    }
+    if (a.last_message_at < b.last_message_at) {
+        return 1;
+    }
+    return 0;
 };
 
 /**
@@ -289,4 +305,48 @@ const getAllConvsFromState = (groupedConvsArray) => {
         return [];
     }
     return groupedConvsArray.flatMap(group => group.conversations);
+};
+
+export const mergeGroupedConvs = (oldGroups, newGroups) => {
+    const merged = [];
+    let i = 0;
+    let j = 0;
+
+    while (i < oldGroups.length && j < newGroups.length) {
+        const a = oldGroups[i];
+        const b = newGroups[j];
+
+        if (a.key === b.key) {
+            const mergedConvsMap = new Map();
+
+            // 先插入旧的，后插入新的（新的覆盖旧的）
+            for (const conv of a.conversations) {
+                mergedConvsMap.set(conv.id, conv);
+            }
+            for (const conv of b.conversations) {
+                mergedConvsMap.set(conv.id, conv);
+            }
+
+            const mergedConvs = Array.from(mergedConvsMap.values()).sort(compareConvs);
+            merged.push({
+                key: a.key,
+                sortValue: a.sortValue,
+                conversations: mergedConvs,
+            });
+
+            i++;
+            j++;
+        } else if (a.sortValue > b.sortValue) {
+            merged.push(a);
+            i++;
+        } else {
+            merged.push(b);
+            j++;
+        }
+    }
+
+    while (i < oldGroups.length) merged.push(oldGroups[i++]);
+    while (j < newGroups.length) merged.push(newGroups[j++]);
+
+    return merged;
 };
