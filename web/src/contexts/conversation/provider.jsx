@@ -15,10 +15,12 @@ export const ConversationProvider = ({ children }) => {
     );
 
     const [nextCursor, setNextCursor] = useState(null);
+    const [hasMore, setHasMore] = useState(true);
+
     const [isLoading, setIsLoading] = useState(false);
 
     const fetchMoreConvs = useCallback(async () => {
-        if (isLoading) {
+        if (isLoading || !hasMore) {
             return;
         }
 
@@ -40,12 +42,13 @@ export const ConversationProvider = ({ children }) => {
             });
 
             setNextCursor(data.next_page);
+            setHasMore(Boolean(data.next_page));
         } catch (error) {
             console.error("Failed to fetch conversations:", error);
         } finally {
             setIsLoading(false);
         }
-    }, [isLoading, nextCursor]);
+    }, [isLoading, hasMore, nextCursor]);
 
     useEffect(() => {
         fetchMoreConvs();
