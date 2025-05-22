@@ -11,7 +11,7 @@ export const conversationReducer = (groupedConvsArray, action) => {
 
             if (groupKey === currentGroup.key) {
                 // target group found, insert the conversation
-                const updatedConversations = sortConvs([conv, ...currentGroup.conversations]);
+                const updatedConversations = [conv, ...currentGroup.conversations].sort(compareConvs);
                 nextGroupedConvsArray[i] = {
                     ...currentGroup,
                     conversations: updatedConversations,
@@ -180,28 +180,10 @@ export const flattenAndSortGroupedConvs = (groupedConvs) => {
 
     // sort conversations within each group
     groupEntries.forEach(group => {
-        group.conversations = sortConvs(group.conversations);
+        group.conversations = group.conversations.sort(compareConvs);
     });
 
     return groupEntries;
-};
-
-/**
- * Sorts an array of conversations based on their pinned status and the last message timestamp.
- *
- * The function first sorts conversations by whether they are pinned, with pinned conversations appearing first.
- * If two conversations have the same pinned status, they are then sorted by the `last_message_at` timestamp, with the most recent messages appearing first.
- *
- * This function uses `Array.toSorted()` to create a new array with the conversations sorted according to the specified criteria.
- *
- * @param {Array} conversations - An array of conversation objects, where each object contains at least a `pinned` boolean and a `last_message_at` timestamp.
- * @returns {Array} A new array of conversations sorted first by pinned status and then by the `last_message_at` timestamp in descending order.
- */
-export const sortConvs = (conversations) => {
-    // sort by pinned and last_message_at
-    // See <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/toSorted>
-    // and <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#sorting_array_of_objects>
-    return conversations.toSorted(compareConvs);
 };
 
 /**
