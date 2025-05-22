@@ -373,9 +373,9 @@ def create_tool_picker(chat_model: BaseChatModel, tools: list[BaseTool]) -> Runn
             ),
         ]
 
-    instruction = """You are a helpful assistant. You have access to tools, but should only use them when necessary.
+    instruction = """You are a helpful assistant with access to a set of tools. Use them only when truly necessary.
 
-Your primary task is to select the appropriate tools for the user's query by calling the `PickTools` function. You MUST always call `PickTools` as your first step to determine if any tools are needed.
+Now, choose the most appropriate tool(s) to proceed with your response.
 """
 
     tmpl = ChatPromptTemplate.from_messages(
