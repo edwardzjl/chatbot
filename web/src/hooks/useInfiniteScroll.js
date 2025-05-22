@@ -13,7 +13,7 @@ export function useInfiniteScroll({ targetRef, onLoadMore, hasMore = true, isLoa
             {
                 root: null, // 视口为默认
                 rootMargin: "0px",
-                threshold: 0.1, // 一小部分可见就触发
+                threshold: 1.0,
             }
         );
 
