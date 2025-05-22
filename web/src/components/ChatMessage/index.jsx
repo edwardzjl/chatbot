@@ -13,6 +13,7 @@ import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import ThumbDownOutlined from "@mui/icons-material/ThumbDownOutlined";
 import ThermostatIcon from "@mui/icons-material/Thermostat";
 import TravelExploreIcon from '@mui/icons-material/TravelExplore';
+import FindInPageIcon from '@mui/icons-material/FindInPage';
 
 import { useCurrentConv } from "@/contexts/message/hook";
 import { useSnackbar } from "@/contexts/snackbar/hook";
@@ -150,6 +151,8 @@ const ChatMessage = ({ convId, message }) => {
                             return <ThermostatIcon key={index} />
                         case "web_search":
                             return <TravelExploreIcon key={index} />
+                        case "web_browser":
+                            return <FindInPageIcon key={index} />
                         default:
                             return null;
                         }
