@@ -19,9 +19,8 @@ from chatbot.agent import create_agent
 from chatbot.dependencies.commons import SettingsDep
 from chatbot.dependencies.db import SqlalchemyEngineDep, get_raw_conn
 from chatbot.http_client import HttpClient
-from chatbot.tools.geo import GeoLocationTool
-from chatbot.tools.search.serpapi import SearchTool
-from chatbot.tools.weather import WeatherTool
+from chatbot.tools import BrowserTool, GeoLocationTool, SearchTool, WeatherTool
+
 
 from .commons import get_http_client
 
@@ -65,6 +64,7 @@ def get_tools(
                 geo_tool=geo_tool,
             )
         )
+    tools.append(BrowserTool(http_client=http_client))
     return tools
 
 
