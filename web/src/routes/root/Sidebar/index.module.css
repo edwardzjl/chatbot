@@ -48,6 +48,31 @@
     margin-top: 20px;
 }
 
+.loadMoreAnchor {
+    min-height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #888;
+    font-size: 12px;
+    text-align: center;
+}
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid #ccc;
+  border-top: 3px solid #3498db; /* TODO: change this */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 .sidebarBottom {
     margin-top: auto;
     width: 90%;

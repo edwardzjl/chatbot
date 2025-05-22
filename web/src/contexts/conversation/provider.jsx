@@ -48,23 +48,12 @@ export const ConversationProvider = ({ children }) => {
     }, [isLoading, nextCursor]);
 
     useEffect(() => {
-        // const init = async () => {
-        //     const convs = await fetch("/api/conversations", {
-        //     }).then((res) => res.json());
-
-        //     dispatch({
-        //         type: "replaceAll",
-        //         convs: convs
-        //     });
-        // };
-
-        // init();
         fetchMoreConvs();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (
-        <ConversationContext.Provider value={{ groupedConvsArray, dispatch, isLoading, fetchMoreConvs }}>
+        <ConversationContext.Provider value={{ groupedConvsArray, dispatch, fetchMoreConvs, isLoading, hasMore: !!nextCursor }}>
             {children}
         </ConversationContext.Provider>
     );

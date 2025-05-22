@@ -6,6 +6,7 @@ import { createContext } from "react";
 export const ConversationContext = createContext({
     groupedConvsArray: [],
     dispatch: () => { },
-    isLoading: false,
+    hasMore: false,
     fetchMoreConvs: () => { },
+    isLoading: false,
 });
