@@ -11,9 +11,8 @@ from aiohttp_client_cache import CachedSession as AsyncCachedSession, SQLiteBack
 from fastapi import FastAPI, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.requests import Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 from fastapi_pagination import add_pagination
 from langgraph.checkpoint.base import BaseCheckpointSaver
 from prometheus_client import make_asgi_app
@@ -129,8 +128,11 @@ def models_info(settings: SettingsDep) -> list[dict]:
     return [llm.to_json() for llm in settings.llms]
 
 
+STATIC_DIR = "static"
+
+
 app.mount(
-    "/", StaticFiles(directory="static", html=True, check_dir=False), name="static"
+    "/", StaticFiles(directory=STATIC_DIR, html=True, check_dir=False), name="static"
 )
 
 
@@ -142,18 +144,15 @@ def not_found_error_handler(request: Request, exc: NoResultFound):
     )
 
 
-templates = Jinja2Templates(directory="static")
-
-
 # return all unregistered, non-API call to web app
 @app.exception_handler(404)
-def custom_404_handler(request: Request, _):
+def spa_fallback(request: Request, _):
     if request.url.path.startswith("/api"):
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
             content={"detail": "API path not found"},
         )
-    return templates.TemplateResponse("index.html", {"request": request})
+    return FileResponse(f"{STATIC_DIR}/index.html")
 
 
 @app.exception_handler(Exception)
