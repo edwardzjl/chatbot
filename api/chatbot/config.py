@@ -30,7 +30,7 @@ class Settings(BaseSettings):
     """Primary database url for read / write connections."""
     db_standby_url: PostgresDsn | str | None = None
     """Standby database url for read only connections.
-    Defaults to `postgres_primary_url`.
+    Defaults to `db_primary_url`.
     """
 
     s3: S3Settings = Field(default_factory=S3Settings)

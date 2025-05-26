@@ -87,7 +87,7 @@ The database url for reading and writing agent states and conversation metadata.
 
 #### DB_STANDBY_URL
 
-An optional read-only database URL for agent states and conversation metadata. If not set, reads will fall back to `POSTGRES_PRIMARY_URL`.
+An optional read-only database URL for agent states and conversation metadata. If not set, reads will fall back to `DB_PRIMARY_URL`.
 
 - type: `str | None`
 - default: `None`
