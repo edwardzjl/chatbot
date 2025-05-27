@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from contextlib import asynccontextmanager
 from functools import partial
-from typing import TYPE_CHECKING, Annotated
+from typing import Annotated, AsyncGenerator
 
 from fastapi import Depends, Header
 from langchain_core.output_parsers import StrOutputParser
@@ -23,9 +23,6 @@ from chatbot.tools import BrowserTool, GeoLocationTool, SearchTool, WeatherTool
 
 
 from .commons import get_http_client
-
-if TYPE_CHECKING:
-    from typing import AsyncGenerator
 
 
 logger = logging.getLogger(__name__)
@@ -117,13 +114,15 @@ def get_agent_wrapper(
     return partial(get_agent, engine, tools, settings)
 
 
-AgentWrapperDep = Annotated[partial, Depends(get_agent_wrapper)]
+AgentWrapperDep = Annotated[
+    partial[AsyncGenerator[CompiledGraph, None]], Depends(get_agent_wrapper)
+]
 
 
 async def get_agent_for_state(
     engine: SqlalchemyEngineDep,
     settings: SettingsDep,
-):
+) -> AsyncGenerator[CompiledGraph, None]:
     """Get an agent only for accessing the state.
 
     Only the checkpointer is needed in such usecase.
@@ -140,7 +139,9 @@ async def get_agent_for_state(
         )
 
 
-AgentForStateDep = Annotated[CompiledGraph, Depends(get_agent_for_state)]
+AgentForStateDep = Annotated[
+    AsyncGenerator[CompiledGraph, None], Depends(get_agent_for_state)
+]
 
 
 # A simple wrapper when you have access to `conversation_id` in the endpoint.
@@ -197,8 +198,8 @@ def get_smry_chain(
 SmrChainDep = Annotated[Runnable, Depends(get_smry_chain)]
 
 
-def get_smry_chain_wrapper(settings: SettingsDep) -> partial:
+def get_smry_chain_wrapper(settings: SettingsDep) -> partial[Runnable]:
     return partial(get_smry_chain, settings)
 
 
-SmrChainWrapperDep = Annotated[partial, Depends(get_smry_chain_wrapper)]
+SmrChainWrapperDep = Annotated[partial[Runnable], Depends(get_smry_chain_wrapper)]
