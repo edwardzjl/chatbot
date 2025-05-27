@@ -1,4 +1,6 @@
 import logging
+from functools import partial
+from typing import Any
 from uuid import UUID
 
 from fastapi import (
@@ -8,6 +10,9 @@ from fastapi import (
     WebSocketException,
 )
 from langchain_core.messages import AIMessage, BaseMessage, trim_messages
+from langchain_core.runnables import Runnable
+from langgraph.graph.graph import CompiledGraph
+from sqlalchemy.orm import sessionmaker
 
 from chatbot.dependencies import UserIdHeaderDep
 from chatbot.dependencies.agent import AgentWrapperDep, SmrChainWrapperDep
@@ -47,16 +52,10 @@ async def chat(
         try:
             payload: str = await websocket.receive_text()
             message = HumanChatMessage.model_validate_json(payload)
-            # In most cases, I don't need to do anything. SQLAlchemy will do the conversion for me.
-            # However, SQLite doesn't have a native UUID type.
-            # See <https://github.com/sqlalchemy/sqlalchemy/discussions/9290#discussioncomment-4953349>
-            conversation_id = UUID(message.conversation)
-            async with session_maker() as session:
-                conv: Conversation = await session.get(Conversation, conversation_id)
-            if conv.owner != userid:
-                # TODO: I'm not sure whether this is the correct way to handle this.
-                # See websocket code definitions here: <https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code>
-                raise WebSocketException(code=3403, reason="authorization error")
+
+            conv = await validate_conversation_owner(
+                session_maker, message.conversation, userid
+            )
 
             selected_model = message.additional_kwargs.get("model_name")
 
@@ -122,31 +121,19 @@ async def chat(
                                 model_name=model_name,
                             ).inc(usage_metadata["output_tokens"])
 
-                conv.last_message_at = utcnow()
-                async with session_maker() as session:
-                    conv = await session.merge(conv)
-                    await session.commit()
+                conv = await update_conversation_last_message_at(session_maker, conv)
 
                 # summarize if required
                 if message.additional_kwargs and message.additional_kwargs.get(
                     "require_summarization", False
                 ):
-                    smry_chain = smry_chain_wrapper(selected_model)
-                    config = {"configurable": {"thread_id": message.conversation}}
-                    state = await agent.aget_state(config)
-                    msgs: list[BaseMessage] = state.values.get("messages", [])
-
-                    windowed_messages = trim_messages(
-                        msgs,
-                        token_counter=len,
-                        max_tokens=20,
-                        start_on="human",  # This means that the first message should be from the user after trimming.
+                    title = await generate_conversation_title(
+                        agent=agent,
+                        smry_chain_wrapper=smry_chain_wrapper,
+                        conversation_id=message.conversation,
+                        selected_model=selected_model,
+                        chain_metadata=chain_metadata,
                     )
-                    title_raw: str = await smry_chain.ainvoke(
-                        input={"messages": windowed_messages},
-                        config={"metadata": chain_metadata},
-                    )
-                    title = title_raw.strip('"')
                     if title:
                         conv.title = title
                         async with session_maker() as session:
@@ -167,3 +154,57 @@ async def chat(
             return
         except Exception as e:  # noqa: BLE001
             logger.exception("Something goes wrong: %s", e)
+
+
+async def validate_conversation_owner(
+    session_maker: sessionmaker, conversation_id: UUID | str, userid: str
+) -> Conversation:
+    """Validate that the user owns the conversation."""
+    if not isinstance(conversation_id, UUID):
+        # In most cases, I don't need to do anything. SQLAlchemy will do the conversion for me.
+        # However, SQLite doesn't have a native UUID type.
+        # See <https://github.com/sqlalchemy/sqlalchemy/discussions/9290#discussioncomment-4953349>
+        conversation_id = UUID(conversation_id)
+    async with session_maker() as session:
+        conv: Conversation = await session.get(Conversation, conversation_id)
+    if conv.owner != userid:
+        raise WebSocketException(code=3403, reason="authorization error")
+    return conv
+
+
+async def update_conversation_last_message_at(
+    session_maker: sessionmaker, conv: Conversation
+):
+    """Update the conversation's last_message_at timestamp."""
+    conv.last_message_at = utcnow()
+    async with session_maker() as session:
+        conv = await session.merge(conv)
+        await session.commit()
+    return conv
+
+
+async def generate_conversation_title(
+    agent: CompiledGraph,
+    smry_chain_wrapper: partial[Runnable],
+    conversation_id: str,
+    selected_model: str,
+    chain_metadata: dict[str, Any],
+):
+    """Generate a title for the conversation."""
+    config = {"configurable": {"thread_id": conversation_id}}
+    state = await agent.aget_state(config)
+    msgs: list[BaseMessage] = state.values.get("messages", [])
+
+    windowed_messages = trim_messages(
+        msgs,
+        token_counter=len,
+        max_tokens=20,
+        start_on="human",  # This means that the first message should be from the user after trimming.
+    )
+
+    smry_chain = smry_chain_wrapper(selected_model)
+    title_raw: str = await smry_chain.ainvoke(
+        input={"messages": windowed_messages},
+        config={"metadata": chain_metadata},
+    )
+    return title_raw.strip('"')
