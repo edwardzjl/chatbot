@@ -12,7 +12,6 @@ from fastapi import FastAPI, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.requests import Request
 from fastapi.responses import FileResponse, JSONResponse
-from fastapi.staticfiles import StaticFiles
 from fastapi_pagination import add_pagination
 from langgraph.checkpoint.base import BaseCheckpointSaver
 from prometheus_client import make_asgi_app
@@ -30,6 +29,7 @@ from chatbot.routers.files import router as files_router
 from chatbot.routers.message import router as message_router
 from chatbot.routers.share import router as share_router
 from chatbot.schemas import UserProfile
+from chatbot.staticfiles import CompressedStaticFiles
 
 
 logger = logging.getLogger(__name__)
@@ -132,7 +132,9 @@ STATIC_DIR = "static"
 
 
 app.mount(
-    "/", StaticFiles(directory=STATIC_DIR, html=True, check_dir=False), name="static"
+    "/",
+    CompressedStaticFiles(directory=STATIC_DIR, html=True, check_dir=False),
+    name="static",
 )
 
 
