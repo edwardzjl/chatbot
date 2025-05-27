@@ -1096,6 +1096,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@rollup/pluginutils@npm:^5.1.0":
+  version: 5.1.4
+  resolution: "@rollup/pluginutils@npm:5.1.4"
+  dependencies:
+    "@types/estree": "npm:^1.0.0"
+    estree-walker: "npm:^2.0.2"
+    picomatch: "npm:^4.0.2"
+  peerDependencies:
+    rollup: ^1.20.0||^2.0.0||^3.0.0||^4.0.0
+  peerDependenciesMeta:
+    rollup:
+      optional: true
+  checksum: 10c0/6d58fbc6f1024eb4b087bc9bf59a1d655a8056a60c0b4021d3beaeec3f0743503f52467fd89d2cf0e7eccf2831feb40a05ad541a17637ea21ba10b21c2004deb
+  languageName: node
+  linkType: hard
+
 "@rollup/rollup-android-arm-eabi@npm:4.34.6":
   version: 4.34.6
   resolution: "@rollup/rollup-android-arm-eabi@npm:4.34.6"
@@ -2160,6 +2176,7 @@ __metadata:
     remark-gfm: "npm:^4.0.1"
     remark-math: "npm:^6.0.0"
     vite: "npm:^6.3.5"
+    vite-plugin-compression2: "npm:^1.4.0"
     vitest: "npm:^3.1.4"
   languageName: unknown
   linkType: soft
@@ -2934,6 +2951,13 @@ __metadata:
   version: 3.0.0
   resolution: "estree-util-is-identifier-name@npm:3.0.0"
   checksum: 10c0/d1881c6ed14bd588ebd508fc90bf2a541811dbb9ca04dec2f39d27dcaa635f85b5ed9bbbe7fc6fb1ddfca68744a5f7c70456b4b7108b6c4c52780631cc787c5b
+  languageName: node
+  linkType: hard
+
+"estree-walker@npm:^2.0.2":
+  version: 2.0.2
+  resolution: "estree-walker@npm:2.0.2"
+  checksum: 10c0/53a6c54e2019b8c914dc395890153ffdc2322781acf4bd7d1a32d7aedc1710807bdcd866ac133903d5629ec601fbb50abe8c2e5553c7f5a0afdd9b6af6c945af
   languageName: node
   linkType: hard
 
@@ -6296,6 +6320,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tar-mini@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "tar-mini@npm:0.2.0"
+  checksum: 10c0/41154778d635edb09c730fe591d74faf0ecda23b2f32bbab8bcb0090284dd6850f60ccf60394fc398f3a54bd75c6150294d1c8006e25156da3e89d1d89e96b14
+  languageName: node
+  linkType: hard
+
 "tar@npm:^7.4.3":
   version: 7.4.3
   resolution: "tar@npm:7.4.3"
@@ -6654,6 +6685,18 @@ __metadata:
   bin:
     vite-node: vite-node.mjs
   checksum: 10c0/2fc71ddadd308b19b0d0dc09f5b9a108ea9bb640ec5fbd6179267994da8fd6c9d6a4c92098af7de73a0fa817055b518b28972452a2f19a1be754e79947e289d2
+  languageName: node
+  linkType: hard
+
+"vite-plugin-compression2@npm:^1.4.0":
+  version: 1.4.0
+  resolution: "vite-plugin-compression2@npm:1.4.0"
+  dependencies:
+    "@rollup/pluginutils": "npm:^5.1.0"
+    tar-mini: "npm:^0.2.0"
+  peerDependencies:
+    vite: ^2.0.0||^3.0.0||^4.0.0||^5.0.0 ||^6.0.0
+  checksum: 10c0/9857b48e0c0a386e562599254ef24a405d068793021bfe000aabe0a754d19c1a2dd4845fd0b976e72cd7ed2686c1eff6bd20d1f22fba55b72c3a20d9048bdc19
   languageName: node
   linkType: hard
 
