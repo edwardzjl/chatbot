@@ -32,7 +32,7 @@ jobs:
     - name: Activate Corepack
       run: corepack enable
     - name: Install modules
-      run: yarn install
+      run: yarn install --frozen-lockfile
     - name: lint
       run: make lint
   test:
@@ -48,7 +48,7 @@ jobs:
     - name: Activate Corepack
       run: corepack enable
     - name: Install modules
-      run: yarn install
+      run: yarn install --frozen-lockfile
     - name: test
       run: make test
   build:
@@ -64,6 +64,6 @@ jobs:
     - name: Activate Corepack
       run: corepack enable
     - name: Install modules
-      run: yarn install
+      run: yarn install --frozen-lockfile
     - name: Build project
       run: yarn build
