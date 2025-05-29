@@ -33,5 +33,7 @@ RUN adduser --system --no-create-home --group chatbot \
   && chown -R chatbot:chatbot /app
 USER chatbot:chatbot
 
+EXPOSE 8000
+
 ENTRYPOINT [ "python", "-m", "uvicorn", "chatbot.main:app" ]
 CMD [ "--host", "0.0.0.0", "--port", "8000" ]
