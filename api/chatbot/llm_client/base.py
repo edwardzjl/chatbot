@@ -180,7 +180,7 @@ class StreamThinkingProcessor(Serializable):
 
 
 class ReasoningChatOpenai(ChatOpenAI):
-    thinking_processor: StreamThinkingProcessor = StreamThinkingProcessor()
+    thinking_processor: StreamThinkingProcessor | None = None
 
     @override
     @classmethod
@@ -196,7 +196,8 @@ class ReasoningChatOpenai(ChatOpenAI):
         run_manager: CallbackManagerForLLMRun | None = None,
         **kwargs: Any,
     ) -> Iterator[ChatGenerationChunk]:
-        self.thinking_processor.reset()
+        if self.thinking_processor:
+            self.thinking_processor.reset()
         for chunk in super()._stream(
             messages, stop=stop, run_manager=run_manager, **kwargs
         ):
@@ -210,7 +211,8 @@ class ReasoningChatOpenai(ChatOpenAI):
         run_manager: AsyncCallbackManagerForLLMRun | None = None,
         **kwargs: Any,
     ) -> AsyncIterator[ChatGenerationChunk]:
-        self.thinking_processor.reset()
+        if self.thinking_processor:
+            self.thinking_processor.reset()
         async for chunk in super()._astream(
             messages, stop=stop, run_manager=run_manager, **kwargs
         ):
@@ -270,6 +272,10 @@ class ReasoningChatOpenai(ChatOpenAI):
         return payload
 
     def _process(self, chunk: ChatGenerationChunk) -> ChatGenerationChunk:
+        if not self.thinking_processor:
+            # If no thinking processor is set, return the chunk as is.
+            return chunk
+
         token = chunk.message.content
         if not isinstance(token, str):
             logger.warning("LLM generated non string content: %s", token)
