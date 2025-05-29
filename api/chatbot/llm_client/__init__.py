@@ -14,7 +14,7 @@ from .vllm import VLLMReasoningChatOpenai
 logger = logging.getLogger(__name__)
 
 
-def llm_client_factory(
+def llm_client_type_factory(
     base_url: str,
     provider_name: str | None = None,
 ) -> Type[ReasoningChatOpenai]:
@@ -77,4 +77,4 @@ def guess_provider(base_url: str) -> Type[ReasoningChatOpenai]:
             return ReasoningChatOpenai
 
 
-__all__ = ["llm_client_factory"]
+__all__ = ["llm_client_type_factory"]
