@@ -7,7 +7,7 @@ from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field, PostgresDsn, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from chatbot.llm_client import ReasoningChatOpenai, llm_client_factory
+from chatbot.llm_client import ReasoningChatOpenai, llm_client_type_factory
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +65,7 @@ class Settings(BaseSettings):
         clients = []
         for item in processed:
             try:
-                clz = llm_client_factory(
+                clz = llm_client_type_factory(
                     item["base_url"], (item.get("metadata") or {}).get("provider")
                 )
                 clients.append(clz(**item))
