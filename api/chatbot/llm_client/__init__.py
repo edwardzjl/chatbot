@@ -45,7 +45,7 @@ def guess_provider(base_url: str) -> Type[ReasoningChatOpenai]:
         logger.info("Provider has `/info` endpoint, assuming it's TGI")
         return TGIReasoningChatOpenai
     except HTTPError:
-        ...
+        pass
 
     try:
         resp = requests.get(urljoin(base_url, "/get_server_info"))
@@ -55,7 +55,7 @@ def guess_provider(base_url: str) -> Type[ReasoningChatOpenai]:
         # TODO: implement SGLang provider
         return ReasoningChatOpenai
     except HTTPError:
-        ...
+        pass
 
     resp = requests.get(urljoin(base_url, "/v1/models"))
     resp.raise_for_status()
