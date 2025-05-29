@@ -18,8 +18,14 @@ class llamacppReasoningChatOpenai(ReasoningChatOpenai):
     def get_context_length(self) -> int:
         http_client = self.http_client or self.root_client._client
         resp = http_client.get(urljoin(self.openai_api_base, "/props"))
-        props = resp.json()
-        return props["default_generation_settings"]["n_ctx"]
+        data = resp.json()
+
+        max_model_len = data.get("default_generation_settings", {}).get("n_ctx")
+        # Should not happen, for type hint only.
+        assert max_model_len is not None, (
+            f"Model {self.model_name} does not have a max_context_length."
+        )
+        return max_model_len
 
     @override
     def get_num_tokens_from_messages(
