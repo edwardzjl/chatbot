@@ -37,16 +37,16 @@ class llamacppReasoningChatOpenai(ReasoningChatOpenai):
                 "messages": convert_to_openai_messages(messages),
             },
         )
-        prompt = resp.json()
+        data = resp.json()
 
-        tokens = http_client.post(
+        resp = http_client.post(
             urljoin(self.openai_api_base, "/tokenize"),
             json={
-                "content": prompt["prompt"],
+                "content": data["prompt"],
             },
         )
-
-        return len(tokens["tokens"])
+        data = resp.json()
+        return len(data["tokens"])
 
     def __hash__(self):
         # I use cache on `self` and cache doesn't work with mutable objects.
