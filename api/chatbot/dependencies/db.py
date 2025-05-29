@@ -4,8 +4,12 @@ from functools import cache
 from typing import Annotated, Any
 
 from fastapi import Depends
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 from sqlalchemy.pool import NullPool
 
 from chatbot.dependencies.commons import SettingsDep
@@ -23,8 +27,10 @@ SqlalchemyEngineDep = Annotated[AsyncEngine, Depends(create_engine)]
 
 
 @cache
-def create_sessionmaker(engine: SqlalchemyEngineDep) -> sessionmaker:
-    return sessionmaker(
+def create_sessionmaker(
+    engine: SqlalchemyEngineDep,
+) -> async_sessionmaker[AsyncSession]:
+    return async_sessionmaker(
         engine,
         autocommit=False,
         expire_on_commit=False,
@@ -33,7 +39,9 @@ def create_sessionmaker(engine: SqlalchemyEngineDep) -> sessionmaker:
     )
 
 
-SqlalchemySessionMakerDep = Annotated[sessionmaker, Depends(create_sessionmaker)]
+SqlalchemySessionMakerDep = Annotated[
+    async_sessionmaker[AsyncSession], Depends(create_sessionmaker)
+]
 
 
 async def get_sqlalchemy_session(
@@ -71,8 +79,8 @@ def create_ro_engine(settings: SettingsDep) -> AsyncEngine:
 @cache
 def create_ro_sessionmaker(
     engine: Annotated[AsyncEngine, Depends(create_ro_engine)],
-) -> sessionmaker:
-    return sessionmaker(
+) -> async_sessionmaker[AsyncSession]:
+    return async_sessionmaker(
         engine,
         autocommit=False,
         expire_on_commit=False,
@@ -82,7 +90,9 @@ def create_ro_sessionmaker(
 
 
 async def get_sqlalchemy_ro_session(
-    session_maker: Annotated[sessionmaker, Depends(create_ro_sessionmaker)],
+    session_maker: Annotated[
+        async_sessionmaker[AsyncSession], Depends(create_ro_sessionmaker)
+    ],
 ) -> AsyncGenerator[AsyncSession, None]:
     async with session_maker() as session:
         yield session
