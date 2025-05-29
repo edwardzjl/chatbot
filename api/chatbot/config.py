@@ -8,6 +8,8 @@ from pydantic import BaseModel, Field, PostgresDsn, field_validator, model_valid
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from chatbot.llm_client import ReasoningChatOpenai, llm_client_type_factory
+from chatbot.llm_client.base import StreamThinkingProcessor
+
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +43,7 @@ class Settings(BaseSettings):
 
     @field_validator("llms", mode="before")
     @classmethod
-    def construct_openai_client(cls, value: Any) -> ChatOpenAI:
+    def construct_openai_clients(cls, value: Any) -> list[ChatOpenAI]:
         if not isinstance(value, list):
             raise ValueError("llms must be a list")
         if not all(isinstance(item, dict) for item in value):
@@ -68,7 +70,8 @@ class Settings(BaseSettings):
                 clz = llm_client_type_factory(
                     item["base_url"], (item.get("metadata") or {}).get("provider")
                 )
-                clients.append(clz(**item))
+                thinking_processor = StreamThinkingProcessor()
+                clients.append(clz(thinking_processor=thinking_processor, **item))
             except:  # noqa: E722
                 logger.exception("Error guessing provider for %s", item)
                 clients.append(ReasoningChatOpenai(**item))
