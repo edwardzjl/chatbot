@@ -12,7 +12,7 @@ from fastapi import (
 from langchain_core.messages import AIMessage, BaseMessage, trim_messages
 from langchain_core.runnables import Runnable
 from langgraph.graph.graph import CompiledGraph
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from chatbot.dependencies import UserIdHeaderDep
 from chatbot.dependencies.agent import AgentWrapperDep, SmrChainWrapperDep
@@ -160,7 +160,9 @@ async def chat(
 
 
 async def validate_conversation_owner(
-    session_maker: sessionmaker, conversation_id: UUID | str, userid: str
+    session_maker: async_sessionmaker[AsyncSession],
+    conversation_id: UUID | str,
+    userid: str,
 ) -> Conversation:
     """Validate that the user owns the conversation."""
     if not isinstance(conversation_id, UUID):
@@ -176,7 +178,7 @@ async def validate_conversation_owner(
 
 
 async def update_conversation_last_message_at(
-    session_maker: sessionmaker, conv: Conversation
+    session_maker: async_sessionmaker[AsyncSession], conv: Conversation
 ):
     """Update the conversation's last_message_at timestamp."""
     conv.last_message_at = utcnow()
