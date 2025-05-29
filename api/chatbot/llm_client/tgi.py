@@ -29,7 +29,13 @@ class TGIReasoningChatOpenai(ReasoningChatOpenai):
     @cache
     def get_context_length(self) -> int:
         model_info = self.get_model_info()
-        return model_info.get("max_total_tokens")
+
+        max_model_len = model_info.get("max_total_tokens")
+        # Should not happen, for type hint only.
+        assert max_model_len is not None, (
+            f"Model {self.model_name} does not have a max_context_length."
+        )
+        return max_model_len
 
     @override
     def get_num_tokens_from_messages(

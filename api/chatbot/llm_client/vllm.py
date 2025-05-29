@@ -33,7 +33,13 @@ class VLLMReasoningChatOpenai(ReasoningChatOpenai):
         model_info = next(
             (item for item in models if item["id"] == self.model_name), {}
         )
-        return model_info.get("max_model_len")
+
+        max_model_len = model_info.get("max_context_length")
+        # Should not happen, for type hint only.
+        assert max_model_len is not None, (
+            f"Model {self.model_name} does not have a max_context_length."
+        )
+        return max_model_len
 
     @override
     def get_num_tokens_from_messages(
