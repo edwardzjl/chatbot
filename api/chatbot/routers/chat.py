@@ -78,8 +78,11 @@ async def chat(
                     version="v2",
                 ):
                     event_name: str = event["name"]
-                    if event_name.startswith("_"):
-                        # events starts with "_" are langchain's internal events, for example '_Exception'
+                    if event_name.startswith("_") or event_name.startswith(
+                        "ChannelWrite"
+                    ):
+                        # events starts with "_" or "ChannelWrite" are langchain's internal events,
+                        # for example '_Exception' and 'ChannelWrite<agent,file,agent_outcome,intermediate_steps>'
                         # skip for mainly 2 reasons:
                         # 1. we don't want to expose internal event to the user (websocket or history)
                         # 2. we want to keep the conversation history as short as possible
