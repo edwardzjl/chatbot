@@ -96,7 +96,9 @@ class HttpClient:
     ) -> _RequestContextManager:
         """A request wrapper. Mainly for retrying."""
         async with self._with_asession() as session:
-            return session.request(method, url, **kwargs)
+            async with session.request(method, url, **kwargs) as response:
+                await response.read()
+                return response
 
     def __getattr__(self, name: str):
         """Dynamically handle HTTP methods like get(), post(), etc."""
