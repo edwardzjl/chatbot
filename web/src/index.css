@@ -37,6 +37,10 @@ body:not(.user-is-tabbing) textarea:focus {
   outline: none;
 }
 
+body:has(dialog[open]) {
+  overflow: hidden;
+}
+
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
