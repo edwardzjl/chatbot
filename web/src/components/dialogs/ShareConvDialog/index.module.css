@@ -6,6 +6,10 @@
   border-radius: 5px;
 }
 
+dialog::backdrop {
+  backdrop-filter: blur(2px);
+}
+
 .dialogContent {
   display: flex;
   flex-direction: row;
