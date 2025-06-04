@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from langchain_core.messages import BaseMessage
 
 router = APIRouter(
-    prefix="/api/conversations/{conversation_id}/messages",
+    prefix="/conversations/{conversation_id}/messages",
     tags=["messages"],
 )
 

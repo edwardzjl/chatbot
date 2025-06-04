@@ -22,7 +22,7 @@ from chatbot.schemas import (
 )
 
 router = APIRouter(
-    prefix="/api/conversations",
+    prefix="/conversations",
     tags=["conversation"],
 )
 
