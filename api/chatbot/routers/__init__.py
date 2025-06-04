@@ -2,6 +2,7 @@ from .chat import router as chat_router
 from .conversation import router as conv_router
 from .files import router as files_router
 from .message import router as message_router
+from .probes import router as probes_router
 from .share import router as share_router
 
 __all__ = [
@@ -9,5 +10,6 @@ __all__ = [
     "conv_router",
     "files_router",
     "message_router",
+    "probes_router",
     "share_router",
 ]

@@ -28,6 +28,7 @@ from .routers import (
     conv_router,
     files_router,
     message_router,
+    probes_router,
     share_router,
 )
 from chatbot.schemas import UserProfile
@@ -99,17 +100,13 @@ app.routes.append(metrics_route)
 
 app.include_router(chat_router, prefix="/api")
 app.include_router(conv_router, prefix="/api")
-app.include_router(message_router, prefix="/api")
-app.include_router(share_router, prefix="/api")
 app.include_router(files_router, prefix="/api")
+app.include_router(message_router, prefix="/api")
+app.include_router(probes_router, prefix="/api")
+app.include_router(share_router, prefix="/api")
 
 
 add_pagination(app)
-
-
-@app.get("/api/healthz")
-def healthz():
-    return "OK"
 
 
 @app.get("/api/userinfo")
