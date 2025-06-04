@@ -26,20 +26,24 @@ class EndpointFilter(logging.Filter):
         return record.getMessage().find(self._path) == -1
 
 
+paths_to_filter = [
+    # API doc endpoints
+    "/api/openapi.json",
+    "/api/docs",
+    "/api/redoc",
+    # probe and metric endpoints
+    "/healthz",
+    "/metrics",
+    # Static file endpoints
+    "/static/",
+    "/assets/",
+    "/favicon.ico",
+    "/logo192.png",
+    "/vite.svg",
+    "/manifest.json",
+]
+
 uvicorn_logger = logging.getLogger("uvicorn.access")
-# API doc endpoints
-uvicorn_logger.addFilter(EndpointFilter(path="/api/openapi.json"))
-uvicorn_logger.addFilter(EndpointFilter(path="/api/docs"))
-uvicorn_logger.addFilter(EndpointFilter(path="/api/redoc"))
-# Health and metrics endpoints
-uvicorn_logger.addFilter(EndpointFilter(path="/api/healthz"))
-uvicorn_logger.addFilter(EndpointFilter(path="/metrics"))
-# Static file endpoints
-## CRA build files
-uvicorn_logger.addFilter(EndpointFilter(path="/static/"))
-uvicorn_logger.addFilter(EndpointFilter(path="/favicon.ico"))
-uvicorn_logger.addFilter(EndpointFilter(path="/logo192.png"))
-uvicorn_logger.addFilter(EndpointFilter(path="/manifest.json"))
-## Vite build files
-uvicorn_logger.addFilter(EndpointFilter(path="/assets/"))
-uvicorn_logger.addFilter(EndpointFilter(path="/vite.svg"))
+for path in paths_to_filter:
+    # Add a filter for each path to exclude it from the logs
+    uvicorn_logger.addFilter(EndpointFilter(path=path))
