@@ -5,7 +5,7 @@ from chatbot.dependencies.commons import SettingsDep
 
 
 router = APIRouter(
-    prefix="/api/files",
+    prefix="/files",
     tags=["files"],
 )
 

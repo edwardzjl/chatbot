@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 
 # jlzhou: The resource name ("shares") is recommended by gemini, don't blame me.
 router = APIRouter(
-    prefix="/api/shares",
+    prefix="/shares",
     tags=["share"],
 )
 
