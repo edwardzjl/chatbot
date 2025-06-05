@@ -33,6 +33,7 @@ paths_to_filter = [
     "/api/redoc",
     # probe and metric endpoints
     "/healthz",
+    "/readyz",
     "/metrics",
     # Static file endpoints
     "/static/",
