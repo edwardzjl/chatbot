@@ -78,6 +78,15 @@ class Settings(BaseSettings):
 
         return clients
 
+    @field_validator("llms", mode="after")
+    @classmethod
+    def atleast_one_clients(cls, value: list[ChatOpenAI]) -> list[ChatOpenAI]:
+        if not value:
+            raise ValueError(
+                "No valid llm configurations provided. Please provide at least one valid configuration."
+            )
+        return value
+
     @field_validator("safety_llm", mode="before")
     @classmethod
     def construct_safety_openai_client(cls, value: Any) -> ChatOpenAI | None:
