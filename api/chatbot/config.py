@@ -45,37 +45,41 @@ class Settings(BaseSettings):
     @classmethod
     def construct_openai_clients(cls, value: Any) -> list[ChatOpenAI]:
         if not isinstance(value, list):
-            raise ValueError("llms must be a list")
-        if not all(isinstance(item, dict) for item in value):
-            return value
-
-        # THIS IS STUPID!
-        # `langchain_openai.chat_models.base.BaseChatOpenAI.extra_body` is typed as `Optional[Mapping[str, Any]]`.
-        # Pydantic does not automatically convert the *values* within this mapping.
-        # Since environment variables are always strings, this results in string values in `extra_body`, e.g.:
-        # {"repetition_penalty": "1.05", "chat_template_kwargs": {"enable_thinking": "True"}}
-        # Crucially, vLLM's "non-thinking mode" requires `extra_body['chat_template_kwargs']['enable_thinking']` to be the *boolean* `False`, not the string "False".
-        # IDK whether other parameters in `extra_body` also require specific types, but converting them proactively is a safe approach.
-        processed = [
-            {
-                key: preprocess_value(val) if key == "extra_body" else val
-                for key, val in item.items()
-            }
-            for item in value
-        ]
+            logger.info("llms configuration is not a list, converting to list.")
+            value = [value]
 
         clients = []
-        for item in processed:
-            try:
-                clz = llm_client_type_factory(
-                    item["base_url"], (item.get("metadata") or {}).get("provider")
-                )
+        for item in value:
+            if isinstance(item, dict):
+                # THIS IS STUPID!
+                # `langchain_openai.chat_models.base.BaseChatOpenAI.extra_body` is typed as `Optional[Mapping[str, Any]]`.
+                # Pydantic does not automatically convert the *values* within this mapping.
+                # Since environment variables are always strings, this results in string values in `extra_body`, e.g.:
+                # {"repetition_penalty": "1.05", "chat_template_kwargs": {"enable_thinking": "True"}}
+                # Crucially, vLLM's "non-thinking mode" requires `extra_body['chat_template_kwargs']['enable_thinking']` to be the *boolean* `False`, not the string "False".
+                # IDK whether other parameters in `extra_body` also require specific types, but converting them proactively is a safe approach.
+                processed = {
+                    key: preprocess_value(val) if key == "extra_body" else val
+                    for key, val in item.items()
+                }
                 thinking_processor = StreamThinkingProcessor()
-                clients.append(clz(thinking_processor=thinking_processor, **item))
-            except:  # noqa: E722
-                logger.exception("Error guessing provider for %s", item)
-                clients.append(ReasoningChatOpenai(**item))
-
+                try:
+                    clz = llm_client_type_factory(
+                        processed["base_url"],
+                        (processed.get("metadata") or {}).get("provider"),
+                    )
+                    clients.append(
+                        clz(thinking_processor=thinking_processor, **processed)
+                    )
+                except:  # noqa: E722
+                    logger.exception("Error guessing provider for %s", processed)
+                    clients.append(
+                        ReasoningChatOpenai(
+                            thinking_processor=thinking_processor, **processed
+                        )
+                    )
+            else:
+                clients.append(item)
         return clients
 
     @field_validator("llms", mode="after")
