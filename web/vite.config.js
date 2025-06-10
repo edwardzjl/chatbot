@@ -4,7 +4,7 @@ import { compression } from 'vite-plugin-compression2'
 
 // https://vite.dev/config/
 export default defineConfig({
-    plugins: [react(), compression({algorithm: 'brotliCompress'})],
+    plugins: [react(), compression({algorithms: ['gzip', 'brotliCompress']})],
     server: {
         port: '3000',
         proxy: {
