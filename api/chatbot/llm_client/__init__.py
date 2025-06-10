@@ -77,4 +77,10 @@ def guess_provider(base_url: str) -> Type[ReasoningChatOpenai]:
             return ReasoningChatOpenai
 
 
-__all__ = ["llm_client_type_factory"]
+__all__ = [
+    "llm_client_type_factory",
+    "ReasoningChatOpenai",
+    "llamacppReasoningChatOpenai",
+    "TGIReasoningChatOpenai",
+    "VLLMReasoningChatOpenai",
+]

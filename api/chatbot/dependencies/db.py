@@ -76,6 +76,9 @@ def create_ro_engine(settings: SettingsDep) -> AsyncEngine:
     )
 
 
+SqlalchemyROEngineDep = Annotated[AsyncEngine, Depends(create_ro_engine)]
+
+
 @cache
 def create_ro_sessionmaker(
     engine: Annotated[AsyncEngine, Depends(create_ro_engine)],
