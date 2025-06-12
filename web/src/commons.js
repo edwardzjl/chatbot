@@ -3,20 +3,25 @@
  * Get ISO 8601 string of the input date in local timezone.
  */
 export const toLocalISOString = (date) => {
-    const isoString = date.toISOString();
     const offset = -date.getTimezoneOffset(); // offset in minutes
     if (offset === 0) {
-        return isoString;
+        return date.toISOString();
     }
 
-    const offsetHours = Math.abs(Math.floor(offset / 60));
-    const offsetMinutes = Math.abs(offset % 60);
-    const offsetSign = offset >= 0 ? "+" : "-";
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const day = date.getDate().toString().padStart(2, "0");
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    const seconds = date.getSeconds().toString().padStart(2, "0");
+    const milliseconds = date.getMilliseconds().toString().padStart(3, "0");
 
-    return isoString.slice(0, -1) + offsetSign +
-        String(offsetHours).padStart(2, "0") +
-        ":" +
-        String(offsetMinutes).padStart(2, "0");
+    // Calculate the timezone offset in hours and minutes
+    const offsetSign = offset >= 0 ? "+" : "-";
+    const offsetHours = Math.abs(Math.floor(offset / 60)).toString().padStart(2, "0");
+    const offsetMinutes = Math.abs(offset % 60).toString().padStart(2, "0");
+
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}${offsetSign}${offsetHours}:${offsetMinutes}`;
 };
 
 export const getFirstLetters = (str) => {
