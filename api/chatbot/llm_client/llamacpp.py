@@ -2,7 +2,7 @@ from functools import cache
 from typing import override
 from urllib.parse import urljoin
 
-from langchain_core.messages import BaseMessage, convert_to_openai_messages
+from langchain_core.messages import BaseMessage
 
 from .base import ReasoningChatOpenai
 
@@ -34,19 +34,12 @@ class llamacppReasoningChatOpenai(ReasoningChatOpenai):
         # Use `list` to create a copy of the messages to avoid modifying the original list
         messages = list(messages)
 
-        oai_messages = convert_to_openai_messages(messages)
-        zipped_messages = zip(oai_messages, messages)
-
-        patched_messages = [
-            self.patch_content(oai_message, lc_message)
-            for oai_message, lc_message in zipped_messages
-        ]
-        _messages = self._truncate_multi_modal_contents(patched_messages)
+        oai_messages = self.convert_messages(messages)
 
         http_client = self.http_client or self.root_client._client
         resp = http_client.post(
             urljoin(self.openai_api_base, "/apply-template"),
-            json={"messages": _messages},
+            json={"messages": oai_messages},
         )
         data = resp.json()
 
