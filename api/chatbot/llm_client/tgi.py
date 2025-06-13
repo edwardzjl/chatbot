@@ -2,7 +2,7 @@ from functools import cache
 from typing import Any, override
 from urllib.parse import urljoin
 
-from langchain_core.messages import BaseMessage, convert_to_openai_messages
+from langchain_core.messages import BaseMessage
 
 from .base import ReasoningChatOpenai
 
@@ -44,20 +44,13 @@ class TGIReasoningChatOpenai(ReasoningChatOpenai):
         # Use `list` to create a copy of the messages to avoid modifying the original list
         messages = list(messages)
 
-        oai_messages = convert_to_openai_messages(messages)
-        zipped_messages = zip(oai_messages, messages)
-
-        patched_messages = [
-            self.patch_content(oai_message, lc_message)
-            for oai_message, lc_message in zipped_messages
-        ]
-        _messages = self._truncate_multi_modal_contents(patched_messages)
+        oai_messages = self.convert_messages(messages)
 
         url = urljoin(self.openai_api_base, "/chat_tokenize")
         http_client = self.http_client or self.root_client._client
         resp = http_client.post(
             url,
-            json={"model": self.model_name, "messages": _messages},
+            json={"model": self.model_name, "messages": oai_messages},
         )
         data = resp.json()
         return len(data["tokenize_response"])

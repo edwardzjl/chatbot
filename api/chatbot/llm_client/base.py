@@ -241,19 +241,7 @@ class ReasoningChatOpenai(ChatOpenAI):
             payload = _construct_responses_api_payload(messages, payload)
         else:
             # section my-patch
-
-            # Use `convert_to_openai_messages` instead of `_convert_message_to_dict`
-            oai_messages = convert_to_openai_messages(messages)
-            zipped_messages = zip(oai_messages, messages)
-
-            payload["messages"] = [
-                self.patch_content(oai_message, lc_message)
-                for oai_message, lc_message in zipped_messages
-            ]
-            payload["messages"] = self._truncate_multi_modal_contents(
-                payload["messages"]
-            )
-
+            payload["messages"] = self.convert_messages(messages)
             # endsection my-patch
 
         # endsection supersuper
@@ -312,6 +300,18 @@ class ReasoningChatOpenai(ChatOpenAI):
         else:
             logger.warning("Unknown message type: %s", message_chunk["type"])
         return chunk
+
+    def convert_messages(self, messages: list[BaseMessage]) -> list[dict]:
+        """Convert Langchain messages to OpenAI messages."""
+        # Use `convert_to_openai_messages` instead of `_convert_message_to_dict`
+        oai_messages = convert_to_openai_messages(messages)
+        zipped_messages = zip(oai_messages, messages)
+
+        patched_messages = [
+            self.patch_content(oai_message, lc_message)
+            for oai_message, lc_message in zipped_messages
+        ]
+        return self._truncate_multi_modal_contents(patched_messages)
 
     def _truncate_multi_modal_contents(self, messages: list[dict]) -> list[dict]:
         """Limit the number of multimodal content in the messages.
