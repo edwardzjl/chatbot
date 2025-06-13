@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, UTC
-from typing import TYPE_CHECKING, Annotated, Callable, Literal, TypeAlias
+from typing import TYPE_CHECKING, Annotated, Any, Callable, Literal, TypeAlias
 
 from langchain_core.messages import BaseMessage, SystemMessage, trim_messages
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.runnables import Runnable
+from langchain_core.runnables import Runnable, RunnablePassthrough
 from langchain_core.tools import BaseTool
 from langchain_core.runnables.config import RunnableConfig
 from langgraph.graph import END, START, MessagesState, StateGraph
@@ -108,6 +108,8 @@ Current date: {date}
             ]
         )
 
+        bound = RunnablePassthrough.assign(date=_get_responding_at) | prompt
+
         windowed_messages: list[BaseMessage] = trim_messages(
             state["messages"],
             token_counter=token_counter,
@@ -115,6 +117,7 @@ Current date: {date}
             start_on="human",  # This means that the first message should be from the user after trimming.
         )
 
+        selected_tools = []
         if tool_picker:
             try:
                 tool_names_out = await tool_picker.ainvoke(
@@ -126,26 +129,18 @@ Current date: {date}
                     if tool_names
                     else []
                 )
-
-                if selected_tools:
-                    bound = prompt | chat_model.bind_tools(selected_tools)
-                else:
-                    bound = prompt | chat_model
             except Exception:
                 logger.exception("Error picking tools, binding all")
-                bound = prompt | chat_model.bind_tools(tools)
+                selected_tools = tools
 
-        last_message_at = windowed_messages[-1].additional_kwargs.get("sent_at")
-        responding_at = (
-            datetime.fromisoformat(last_message_at)
-            if last_message_at
-            else datetime.now(tz=UTC)
-        )
+        if selected_tools:
+            bound = bound | chat_model.bind_tools(selected_tools)
+        else:
+            bound = bound | chat_model
 
         messages = await bound.ainvoke(
             {
                 "messages": windowed_messages,
-                "date": responding_at.strftime("%Y-%m-%d (%A)"),
             }
         )
         return {"messages": [messages]}
@@ -398,3 +393,14 @@ Now, choose the most appropriate tool(s) to proceed with your response.
         include_raw=True,
         tools=[PickTools],
     ).bind(extra_body=extra_body).with_config(tags=["internal"])
+
+
+def _get_responding_at(inputs: dict[str, Any]) -> str:
+    last_message: BaseMessage = inputs["messages"][-1]
+    last_message_at = last_message.additional_kwargs.get("sent_at")
+    responding_at = (
+        datetime.fromisoformat(last_message_at)
+        if last_message_at
+        else datetime.now(tz=UTC)
+    )
+    return responding_at.strftime("%Y-%m-%d (%A)")
