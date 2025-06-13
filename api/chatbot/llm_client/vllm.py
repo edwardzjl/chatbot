@@ -47,17 +47,21 @@ class VLLMReasoningChatOpenai(ReasoningChatOpenai):
     ) -> int:
         # Use `list` to create a copy of the messages to avoid modifying the original list
         messages = list(messages)
-        for message in messages:
-            self.patch_content(message)
+
+        oai_messages = convert_to_openai_messages(messages)
+        zipped_messages = zip(oai_messages, messages)
+
+        patched_messages = [
+            self.patch_content(oai_message, lc_message)
+            for oai_message, lc_message in zipped_messages
+        ]
+        _messages = self._truncate_multi_modal_contents(patched_messages)
 
         url = urljoin(self.openai_api_base, "/tokenize")
         http_client = self.http_client or self.root_client._client
         resp = http_client.post(
             url,
-            json={
-                "model": self.model_name,
-                "messages": convert_to_openai_messages(messages),
-            },
+            json={"model": self.model_name, "messages": _messages},
         )
         data = resp.json()
         return data["count"]
