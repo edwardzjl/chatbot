@@ -8,7 +8,7 @@ from langchain_core.callbacks import (
 )
 from langchain_core.language_models.base import LanguageModelInput
 from langchain_core.load.serializable import Serializable
-from langchain_core.messages import AIMessage, BaseMessage, convert_to_openai_messages
+from langchain_core.messages import BaseMessage, convert_to_openai_messages
 from langchain_core.outputs import ChatGenerationChunk
 from langchain_openai import ChatOpenAI
 from langchain_openai.chat_models.base import _construct_responses_api_payload
@@ -233,15 +233,6 @@ class ReasoningChatOpenai(ChatOpenAI):
 
         messages = self._convert_input(input_).to_messages()
 
-        # section my patch 1
-
-        # It seems that we are safe to manipulate the `lc_messages` here for the following reasons:
-        # - `langchain_core.prompt_values.ChatPromptValue.to_messages` calls `list(self.messages)`, which will create a new list.
-        for lc_message in messages:
-            self.patch_content(lc_message)
-
-        # endsection my patch 1
-
         if stop is not None:
             kwargs["stop"] = stop
 
@@ -249,8 +240,21 @@ class ReasoningChatOpenai(ChatOpenAI):
         if self._use_responses_api(payload):
             payload = _construct_responses_api_payload(messages, payload)
         else:
+            # section my-patch
+
             # Use `convert_to_openai_messages` instead of `_convert_message_to_dict`
-            payload["messages"] = convert_to_openai_messages(messages)
+            oai_messages = convert_to_openai_messages(messages)
+            zipped_messages = zip(oai_messages, messages)
+
+            payload["messages"] = [
+                patch_content(oai_message, lc_message)
+                for oai_message, lc_message in zipped_messages
+            ]
+            payload["messages"] = self._truncate_multi_modal_contents(
+                payload["messages"]
+            )
+
+            # endsection my-patch
 
         # endsection supersuper
 
@@ -266,8 +270,6 @@ class ReasoningChatOpenai(ChatOpenAI):
                     message["role"] = "developer"
 
         # endsection super
-
-        payload["messages"] = self._truncate_multi_modal_contents(payload["messages"])
 
         return payload
 
@@ -370,16 +372,16 @@ class ReasoningChatOpenai(ChatOpenAI):
 
         return messages
 
-    def patch_content(self, lc_message: BaseMessage) -> None:
-        if (
-            isinstance(lc_message, AIMessage)
-            and (raw_content := lc_message.additional_kwargs.get("raw_content"))
-            is not None
-        ):
-            lc_message.content = raw_content
 
-        if attachments := lc_message.additional_kwargs.get("attachments"):
-            lc_message.content = attach_attachments(lc_message.content, attachments)
+def patch_content(oai_message: dict, lc_message: BaseMessage) -> dict:
+    if (raw_content := lc_message.additional_kwargs.get("raw_content")) is not None:
+        oai_message["content"] = raw_content
+
+    # Do not use None check here, as it might be an empty list.
+    if attachments := lc_message.additional_kwargs.get("attachments"):
+        oai_message["content"] = attach_attachments(oai_message["content"], attachments)
+
+    return oai_message
 
 
 def attach_attachments(content: str | list[dict[str, Any]], attachments: list) -> list:
