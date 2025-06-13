@@ -247,7 +247,7 @@ class ReasoningChatOpenai(ChatOpenAI):
             zipped_messages = zip(oai_messages, messages)
 
             payload["messages"] = [
-                patch_content(oai_message, lc_message)
+                self.patch_content(oai_message, lc_message)
                 for oai_message, lc_message in zipped_messages
             ]
             payload["messages"] = self._truncate_multi_modal_contents(
@@ -372,16 +372,17 @@ class ReasoningChatOpenai(ChatOpenAI):
 
         return messages
 
+    def patch_content(self, oai_message: dict, lc_message: BaseMessage) -> dict:
+        if (raw_content := lc_message.additional_kwargs.get("raw_content")) is not None:
+            oai_message["content"] = raw_content
 
-def patch_content(oai_message: dict, lc_message: BaseMessage) -> dict:
-    if (raw_content := lc_message.additional_kwargs.get("raw_content")) is not None:
-        oai_message["content"] = raw_content
+        # Do not use None check here, as it might be an empty list.
+        if attachments := lc_message.additional_kwargs.get("attachments"):
+            oai_message["content"] = attach_attachments(
+                oai_message["content"], attachments
+            )
 
-    # Do not use None check here, as it might be an empty list.
-    if attachments := lc_message.additional_kwargs.get("attachments"):
-        oai_message["content"] = attach_attachments(oai_message["content"], attachments)
-
-    return oai_message
+        return oai_message
 
 
 def attach_attachments(content: str | list[dict[str, Any]], attachments: list) -> list:
