@@ -56,3 +56,24 @@ jobs:
         run: pipenv sync -d
       - name: Test
         run: make test
+
+  # We need database access to enable this job
+  check-db:
+    if: false
+    defaults:
+      run:
+        working-directory: api
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: "pipenv"
+      - name: Install pipenv
+        run: pip install pipenv
+      - name: Install Dependencies
+        run: pipenv sync -d
+      - name: Check Database
+        run: alembic check
