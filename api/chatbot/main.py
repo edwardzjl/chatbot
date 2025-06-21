@@ -22,7 +22,6 @@ from starlette.routing import Mount
 from chatbot.dependencies import EmailHeaderDep, UserIdHeaderDep, UsernameHeaderDep
 from chatbot.dependencies.commons import SettingsDep, get_settings
 from chatbot.dependencies.db import create_engine
-from chatbot.models import Base
 from .routers import (
     chat_router,
     conv_router,
@@ -43,11 +42,7 @@ async def lifespan(app: FastAPI):
     settings = get_settings()
 
     sqlalchemy_engine = create_engine(settings)
-    # Create tables for ORM models
     async with sqlalchemy_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-
-        # Create checkpointer tables
         if settings.db_primary_url.startswith("postgresql"):
             from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 
