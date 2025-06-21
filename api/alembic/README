@@ -1,0 +1,10 @@
+Generic single-database configuration.
+
+Common usage:
+
+```sh
+alembic revision --autogenerate -m "Init DB"
+alembic upgrade head
+```
+
+See <https://alembic.sqlalchemy.org/en/latest/autogenerate.html>

@@ -35,6 +35,7 @@ uvloop = {version = "*", sys_platform = "!= 'win32'"}
 websockets = ">=12.0"
 
 [dev-packages]
+alembic = "*"
 psycopg = {extras = ["binary"], version = "*"}
 ruff = "*"
 pre-commit = "*"
