@@ -2270,7 +2270,7 @@ __metadata:
     remark-gfm: "npm:^4.0.1"
     remark-math: "npm:^6.0.0"
     vite: "npm:^6.3.5"
-    vite-plugin-compression2: "npm:^2.0.1"
+    vite-plugin-compression2: "npm:^2.2.0"
     vitest: "npm:^3.2.3"
   languageName: unknown
   linkType: soft
@@ -6841,13 +6841,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-plugin-compression2@npm:^2.0.1":
-  version: 2.0.1
-  resolution: "vite-plugin-compression2@npm:2.0.1"
+"vite-plugin-compression2@npm:^2.2.0":
+  version: 2.2.0
+  resolution: "vite-plugin-compression2@npm:2.2.0"
   dependencies:
     "@rollup/pluginutils": "npm:^5.1.0"
     tar-mini: "npm:^0.2.0"
-  checksum: 10c0/c85c7ebb40269a1e100d6db7c24b21f36a5a17e8c639c16009bba81a56140a82043765e65d3f69a4164605681d43e36163cfadfb770e90205e5da6e3d91d0279
+  checksum: 10c0/d15fb620b8d2b8eef995fb4fcc9628c3aa283a885a286cdda40e5c432548a17d308b82b51e090c1cb40eae21372ad1fdf9acbd375b6ca1bb0eef40aa1704ae80
   languageName: node
   linkType: hard
 
