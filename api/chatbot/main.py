@@ -42,7 +42,11 @@ async def lifespan(app: FastAPI):
     settings = get_settings()
 
     sqlalchemy_engine = create_engine(settings)
-    async with sqlalchemy_engine.begin() as conn:
+    autocommit_engine = sqlalchemy_engine.execution_options(
+        isolation_level="AUTOCOMMIT"
+    )
+
+    async with autocommit_engine.begin() as conn:
         if settings.db_primary_url.startswith("postgresql"):
             from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 
