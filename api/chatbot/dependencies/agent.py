@@ -12,7 +12,7 @@ from langchain_core.runnables import Runnable
 from langchain_core.tools import BaseTool
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.base import BaseCheckpointSaver
-from langgraph.graph.graph import CompiledGraph
+from langgraph.graph.state import CompiledStateGraph
 from langgraph.types import StateSnapshot
 
 from chatbot.agent import create_agent
@@ -93,7 +93,7 @@ async def get_agent(
     tools: Annotated[list[BaseTool], Depends(get_tools)],
     settings: SettingsDep,
     select_model: Annotated[str | None, ModelHeader()] = None,
-) -> AsyncGenerator[CompiledGraph, None]:
+) -> AsyncGenerator[CompiledStateGraph, None]:
     llm = settings.must_get_llm(select_model)
 
     async with get_checkpointer(settings, engine) as checkpointer:
@@ -110,19 +110,19 @@ def get_agent_wrapper(
     engine: SqlalchemyEngineDep,
     tools: Annotated[list[BaseTool], Depends(get_tools)],
     settings: SettingsDep,
-) -> partial[AsyncGenerator[CompiledGraph, None]]:
+) -> partial[AsyncGenerator[CompiledStateGraph, None]]:
     return partial(get_agent, engine, tools, settings)
 
 
 AgentWrapperDep = Annotated[
-    partial[AsyncGenerator[CompiledGraph, None]], Depends(get_agent_wrapper)
+    partial[AsyncGenerator[CompiledStateGraph, None]], Depends(get_agent_wrapper)
 ]
 
 
 async def get_agent_for_state(
     engine: SqlalchemyEngineDep,
     settings: SettingsDep,
-) -> AsyncGenerator[CompiledGraph, None]:
+) -> AsyncGenerator[CompiledStateGraph, None]:
     """Get an agent only for accessing the state.
 
     Only the checkpointer is needed in such usecase.
@@ -140,7 +140,7 @@ async def get_agent_for_state(
 
 
 AgentForStateDep = Annotated[
-    AsyncGenerator[CompiledGraph, None], Depends(get_agent_for_state)
+    AsyncGenerator[CompiledStateGraph, None], Depends(get_agent_for_state)
 ]
 
 
