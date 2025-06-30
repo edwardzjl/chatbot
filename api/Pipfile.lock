@@ -959,12 +959,12 @@
         },
         "langgraph": {
             "hashes": [
-                "sha256:273b02782669a474ba55ef4296607ac3bac9e93639d37edc0d32d8cf1a41a45b",
-                "sha256:48445ac8a351b7bdc6dee94e2e6a597f8582e0516ebd9dea0fd0164ae01b915e"
+                "sha256:74e33efb6527602b79bfcc4e3d0bfbb15b8d86fa25bb417fdd8d3306456cf8de",
+                "sha256:7ad6d42f2a44e93e225cc65c59fac51c55ae549c9824adc22971d00e5ac26443"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.9'",
-            "version": "==0.4.8"
+            "version": "==0.5.0"
         },
         "langgraph-checkpoint": {
             "hashes": [
@@ -994,27 +994,27 @@
         },
         "langgraph-prebuilt": {
             "hashes": [
-                "sha256:0a5d1f651f97c848cd1c3dd0ef017614f47ee74effb7375b59ac639e41b253f9",
-                "sha256:72de5ef1d969a8f02ad7adc7cc1915bb9b4467912d57ba60da34b5a70fdad1f6"
+                "sha256:43a361612b8fb9784338bfc481245e3422ca366ca8e43f68c4c6723d7eb8b9f4",
+                "sha256:60a752c62a954fab816e9047e1dd05df8f2fabbdf59e1c745d9e2f700202662f"
             ],
             "markers": "python_version >= '3.9'",
-            "version": "==0.2.2"
+            "version": "==0.5.1"
         },
         "langgraph-sdk": {
             "hashes": [
-                "sha256:47f2b04a964f40a610c1636b387ea52f961ce7a233afc21d3103e5faac8ca1e5",
-                "sha256:cc65ec33bcdf8c7008d43da2d2b0bc1dd09f98d21a7f636828d9379535069cf9"
+                "sha256:396d8195881830700e2d54a0a9ee273e8b1173428e667502ef9c182a3cec7ab7",
+                "sha256:925d3fcc7a26361db04f9c4beb3ec05bc36361b2a836d181ff2ab145071ec3ce"
             ],
             "markers": "python_version >= '3.9'",
-            "version": "==0.1.70"
+            "version": "==0.1.72"
         },
         "langsmith": {
             "hashes": [
-                "sha256:19c4c40bbb6735cb1136c453b2edcde265ca5ba1b108b7e0e3583ec4bda28625",
-                "sha256:ae8ec403fb2b9cabcfc3b0c54556d65555598c85879dac83b009576927f7eb1d"
+                "sha256:014c68329bd085bd6c770a6405c61bb6881f82eb554ce8c4d1984b0035fd1716",
+                "sha256:70c53bbff24a7872e88e6fa0af98270f4986a6e364f9e85db1cc5636defa4d66"
             ],
             "markers": "python_version >= '3.9'",
-            "version": "==0.4.1"
+            "version": "==0.4.4"
         },
         "markdownify": {
             "hashes": [
