@@ -11,7 +11,7 @@ from fastapi import (
 )
 from langchain_core.messages import AIMessage, BaseMessage, trim_messages
 from langchain_core.runnables import Runnable
-from langgraph.graph.graph import CompiledGraph
+from langgraph.graph.state import CompiledStateGraph
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from chatbot.dependencies import UserIdHeaderDep
@@ -189,7 +189,7 @@ async def update_conversation_last_message_at(
 
 
 async def generate_conversation_title(
-    agent: CompiledGraph,
+    agent: CompiledStateGraph,
     smry_chain_wrapper: partial[Runnable],
     conversation_id: str,
     selected_model: str,

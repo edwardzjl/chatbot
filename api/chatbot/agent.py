@@ -19,7 +19,7 @@ from chatbot.utils import is_valid_positive_int
 if TYPE_CHECKING:
     from langchain_core.language_models import BaseChatModel
     from langgraph.checkpoint.base import BaseCheckpointSaver
-    from langgraph.graph.graph import CompiledGraph
+    from langgraph.graph.state import CompiledStateGraph
 
 
 logger = logging.getLogger(__name__)
@@ -41,7 +41,7 @@ def create_agent(
     ) = None,
     context_length: int | None = None,
     tools: list[BaseTool] = None,
-) -> CompiledGraph:
+) -> CompiledStateGraph:
     token_counter, max_input_tokens, _ = _resolve_token_management_params(
         chat_model, token_counter, context_length
     )
