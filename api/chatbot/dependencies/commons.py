@@ -29,13 +29,24 @@ def get_http_client(request: Request = None, websocket: WebSocket = None) -> Htt
     return HttpClient(session=session, asession=asession)
 
 
-def uuid_or_404(param_name: str, message: str = None):
+def uuid_or_404(param_name: str, resource_name: str = "Resource"):
+    """Returns a dependency function that parses a UUID from the given path param.
+    If the value is not a valid UUID, raises a 404 error with a detailed message.
+
+    Args:
+        param_name: The name of the path parameter (e.g. "conversation_id").
+        resource_name: The display name of the resource for error messages (e.g. "Conversation").
+
+    Returns:
+        A dependency callable that returns a UUID or raises HTTP 404.
+    """
+
     def dep(id_str: str = Path(..., alias=param_name)) -> UUID:
         try:
             return UUID(id_str)
         except ValueError:
             raise HTTPException(
-                status_code=404, detail=message or f"Resource [{id_str}] not found."
+                status_code=404, detail=f"{resource_name} [{id_str}] not found."
             )
 
     return Depends(dep)

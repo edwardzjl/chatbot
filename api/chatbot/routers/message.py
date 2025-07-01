@@ -23,9 +23,7 @@ router = APIRouter(
 # TODO: merge thumbup and thumbdown into one endpoint called feedback?
 @router.put("/{message_id}/thumbup")
 async def thumbup(
-    conversation_id: Annotated[
-        UUID, uuid_or_404("conversation_id", "Conversation not found.")
-    ],
+    conversation_id: Annotated[UUID, uuid_or_404("conversation_id", "Conversation")],
     message_id: str,
     userid: UserIdHeaderDep,
     session: SqlalchemyROSessionDep,
@@ -53,9 +51,7 @@ async def thumbup(
 
 @router.put("/{message_id}/thumbdown")
 async def thumbdown(
-    conversation_id: Annotated[
-        UUID, uuid_or_404("conversation_id", "Conversation not found.")
-    ],
+    conversation_id: Annotated[UUID, uuid_or_404("conversation_id", "Conversation")],
     message_id: str,
     userid: UserIdHeaderDep,
     session: SqlalchemyROSessionDep,
