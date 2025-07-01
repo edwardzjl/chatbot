@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException
@@ -7,6 +7,7 @@ from chatbot.dependencies import (
     AgentForStateDep,
     SqlalchemyROSessionDep,
     UserIdHeaderDep,
+    uuid_or_404,
 )
 from chatbot.models import Conversation as ORMConversation
 
@@ -22,7 +23,9 @@ router = APIRouter(
 # TODO: merge thumbup and thumbdown into one endpoint called feedback?
 @router.put("/{message_id}/thumbup")
 async def thumbup(
-    conversation_id: UUID,
+    conversation_id: Annotated[
+        UUID, uuid_or_404("conversation_id", "Conversation not found.")
+    ],
     message_id: str,
     userid: UserIdHeaderDep,
     session: SqlalchemyROSessionDep,
@@ -50,7 +53,9 @@ async def thumbup(
 
 @router.put("/{message_id}/thumbdown")
 async def thumbdown(
-    conversation_id: UUID,
+    conversation_id: Annotated[
+        UUID, uuid_or_404("conversation_id", "Conversation not found.")
+    ],
     message_id: str,
     userid: UserIdHeaderDep,
     session: SqlalchemyROSessionDep,

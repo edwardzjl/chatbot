@@ -1,3 +1,5 @@
+from typing import Annotated
+
 from fastapi import APIRouter, HTTPException
 from fastapi_pagination.cursor import CursorPage
 from fastapi_pagination.ext.sqlalchemy import paginate
@@ -11,6 +13,7 @@ from chatbot.dependencies import (
     SqlalchemyROSessionDep,
     SqlalchemySessionDep,
     UserIdHeaderDep,
+    uuid_or_404,
 )
 from chatbot.models import Conversation as ORMConversation
 from chatbot.schemas import (
@@ -43,7 +46,9 @@ async def get_conversations(
 
 @router.get("/{conversation_id}")
 async def get_conversation(
-    conversation_id: UUID,
+    conversation_id: Annotated[
+        UUID, uuid_or_404("conversation_id", "Conversation not found.")
+    ],
     userid: UserIdHeaderDep,
     session: SqlalchemyROSessionDep,
     agent_state: AgentStateDep,
@@ -74,7 +79,9 @@ async def create_conversation(
 
 @router.put("/{conversation_id}")
 async def update_conversation(
-    conversation_id: UUID,
+    conversation_id: Annotated[
+        UUID, uuid_or_404("conversation_id", "Conversation not found.")
+    ],
     payload: UpdateConversation,
     userid: UserIdHeaderDep,
     session: SqlalchemySessionDep,
@@ -93,7 +100,7 @@ async def update_conversation(
 
 @router.delete("/{conversation_id}", status_code=204)
 async def delete_conversation(
-    conversation_id: UUID,
+    conversation_id: str,
     userid: UserIdHeaderDep,
     session: SqlalchemySessionDep,
 ) -> None:
@@ -108,7 +115,9 @@ async def delete_conversation(
 
 @router.post("/{conversation_id}/summarization", status_code=201)
 async def summarize(
-    conversation_id: UUID,
+    conversation_id: Annotated[
+        UUID, uuid_or_404("conversation_id", "Conversation not found.")
+    ],
     userid: UserIdHeaderDep,
     session: SqlalchemyROSessionDep,
     agent_state: AgentStateDep,

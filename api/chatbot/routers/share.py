@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Annotated, Any
 from urllib.parse import urljoin
 from uuid import UUID, uuid4
 
@@ -11,6 +11,7 @@ from chatbot.dependencies import (
     SqlalchemyROSessionDep,
     SqlalchemySessionDep,
     UserIdHeaderDep,
+    uuid_or_404,
 )
 from chatbot.models import Conversation as ORMConv
 from chatbot.models import Share as ORMShare
@@ -43,7 +44,7 @@ async def get_shares(
 
 @router.get("/{share_id}")
 async def get_share(
-    share_id: UUID,
+    share_id: Annotated[UUID, uuid_or_404("share_id", "Share not found.")],
     session: SqlalchemyROSessionDep,
     agent: AgentForStateDep,
 ) -> Share:
@@ -93,7 +94,7 @@ async def create_share(
 
 @router.delete("/{share_id}", status_code=204)
 async def delete_share(
-    share_id: UUID,
+    share_id: str,
     userid: UserIdHeaderDep,
     session: SqlalchemySessionDep,
 ) -> None:
