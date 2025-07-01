@@ -28,11 +28,7 @@ async def thumbup(
     session: SqlalchemyROSessionDep,
     agent: AgentForStateDep,
 ) -> None:
-    conv: ORMConversation = await session.get(ORMConversation, conversation_id)
-    if not conv:
-        raise HTTPException(
-            status_code=404, detail=f"Conversation {conversation_id} not found"
-        )
+    conv: ORMConversation = await session.get_one(ORMConversation, conversation_id)
     if conv.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
 
@@ -60,11 +56,7 @@ async def thumbdown(
     session: SqlalchemyROSessionDep,
     agent: AgentForStateDep,
 ) -> None:
-    conv: ORMConversation = await session.get(ORMConversation, conversation_id)
-    if not conv:
-        raise HTTPException(
-            status_code=404, detail=f"Conversation {conversation_id} not found"
-        )
+    conv: ORMConversation = await session.get_one(ORMConversation, conversation_id)
     if conv.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
 

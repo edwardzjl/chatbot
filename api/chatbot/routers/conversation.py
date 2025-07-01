@@ -48,11 +48,7 @@ async def get_conversation(
     session: SqlalchemyROSessionDep,
     agent_state: AgentStateDep,
 ) -> ConversationDetail:
-    conv: ORMConversation = await session.get(ORMConversation, conversation_id)
-    if not conv:
-        raise HTTPException(
-            status_code=404, detail=f"Conversation {conversation_id} not found"
-        )
+    conv: ORMConversation = await session.get_one(ORMConversation, conversation_id)
     if conv.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
 
@@ -83,11 +79,7 @@ async def update_conversation(
     userid: UserIdHeaderDep,
     session: SqlalchemySessionDep,
 ) -> ConversationDetail:
-    conv: ORMConversation = await session.get(ORMConversation, conversation_id)
-    if not conv:
-        raise HTTPException(
-            status_code=404, detail=f"Conversation {conversation_id} not found"
-        )
+    conv: ORMConversation = await session.get_one(ORMConversation, conversation_id)
     if conv.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
 
@@ -122,11 +114,7 @@ async def summarize(
     agent_state: AgentStateDep,
     smry_chain: SmrChainDep,
 ) -> dict[str, str]:
-    conv: ORMConversation = await session.get(ORMConversation, conversation_id)
-    if not conv:
-        raise HTTPException(
-            status_code=404, detail=f"Conversation {conversation_id} not found"
-        )
+    conv: ORMConversation = await session.get_one(ORMConversation, conversation_id)
     if conv.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
 

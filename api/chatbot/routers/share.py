@@ -48,9 +48,7 @@ async def get_share(
     agent: AgentForStateDep,
 ) -> Share:
     """Get a share by id"""
-    share: ORMShare = await session.get(ORMShare, share_id)
-    if not share:
-        raise HTTPException(status_code=404, detail=f"Share {share_id} not found")
+    share: ORMShare = await session.get_one(ORMShare, share_id)
     res = Share.model_validate(share)
 
     config = {"configurable": share.snapshot_ref}
@@ -70,11 +68,7 @@ async def create_share(
     agent: AgentForStateDep,
 ) -> Share:
     # TODO: maybe only get the conv.owner
-    conv: ORMConv = await session.get(ORMConv, payload.source_id)
-    if not conv:
-        raise HTTPException(
-            status_code=404, detail=f"Conversation {payload.source_id} not found"
-        )
+    conv: ORMConv = await session.get_one(ORMConv, payload.source_id)
     if conv.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
 
