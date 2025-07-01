@@ -46,9 +46,7 @@ async def get_conversations(
 
 @router.get("/{conversation_id}")
 async def get_conversation(
-    conversation_id: Annotated[
-        UUID, uuid_or_404("conversation_id", "Conversation not found.")
-    ],
+    conversation_id: Annotated[UUID, uuid_or_404("conversation_id", "Conversation")],
     userid: UserIdHeaderDep,
     session: SqlalchemyROSessionDep,
     agent_state: AgentStateDep,
@@ -79,9 +77,7 @@ async def create_conversation(
 
 @router.put("/{conversation_id}")
 async def update_conversation(
-    conversation_id: Annotated[
-        UUID, uuid_or_404("conversation_id", "Conversation not found.")
-    ],
+    conversation_id: Annotated[UUID, uuid_or_404("conversation_id", "Conversation")],
     payload: UpdateConversation,
     userid: UserIdHeaderDep,
     session: SqlalchemySessionDep,
@@ -115,9 +111,7 @@ async def delete_conversation(
 
 @router.post("/{conversation_id}/summarization", status_code=201)
 async def summarize(
-    conversation_id: Annotated[
-        UUID, uuid_or_404("conversation_id", "Conversation not found.")
-    ],
+    conversation_id: Annotated[UUID, uuid_or_404("conversation_id", "Conversation")],
     userid: UserIdHeaderDep,
     session: SqlalchemyROSessionDep,
     agent_state: AgentStateDep,

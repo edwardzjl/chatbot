@@ -44,7 +44,7 @@ async def get_shares(
 
 @router.get("/{share_id}")
 async def get_share(
-    share_id: Annotated[UUID, uuid_or_404("share_id", "Share not found.")],
+    share_id: Annotated[UUID, uuid_or_404("share_id", "Share")],
     session: SqlalchemyROSessionDep,
     agent: AgentForStateDep,
 ) -> Share:
