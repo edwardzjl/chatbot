@@ -70,13 +70,13 @@ async def get_checkpointer(
     settings: SettingsDep,
     engine: SqlalchemyEngineDep,
 ) -> AsyncGenerator[BaseCheckpointSaver, None]:
-    if settings.db_primary_url.startswith("postgresql"):
+    if settings.db_primary_url.scheme.startswith("postgresql"):
         from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 
         async with get_raw_conn(engine) as conn:
             yield AsyncPostgresSaver(conn)
 
-    elif settings.db_primary_url.startswith("sqlite"):
+    elif settings.db_primary_url.scheme.startswith("sqlite"):
         from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
         async with get_raw_conn(engine) as conn:
