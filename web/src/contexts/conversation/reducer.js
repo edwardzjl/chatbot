@@ -1,3 +1,5 @@
+import { createComparator } from "@/commons";
+
 
 export const conversationReducer = (groupedConvsArray, action) => {
     switch (action.type) {
@@ -192,21 +194,10 @@ export const flattenAndSortGroupedConvs = (groupedConvs) => {
  * The function first compare conversations by whether they are pinned, with pinned conversations appearing first.
  * If two conversations have the same pinned status, they are then compared by the `last_message_at` timestamp, with the most recent messages appearing first.
  */
-export const compareConvs = (a, b) => {
-    if (a.pinned && !b.pinned) {
-        return -1;
-    }
-    if (!a.pinned && b.pinned) {
-        return 1;
-    }
-    if (a.last_message_at > b.last_message_at) {
-        return -1;
-    }
-    if (a.last_message_at < b.last_message_at) {
-        return 1;
-    }
-    return 0;
-};
+export const compareConvs = createComparator([
+    { key: "pinned", order: "desc" },
+    { key: "last_message_at", order: "desc" },
+]);
 
 /**
  * Calculates and returns key date objects for grouping conversations.

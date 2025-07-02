@@ -64,3 +64,34 @@ export const formatTimestamp = (timestamp) => {
         second: "2-digit",
     });
 };
+
+export const createComparator = (options) => {
+    return (a, b) => {
+        for (const { key, order = "asc", compareFn } of options) {
+            const aVal = a[key];
+            const bVal = b[key];
+
+            let result = 0;
+
+            if (typeof compareFn === "function") {
+                result = compareFn(a, b);
+            } else {
+                if (aVal == null && bVal != null) result = -1;
+                else if (aVal != null && bVal == null) result = 1;
+                else if (aVal == null && bVal == null) result = 0;
+                else if (typeof aVal === "string" && typeof bVal === "string") {
+                    result = aVal.localeCompare(bVal);
+                } else if (aVal instanceof Date && bVal instanceof Date) {
+                    result = aVal.getTime() - bVal.getTime();
+                } else {
+                    result = aVal > bVal ? 1 : aVal < bVal ? -1 : 0;
+                }
+            }
+
+            if (result !== 0) {
+                return order === "asc" ? result : -result;
+            }
+        }
+        return 0;
+    };
+}
