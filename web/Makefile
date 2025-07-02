@@ -20,6 +20,7 @@ build:
 
 help:
 	@echo '----'
-	@echo 'format                       - run code formatters'
 	@echo 'lint                         - run linters'
+	@echo 'format                       - run code formatters'
 	@echo 'test                         - run unit tests'
+	@echo 'build                        - build the project'
