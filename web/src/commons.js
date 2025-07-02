@@ -24,13 +24,6 @@ export const toLocalISOString = (date) => {
     return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}${offsetSign}${offsetHours}:${offsetMinutes}`;
 };
 
-export const getFirstLetters = (str) => {
-    if (!str) {
-        return "";
-    }
-    return str.split(" ").map(word => word[0])
-};
-
 /**
  * <https://github.com/mui/material-ui/issues/12700#issuecomment-416869593>
  */
@@ -54,15 +47,6 @@ export const stringToColor = (string) => {
     }
 
     return color;
-}
-
-/**
- * <https://stackoverflow.com/a/15724300/6564721>
- */
-export const getCookie = (name) => {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(";").shift();
 }
 
 export const DEFAULT_CONV_TITLE = "New Chat";
