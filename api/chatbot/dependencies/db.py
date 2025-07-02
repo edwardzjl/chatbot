@@ -70,9 +70,13 @@ async def get_raw_conn(engine: SqlalchemyEngineDep) -> AsyncGenerator[Any, None]
 
 @cache
 def create_ro_engine(settings: SettingsDep) -> AsyncEngine:
+    kwargs = {}
+    if settings.db_standby_url.scheme.startswith("postgres"):
+        kwargs["isolation_level"] = "REPEATABLE READ"
     return create_async_engine(
         str(settings.db_standby_url),
         poolclass=NullPool,
+        **kwargs,
     )
 
 
