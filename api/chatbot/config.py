@@ -4,7 +4,15 @@ import logging
 from typing import Any, Self
 
 from langchain_openai import ChatOpenAI
-from pydantic import BaseModel, Field, PostgresDsn, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    Field,
+    PostgresDsn,
+    UrlConstraints,
+    field_validator,
+    model_validator,
+)
+from pydantic.networks import _BaseMultiHostUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from chatbot.llm_client import ReasoningChatOpenai, llm_client_type_factory
@@ -12,6 +20,18 @@ from chatbot.llm_client.base import StreamThinkingProcessor
 
 
 logger = logging.getLogger(__name__)
+
+
+class SQLiteDsn(_BaseMultiHostUrl):
+    _constraints = UrlConstraints(
+        host_required=False,
+        allowed_schemes=[
+            "sqlite",
+            "sqlite+pysqlite",
+            "sqlite+aiosqlite",
+            "sqlite+pysqlcipher",
+        ],
+    )
 
 
 class S3Settings(BaseModel):
@@ -28,9 +48,9 @@ class Settings(BaseSettings):
     llms: list[ChatOpenAI]
     safety_llm: ChatOpenAI | None = None
 
-    db_primary_url: PostgresDsn | str = "sqlite+aiosqlite:///chatbot.sqlite"
+    db_primary_url: PostgresDsn | SQLiteDsn = "sqlite+aiosqlite:///chatbot.sqlite"
     """Primary database url for read / write connections."""
-    db_standby_url: PostgresDsn | str | None = None
+    db_standby_url: PostgresDsn | SQLiteDsn | None = None
     """Standby database url for read only connections.
     Defaults to `db_primary_url`.
     """
