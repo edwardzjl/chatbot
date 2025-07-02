@@ -17,10 +17,20 @@ async def lifespan(app: FastAPI):
     settings = get_settings()
 
     sqlalchemy_engine = create_engine(settings)
+
+    # Setup ORM tables (for SQLite only. We have alembic migrations for PostgreSQL)
+    if settings.db_primary_url.scheme.startswith("sqlite"):
+        from chatbot.models import Base
+
+        async with sqlalchemy_engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+
+    # Setup langgraph checkpointer tables
+    # PostgreSQL doesn't allow CREATE INDEX CONCURRENTLY within a transaction.
+    # See <https://github.com/langchain-ai/langgraph/issues/2887#issuecomment-2571645296>
     autocommit_engine = sqlalchemy_engine.execution_options(
         isolation_level="AUTOCOMMIT"
     )
-
     async with autocommit_engine.begin() as conn:
         if settings.db_primary_url.scheme.startswith("postgresql"):
             from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
