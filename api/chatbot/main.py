@@ -4,19 +4,18 @@ import logging
 import re
 
 from fastapi import FastAPI, status
-from fastapi.encoders import jsonable_encoder
 from fastapi.requests import Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi_pagination import add_pagination
 
 from prometheus_client import make_asgi_app
-from sqlalchemy.exc import NoResultFound
 from starlette.routing import Mount
 
 from chatbot.dependencies import EmailHeaderDep, UserIdHeaderDep, UsernameHeaderDep
 from chatbot.dependencies.commons import SettingsDep
 from chatbot.schemas import UserProfile
 from chatbot.staticfiles import CompressedStaticFiles
+from .exception_handlers import register_exception_handlers
 from .lifespan import lifespan
 from .routers import (
     chat_router,
@@ -83,12 +82,7 @@ app.mount(
 )
 
 
-@app.exception_handler(NoResultFound)
-def not_found_error_handler(request: Request, exc: NoResultFound):
-    return JSONResponse(
-        status_code=status.HTTP_404_NOT_FOUND,
-        content=jsonable_encoder({"detail": str(exc)}),
-    )
+register_exception_handlers(app)
 
 
 # return all unregistered, non-API call to web app
@@ -100,13 +94,3 @@ def spa_fallback(request: Request, _):
             content={"detail": "API path not found"},
         )
     return FileResponse(f"{STATIC_DIR}/index.html")
-
-
-@app.exception_handler(Exception)
-def exception_handler(request: Request, exc: Exception):
-    """Global exception handler."""
-    logger.exception("Unhandled error during request %s", request)
-    return JSONResponse(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={"detail": "server error"},
-    )
