@@ -103,20 +103,22 @@ Current date: {date}
             ]
         )
 
-        bound = RunnablePassthrough.assign(date=_get_responding_at) | prompt
-
-        windowed_messages: list[BaseMessage] = trim_messages(
-            state["messages"],
+        # Notice we don't pass in messages. This creates
+        # a RunnableLambda that takes messages as input
+        trimmer = trim_messages(
             token_counter=token_counter,
             max_tokens=max_input_tokens,
-            start_on="human",  # This means that the first message should be from the user after trimming.
+            start_on="human",
+            include_system=True,
         )
+
+        bound = RunnablePassthrough.assign(date=_get_responding_at) | prompt | trimmer
 
         selected_tools = []
         if tool_picker:
             try:
                 tool_names_out = await tool_picker.ainvoke(
-                    input={"messages": windowed_messages}
+                    input={"messages": state["messages"]}
                 )
                 tool_names = tool_names_out["parsed"].tool_names
                 selected_tools = (
@@ -135,7 +137,7 @@ Current date: {date}
 
         messages = await bound.ainvoke(
             {
-                "messages": windowed_messages,
+                "messages": state["messages"],
             }
         )
         return {"messages": [messages]}
