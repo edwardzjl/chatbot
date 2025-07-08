@@ -1,4 +1,5 @@
 name: Chatbot Manifest CI
+
 permissions:
   contents: read
 

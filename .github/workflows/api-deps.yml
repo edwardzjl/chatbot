@@ -1,4 +1,5 @@
 name: Chatbot API check dependency hash
+
 permissions:
   contents: read
 
