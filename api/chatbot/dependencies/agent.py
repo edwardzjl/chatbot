@@ -6,8 +6,6 @@ from functools import partial
 from typing import Annotated, AsyncGenerator
 
 from fastapi import Depends, Header
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import Runnable
 from langchain_core.tools import BaseTool
 from langchain_openai import ChatOpenAI
@@ -16,6 +14,7 @@ from langgraph.graph.state import CompiledStateGraph
 from langgraph.types import StateSnapshot
 
 from chatbot.agent import create_agent
+from chatbot.agent.smry import create_summary_agent
 from chatbot.dependencies.commons import SettingsDep
 from chatbot.dependencies.db import SqlalchemyEngineDep, get_raw_conn
 from chatbot.http_client import HttpClient
@@ -171,28 +170,7 @@ def get_smry_chain(
 ) -> Runnable:
     llm = settings.must_get_llm(select_model)
 
-    instruction = (
-        "You are Rei, the ideal assistant dedicated to assisting users effectively."
-    )
-
-    tmpl = ChatPromptTemplate.from_messages(
-        [
-            ("system", instruction),
-            ("placeholder", "{messages}"),
-            (
-                "system",
-                "Now Provide a short summarization for the above messages in less than 10 words, using the same language as the user.",
-            ),
-        ]
-    )
-
-    runnable = (
-        tmpl
-        | llm.bind(extra_body={"chat_template_kwargs": {"enable_thinking": False}})
-        | StrOutputParser()
-    )
-
-    return runnable
+    return create_summary_agent(llm)
 
 
 SmrChainDep = Annotated[Runnable, Depends(get_smry_chain)]
