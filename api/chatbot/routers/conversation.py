@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, HTTPException
 from fastapi_pagination.cursor import CursorPage
 from fastapi_pagination.ext.sqlalchemy import paginate
-from langchain_core.messages import BaseMessage, trim_messages
+from langchain_core.messages import BaseMessage
 from sqlalchemy import select
 from uuid import UUID
 
@@ -123,15 +123,8 @@ async def summarize(
 
     msgs: list[BaseMessage] = agent_state.values.get("messages", [])
 
-    windowed_messages = trim_messages(
-        msgs,
-        token_counter=len,
-        max_tokens=20,
-        start_on="human",  # This means that the first message should be from the user after trimming, which also means that we abandon the original system message.
-    )
-
     title_raw: str = await smry_chain.ainvoke(
-        input={"messages": windowed_messages},
+        input={"messages": msgs},
         config={
             "metadata": {
                 "conversation_id": conversation_id,

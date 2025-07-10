@@ -9,7 +9,7 @@ from fastapi import (
     WebSocketDisconnect,
     WebSocketException,
 )
-from langchain_core.messages import AIMessage, BaseMessage, trim_messages
+from langchain_core.messages import AIMessage, BaseMessage
 from langchain_core.runnables import Runnable
 from langgraph.graph.state import CompiledStateGraph
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
@@ -196,20 +196,14 @@ async def generate_conversation_title(
     chain_metadata: dict[str, Any],
 ):
     """Generate a title for the conversation."""
+    smry_chain = smry_chain_wrapper(selected_model)
+
     config = {"configurable": {"thread_id": conversation_id}}
     state = await agent.aget_state(config)
     msgs: list[BaseMessage] = state.values.get("messages", [])
 
-    windowed_messages = trim_messages(
-        msgs,
-        token_counter=len,
-        max_tokens=20,
-        start_on="human",  # This means that the first message should be from the user after trimming.
-    )
-
-    smry_chain = smry_chain_wrapper(selected_model)
     title_raw: str = await smry_chain.ainvoke(
-        input={"messages": windowed_messages},
+        input={"messages": msgs},
         config={"metadata": chain_metadata},
     )
     return title_raw.strip('"')
