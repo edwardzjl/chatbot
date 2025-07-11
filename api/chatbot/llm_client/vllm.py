@@ -2,6 +2,7 @@ from functools import cache
 from typing import Any, override
 from urllib.parse import urljoin
 
+from httpx import Client
 from langchain_core.messages import BaseMessage
 
 from .base import ReasoningChatOpenai
@@ -16,8 +17,10 @@ class VLLMReasoningChatOpenai(ReasoningChatOpenai):
     # Since I want to apply caching here, async is not used for this method.
     @cache
     def get_models(self) -> list[dict[str, Any]]:
-        http_client = self.http_client or self.root_client._client
-        resp = http_client.get(urljoin(self.openai_api_base, "/v1/models"))
+        http_client: Client = self.http_client or self.root_client._client
+        resp = http_client.get(
+            urljoin(self.openai_api_base, "/v1/models")
+        ).raise_for_status()
         data = resp.json()
         return data.get("data", [])
 
@@ -51,11 +54,11 @@ class VLLMReasoningChatOpenai(ReasoningChatOpenai):
         oai_messages = self.convert_messages(messages)
 
         url = urljoin(self.openai_api_base, "/tokenize")
-        http_client = self.http_client or self.root_client._client
+        http_client: Client = self.http_client or self.root_client._client
         resp = http_client.post(
             url,
             json={"model": self.model_name, "messages": oai_messages},
-        )
+        ).raise_for_status()
         data = resp.json()
         return data["count"]
 

@@ -2,6 +2,7 @@ from functools import cache
 from typing import override
 from urllib.parse import urljoin
 
+from httpx import Client
 from langchain_core.messages import BaseMessage
 
 from .base import ReasoningChatOpenai
@@ -16,8 +17,10 @@ class llamacppReasoningChatOpenai(ReasoningChatOpenai):
     # Since I want to apply caching here, async is not used for this method.
     @cache
     def get_context_length(self) -> int:
-        http_client = self.http_client or self.root_client._client
-        resp = http_client.get(urljoin(self.openai_api_base, "/props"))
+        http_client: Client = self.http_client or self.root_client._client
+        resp = http_client.get(
+            urljoin(self.openai_api_base, "/props")
+        ).raise_for_status()
         data = resp.json()
 
         max_model_len = data.get("default_generation_settings", {}).get("n_ctx")
@@ -36,11 +39,11 @@ class llamacppReasoningChatOpenai(ReasoningChatOpenai):
 
         oai_messages = self.convert_messages(messages)
 
-        http_client = self.http_client or self.root_client._client
+        http_client: Client = self.http_client or self.root_client._client
         resp = http_client.post(
             urljoin(self.openai_api_base, "/apply-template"),
             json={"messages": oai_messages},
-        )
+        ).raise_for_status()
         data = resp.json()
 
         resp = http_client.post(
@@ -48,7 +51,7 @@ class llamacppReasoningChatOpenai(ReasoningChatOpenai):
             json={
                 "content": data["prompt"],
             },
-        )
+        ).raise_for_status()
         data = resp.json()
         return len(data["tokens"])
 
