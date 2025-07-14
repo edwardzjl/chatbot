@@ -179,7 +179,7 @@ class StreamThinkingProcessor(Serializable):
         self._buffering_signature = None
 
 
-class ReasoningChatOpenai(ChatOpenAI):
+class ExtendedChatOpenAI(ChatOpenAI):
     thinking_processor: StreamThinkingProcessor | None = None
 
     @override

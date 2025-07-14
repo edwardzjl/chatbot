@@ -5,10 +5,10 @@ from urllib.parse import urljoin
 from httpx import Client
 from langchain_core.messages import BaseMessage
 
-from .base import ReasoningChatOpenai
+from .base import ExtendedChatOpenAI
 
 
-class TGIReasoningChatOpenai(ReasoningChatOpenai):
+class TGIChatOpenAI(ExtendedChatOpenAI):
     # Note on caching:
     # Using @functools.cache/@lru_cache on methods can prevent instance GC.
     # See <https://rednafi.com/python/lru_cache_on_methods/> for details.

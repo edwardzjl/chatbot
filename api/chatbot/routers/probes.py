@@ -10,9 +10,9 @@ from sqlalchemy.ext.asyncio import (
 from chatbot.dependencies.commons import SettingsDep
 from chatbot.dependencies.db import SqlalchemyEngineDep, SqlalchemyROEngineDep
 from chatbot.llm_client import (
-    llamacppReasoningChatOpenai,
-    TGIReasoningChatOpenai,
-    VLLMReasoningChatOpenai,
+    llamacppChatOpenAI,
+    TGIChatOpenAI,
+    VLLMChatOpenAI,
 )
 
 
@@ -42,11 +42,11 @@ async def readyz_check(
     try:
         for llm in settings.llms:
             # These endpoints will be used anyway and the result will be cached.
-            if isinstance(llm, llamacppReasoningChatOpenai):
+            if isinstance(llm, llamacppChatOpenAI):
                 llm.get_context_length()
-            elif isinstance(llm, TGIReasoningChatOpenai):
+            elif isinstance(llm, TGIChatOpenAI):
                 llm.get_model_info()
-            elif isinstance(llm, VLLMReasoningChatOpenai):
+            elif isinstance(llm, VLLMChatOpenAI):
                 llm.get_models()
             else:
                 # TODO: check /v1/models endpoint for OpenAI and other LLMs

@@ -15,7 +15,7 @@ from pydantic import (
 from pydantic.networks import _BaseMultiHostUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from chatbot.llm_client import ReasoningChatOpenai, llm_client_type_factory
+from chatbot.llm_client import ExtendedChatOpenAI, llm_client_type_factory
 from chatbot.llm_client.base import StreamThinkingProcessor
 
 
@@ -94,7 +94,7 @@ class Settings(BaseSettings):
                 except:  # noqa: E722
                     logger.exception("Error guessing provider for %s", processed)
                     clients.append(
-                        ReasoningChatOpenai(
+                        ExtendedChatOpenAI(
                             thinking_processor=thinking_processor, **processed
                         )
                     )
