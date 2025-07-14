@@ -361,11 +361,11 @@
         },
         "certifi": {
             "hashes": [
-                "sha256:2e0c7ce7cb5d8f8634ca55d2ba7e6ec2689a2fd6537d8dec1296a477a4910057",
-                "sha256:d747aa5a8b9bbbb1bb8c22bb13e22bd1f18e9796defa16bab421f7f7a317323b"
+                "sha256:6b31f564a415d79ee77df69d757bb49a5bb53bd9f756cbbe24394ffd6fc1f4b2",
+                "sha256:8ea99dbdfaaf2ba2f9bac77b9249ef62ec5218e7c2b2e903378ed5fccf765995"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==2025.6.15"
+            "version": "==2025.7.14"
         },
         "cffi": {
             "hashes": [
@@ -959,12 +959,12 @@
         },
         "langgraph": {
             "hashes": [
-                "sha256:312d341979e38034dde60e08df53505b8a196619df1266d6eacf6b002a0a65a8",
-                "sha256:707f0cc0d2713011fff4578bf57de8226cd96bcc0679868be2f41eb0984bb5af"
+                "sha256:393b767e9d6a129636a9df36edc492499336c71e4ee268e64b9d1299d30e636c",
+                "sha256:db6b8053bf99887957fe45ec27918f8819c4bba269afde88b538e00e9301a581"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.9'",
-            "version": "==0.5.1"
+            "version": "==0.5.2"
         },
         "langgraph-checkpoint": {
             "hashes": [
@@ -1010,11 +1010,11 @@
         },
         "langsmith": {
             "hashes": [
-                "sha256:014c68329bd085bd6c770a6405c61bb6881f82eb554ce8c4d1984b0035fd1716",
-                "sha256:70c53bbff24a7872e88e6fa0af98270f4986a6e364f9e85db1cc5636defa4d66"
+                "sha256:4167717a2cccc4dff5809dbddc439628e836f6fd13d4fdb31ea013bc8d5cfaf5",
+                "sha256:49444bd8ccd4e46402f1b9ff1d686fa8e3a31b175e7085e72175ab8ec6164a34"
             ],
             "markers": "python_version >= '3.9'",
-            "version": "==0.4.4"
+            "version": "==0.4.5"
         },
         "markdownify": {
             "hashes": [
