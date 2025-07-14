@@ -2588,12 +2588,12 @@
     "develop": {
         "alembic": {
             "hashes": [
-                "sha256:5f42e9bd0afdbd1d5e3ad856c01754530367debdebf21ed6894e34af52b3bb03",
-                "sha256:e53c38ff88dadb92eb22f8b150708367db731d58ad7e9d417c9168ab516cbed8"
+                "sha256:b05e51e8e82efc1abd14ba2af6392897e145930c3e0a2faf2b0da2f7f7fd660d",
+                "sha256:efab6ada0dd0fae2c92060800e0bf5c1dc26af15a10e02fb4babff164b4725e2"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.9'",
-            "version": "==1.16.2"
+            "version": "==1.16.4"
         },
         "cfgv": {
             "hashes": [
@@ -2951,9 +2951,6 @@
             "version": "==0.12.2"
         },
         "sqlalchemy": {
-            "extras": [
-                "asyncio"
-            ],
             "hashes": [
                 "sha256:023b3ee6169969beea3bb72312e44d8b7c27c75b347942d943cf49397b7edeb5",
                 "sha256:03968a349db483936c249f4d9cd14ff2c296adfa1290b660ba6516f973139582",
