@@ -48,12 +48,8 @@ def create_summary_agent(
         include_system=True,
     )
 
-    bind = (
-        tmpl
-        | trimmer
-        | chat_model.bind(
-            extra_body={"chat_template_kwargs": {"enable_thinking": False}}
-        )
-        | output_parser
-    )
+    extra_body = chat_model.extra_body or {}
+    extra_body = extra_body | {"chat_template_kwargs": {"enable_thinking": False}}
+
+    bind = tmpl | trimmer | chat_model.bind(extra_body=extra_body) | output_parser
     return bind
