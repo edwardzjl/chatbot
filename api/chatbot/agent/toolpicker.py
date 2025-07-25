@@ -70,9 +70,8 @@ def create_tool_picker(
 
     # Disable thinking for reasoning models.
     # NOTE: this may only work for VLLM.
-    extra_body = chat_model.extra_body | {
-        "chat_template_kwargs": {"enable_thinking": False}
-    }
+    extra_body = chat_model.extra_body or {}
+    extra_body = extra_body | {"chat_template_kwargs": {"enable_thinking": False}}
 
     return (
         tmpl
