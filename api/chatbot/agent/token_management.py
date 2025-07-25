@@ -8,7 +8,7 @@ from langchain_core.messages import BaseMessage
 from chatbot.utils import is_valid_positive_int
 
 if TYPE_CHECKING:
-    from langchain_core.language_models import BaseChatModel
+    from langchain_core.language_models import BaseLanguageModel
 
 
 logger = logging.getLogger(__name__)
@@ -20,7 +20,7 @@ MIN_POSITIVE_TOKENS = 1024
 
 
 def resolve_token_management_params(
-    chat_model: BaseChatModel,
+    chat_model: BaseLanguageModel,
     token_counter: (
         Callable[[list[BaseMessage]], int] | Callable[[BaseMessage], int] | None
     ) = None,
@@ -66,25 +66,17 @@ def resolve_token_management_params(
 
 
 def _get_effective_token_counter(
-    chat_model: BaseChatModel,
+    language_model: BaseLanguageModel,
     token_counter: (
         Callable[[list[BaseMessage]], int] | Callable[[BaseMessage], int] | None
     ) = None,
 ) -> tuple[Callable[[list[BaseMessage]], int] | Callable[[BaseMessage], int], bool]:
     effective_token_counter = token_counter
     if effective_token_counter is None:
-        try:
-            effective_token_counter = chat_model.get_num_tokens_from_messages
-            logger.info(
-                "Using `get_num_tokens_from_messages` from chat_model as token_counter."
-            )
-        except AttributeError:
-            logger.warning(
-                "Chat model lacks `get_num_tokens_from_messages`. "
-                "Falling back to message count (len) for truncation. "
-                "This may lead to context overflow if model expects token limits."
-            )
-            effective_token_counter = len
+        effective_token_counter = language_model.get_num_tokens_from_messages
+        logger.info(
+            "Using `get_num_tokens_from_messages` from language_model as token_counter."
+        )
 
     is_message_counting = effective_token_counter is len
     return effective_token_counter, is_message_counting
@@ -131,7 +123,7 @@ def _calculate_max_input_tokens(
 
 
 def _resolve_token_context_length(
-    chat_model: BaseChatModel, user_context_length: int | None = None
+    chat_model: BaseLanguageModel, user_context_length: int | None = None
 ) -> int:
     """Resolves the context length when counting by tokens."""
     if is_valid_positive_int(user_context_length):
@@ -175,9 +167,10 @@ def _resolve_token_context_length(
     return DEFAULT_TOKEN_CONTEXT_LENGTH
 
 
-def _get_model_max_output_tokens(chat_model: BaseChatModel) -> int | None:
+def _get_model_max_output_tokens(chat_model: BaseLanguageModel) -> int | None:
     """Attempts to retrieve the model's maximum output tokens."""
     try:
+        # Here I use ChatOpenAI's `max_tokens` attribute.
         raw_model_max_tokens = getattr(chat_model, "max_tokens", None)
         if is_valid_positive_int(raw_model_max_tokens):
             return raw_model_max_tokens

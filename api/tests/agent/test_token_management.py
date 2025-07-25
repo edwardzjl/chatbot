@@ -2,7 +2,6 @@ import unittest
 
 from chatbot.agent.token_management import (
     DEFAULT_INPUT_TOKEN_RATIO,
-    DEFAULT_MESSAGE_CONTEXT_LENGTH,
     DEFAULT_TOKEN_CONTEXT_LENGTH,
     MIN_POSITIVE_TOKENS,
     _calculate_max_input_tokens,
@@ -14,7 +13,7 @@ from chatbot.agent.token_management import (
 
 
 class TestResolveTokenManagementParams(unittest.TestCase):
-    class DummyTokenModel:
+    class DummyLanguageModel:
         def get_num_tokens_from_messages(self, messages):
             return 42
 
@@ -23,39 +22,19 @@ class TestResolveTokenManagementParams(unittest.TestCase):
 
         max_tokens = 256
 
-    class DummyMessageModel:
-        pass
-
     def test_token_counting_full_path(self):
-        model = TestResolveTokenManagementParams.DummyTokenModel()
+        model = TestResolveTokenManagementParams.DummyLanguageModel()
         result = resolve_token_management_params(model)
         counter, max_input, is_msg = result
         self.assertFalse(is_msg)
         self.assertTrue(callable(counter))
         self.assertGreater(max_input, 0)
 
-    def test_message_counting_default(self):
-        model = TestResolveTokenManagementParams.DummyMessageModel()
-        result = resolve_token_management_params(model)
-        counter, max_input, is_msg = result
-        self.assertTrue(is_msg)
-        self.assertEqual(max_input, DEFAULT_MESSAGE_CONTEXT_LENGTH)
-
-    def test_message_counting_with_context(self):
-        model = TestResolveTokenManagementParams.DummyMessageModel()
-        result = resolve_token_management_params(model, context_length=50)
-        counter, max_input, is_msg = result
-        self.assertTrue(is_msg)
-        self.assertEqual(max_input, 50)
-
 
 class TestGetEffectiveTokenCounter(unittest.TestCase):
     class ChatModelWithTokenMethod:
         def get_num_tokens_from_messages(self, messages):
             return 42
-
-    class ChatModelWithoutTokenMethod:
-        pass
 
     def test_explicit_token_counter(self):
         def dummy_counter(messages):
@@ -76,14 +55,6 @@ class TestGetEffectiveTokenCounter(unittest.TestCase):
         self.assertTrue(callable(counter))
         self.assertEqual(counter(["msg"]), 42)
         self.assertFalse(is_message_counting)
-
-    def test_model_without_token_method(self):
-        model = TestGetEffectiveTokenCounter.ChatModelWithoutTokenMethod()
-        counter, is_message_counting = _get_effective_token_counter(model)
-
-        self.assertIs(counter, len)
-        self.assertTrue(is_message_counting)
-        self.assertEqual(counter(["a", "b"]), 2)
 
 
 class TestCalculateMaxInputTokens(unittest.TestCase):
