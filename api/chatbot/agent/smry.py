@@ -48,8 +48,11 @@ def create_summary_agent(
         include_system=True,
     )
 
-    extra_body = chat_model.extra_body or {}
-    extra_body = extra_body | {"chat_template_kwargs": {"enable_thinking": False}}
+    # Disable thinking for reasoning models.
+    # NOTE: this may only work for VLLM.
+    if hasattr(chat_model, "extra_body"):
+        extra_body = chat_model.extra_body or {}
+        extra_body = extra_body | {"chat_template_kwargs": {"enable_thinking": False}}
+        chat_model = chat_model.bind(extra_body=extra_body)
 
-    bind = tmpl | trimmer | chat_model.bind(extra_body=extra_body) | output_parser
-    return bind
+    return tmpl | trimmer | chat_model | output_parser

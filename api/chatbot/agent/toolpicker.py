@@ -68,21 +68,19 @@ def create_tool_picker(
         include_system=True,
     )
 
+    chat_model = chat_model.with_structured_output(
+        PickTools,
+        method="json_schema",
+        strict=True,
+        include_raw=True,
+        tools=[PickTools],
+    ).with_config(tags=["internal"])
+
     # Disable thinking for reasoning models.
     # NOTE: this may only work for VLLM.
-    extra_body = chat_model.extra_body or {}
-    extra_body = extra_body | {"chat_template_kwargs": {"enable_thinking": False}}
+    if hasattr(chat_model, "extra_body"):
+        extra_body = chat_model.extra_body or {}
+        extra_body = extra_body | {"chat_template_kwargs": {"enable_thinking": False}}
+        chat_model = chat_model.bind(extra_body=extra_body)
 
-    return (
-        tmpl
-        | trimmer
-        | chat_model.with_structured_output(
-            PickTools,
-            method="json_schema",
-            strict=True,
-            include_raw=True,
-            tools=[PickTools],
-        )
-        .bind(extra_body=extra_body)
-        .with_config(tags=["internal"])
-    )
+    return tmpl | trimmer | chat_model
