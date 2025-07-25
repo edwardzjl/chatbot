@@ -18,7 +18,7 @@ from .token_management import resolve_token_management_params
 from .toolpicker import create_tool_picker
 
 if TYPE_CHECKING:
-    from langchain_core.language_models import BaseChatModel
+    from langchain_core.language_models import BaseChatModel, BaseLanguageModel
     from langgraph.checkpoint.base import BaseCheckpointSaver
     from langgraph.graph.state import CompiledStateGraph
 
@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 def create_agent(
     chat_model: BaseChatModel,
     *,
-    safety_model: BaseChatModel | None = None,
+    safety_model: BaseLanguageModel | None = None,
     checkpointer: BaseCheckpointSaver = None,
     token_counter: (
         Callable[[list[BaseMessage]], int] | Callable[[BaseMessage], int] | None
