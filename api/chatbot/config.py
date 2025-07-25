@@ -48,6 +48,9 @@ class Settings(BaseSettings):
     llms: list[ChatOpenAI]
     safety_llm: ChatOpenAI | None = None
 
+    # I can't use inmemory sqlite, as it does not persist across sessions.
+    # The shared-cache mode can be used but it is discouraged.
+    # See <https://www.sqlite.org/sharedcache.html>
     db_primary_url: PostgresDsn | SQLiteDsn = "sqlite+aiosqlite:///chatbot.sqlite"
     """Primary database url for read / write connections."""
     db_standby_url: PostgresDsn | SQLiteDsn | None = None
