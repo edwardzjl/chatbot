@@ -92,7 +92,7 @@ class Settings(BaseSettings):
                 try:
                     client = llm_client_factory(
                         base_url=base_url,
-                        provider=provider,
+                        provider_name=provider,
                         thinking_processor=thinking_processor,
                         **client_kwargs,
                     )
