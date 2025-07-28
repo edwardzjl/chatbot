@@ -57,6 +57,15 @@ def guess_provider(base_url: str) -> Type[ExtendedChatOpenAI]:
     except HTTPError:
         pass
 
+    try:
+        resp = requests.get(urljoin(base_url, "/props"))
+        resp.raise_for_status()
+        resp.json()
+        logger.info("Provider has `/props` endpoint, assuming it's llamacpp")
+        return llamacppChatOpenAI
+    except HTTPError:
+        pass
+
     resp = requests.get(urljoin(base_url, "/v1/models"))
     resp.raise_for_status()
     data = resp.json()
@@ -67,8 +76,6 @@ def guess_provider(base_url: str) -> Type[ExtendedChatOpenAI]:
     match models[0]["owned_by"].lower():
         case "vllm":
             return VLLMChatOpenAI
-        case "llama-cpp":
-            return llamacppChatOpenAI
         case _:
             logger.warning(
                 "Unknown provider %s, falling back to Default client",
