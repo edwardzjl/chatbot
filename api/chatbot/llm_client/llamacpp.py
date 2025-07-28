@@ -1,5 +1,5 @@
 from functools import cache
-from typing import override
+from typing import Any, override
 from urllib.parse import urljoin
 
 from httpx import Client
@@ -9,21 +9,23 @@ from .base import ExtendedChatOpenAI
 
 
 class llamacppChatOpenAI(ExtendedChatOpenAI):
+    _server_props: dict[str, Any] | None = None
+
     # Note on caching:
-    # Using @functools.cache/@lru_cache on methods can prevent instance GC.
+    # Using `@functools.cache` or `@functools.lru_cache` on methods can prevent instance GC.
     # See <https://rednafi.com/python/lru_cache_on_methods/> for details.
     # This is acceptable here as client instances (one per LLM) live for the app's lifespan.
-    # Standard functools caches do not support async methods.
+    # Also note that standard functools caches do not support async methods.
     # Since I want to apply caching here, async is not used for this method.
     @cache
     def get_context_length(self) -> int:
-        http_client: Client = self.http_client or self.root_client._client
-        resp = http_client.get(
-            urljoin(self.openai_api_base, "/props")
-        ).raise_for_status()
-        data = resp.json()
+        if self._server_props is None:
+            self._fetch_server_props()
 
-        max_model_len = data.get("default_generation_settings", {}).get("n_ctx")
+        max_model_len = self._server_props.get("default_generation_settings", {}).get(
+            "n_ctx"
+        )
+
         # Should not happen, for type hint only.
         assert max_model_len is not None, (
             f"Model {self.model_name} does not have a max_context_length."
@@ -54,6 +56,14 @@ class llamacppChatOpenAI(ExtendedChatOpenAI):
         ).raise_for_status()
         data = resp.json()
         return len(data["tokens"])
+
+    def _fetch_server_props(self) -> None:
+        """Fetches server properties."""
+        http_client: Client = self.http_client or self.root_client._client
+        resp = http_client.get(
+            urljoin(self.openai_api_base, "/props")
+        ).raise_for_status()
+        self._server_props = resp.json()
 
     def __hash__(self):
         # I use cache on `self` and cache doesn't work with mutable objects.

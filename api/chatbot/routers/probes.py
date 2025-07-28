@@ -43,11 +43,11 @@ async def readyz_check(
         for llm in settings.llms:
             # These endpoints will be used anyway and the result will be cached.
             if isinstance(llm, llamacppChatOpenAI):
-                llm.get_context_length()
+                llm._fetch_server_props()
             elif isinstance(llm, TGIChatOpenAI):
-                llm.get_model_info()
+                llm._fetch_server_info()
             elif isinstance(llm, VLLMChatOpenAI):
-                llm.get_models()
+                llm._fetch_models_meta()
             else:
                 # TODO: check /v1/models endpoint for OpenAI and other LLMs
                 pass
