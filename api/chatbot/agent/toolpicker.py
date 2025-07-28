@@ -8,6 +8,8 @@ from langchain_core.runnables import Runnable
 from langchain_core.tools import BaseTool
 from pydantic import BaseModel, Field
 
+from chatbot.llm_client.vllm import VLLMChatOpenAI
+
 from .token_management import resolve_token_management_params
 
 if TYPE_CHECKING:
@@ -76,9 +78,9 @@ def create_tool_picker(
         tools=[PickTools],
     ).with_config(tags=["internal"])
 
-    # Disable thinking for reasoning models.
-    # NOTE: this may only work for VLLM.
-    if hasattr(chat_model, "extra_body"):
+    # Disable internal "thinking" behavior when using reasoning models.
+    # NOTE: This only applies when using the VLLM-based chat service.
+    if isinstance(chat_model, VLLMChatOpenAI):
         extra_body = chat_model.extra_body or {}
         extra_body = extra_body | {"chat_template_kwargs": {"enable_thinking": False}}
         chat_model = chat_model.bind(extra_body=extra_body)
