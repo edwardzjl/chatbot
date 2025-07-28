@@ -38,7 +38,9 @@ def create_tool_picker(
     )
 
     tool_names = [tool.name for tool in tools]
-    ToolNamesType: TypeAlias = set[Literal[*tool_names]] | None  # type: ignore
+    # NOTE: some openai provider does not accept `set` params.
+    # For example github will throw "'uniqueItems' is not permitted." error.
+    ToolNamesType: TypeAlias = list[Literal[*tool_names]] | None  # type: ignore
 
     valid_options = [
         "- `None`: No tool needed. You can answer based on your existing knowledge, or the task does not require fetching external information."

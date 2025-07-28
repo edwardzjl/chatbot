@@ -13,6 +13,7 @@ from chatbot.llm_client import (
     llamacppChatOpenAI,
     TGIChatOpenAI,
     VLLMChatOpenAI,
+    GithubChatOpenAI,
 )
 
 
@@ -47,6 +48,8 @@ async def readyz_check(
             elif isinstance(llm, TGIChatOpenAI):
                 llm._fetch_server_info()
             elif isinstance(llm, VLLMChatOpenAI):
+                llm._fetch_models_meta()
+            elif isinstance(llm, GithubChatOpenAI):
                 llm._fetch_models_meta()
             else:
                 # TODO: check /v1/models endpoint for OpenAI and other LLMs
