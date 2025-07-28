@@ -1,5 +1,4 @@
 import logging
-from typing import Type
 from urllib.parse import urljoin
 
 import requests
@@ -14,13 +13,31 @@ from .vllm import VLLMChatOpenAI
 logger = logging.getLogger(__name__)
 
 
-def llm_client_type_factory(
+def llm_client_factory(
     base_url: str,
     provider_name: str | None = None,
-) -> Type[ExtendedChatOpenAI]:
-    if not provider_name:
-        return guess_provider(base_url)
+    **client_kwargs,
+) -> ExtendedChatOpenAI:
+    """Factory function to create the appropriate LLM client instance.
 
+    Args:
+        base_url: The base URL of the LLM provider
+        provider_name: Optional provider name hint
+        **client_kwargs: Additional arguments to pass to the client constructor
+
+    Returns:
+        An instance of the appropriate LLM client
+    """
+    # Try to get client type from known provider names first
+    if provider_name and (client_type := _get_client_type_by_name(provider_name)):
+        return client_type(base_url=base_url, **client_kwargs)
+
+    # Fall back to guessing the provider from server features
+    return _create_client_from_guess(base_url, provider_name, **client_kwargs)
+
+
+def _get_client_type_by_name(provider_name: str) -> type[ExtendedChatOpenAI] | None:
+    """Get client type by provider name, return None if unknown."""
     match provider_name.lower():
         case "vllm":
             return VLLMChatOpenAI
@@ -29,40 +46,60 @@ def llm_client_type_factory(
         case "llamacpp":
             return llamacppChatOpenAI
         case _:
-            logger.warning(
-                "Unknown provider %s, guessing from server features", provider_name
-            )
-            return guess_provider(base_url)
+            return None
+
+
+def _create_client_from_guess(
+    base_url: str, provider_name: str | None = None, **client_kwargs
+) -> ExtendedChatOpenAI:
+    """Create client by guessing provider type and pre-populate cache if possible."""
+    if provider_name:
+        logger.warning(
+            "Unknown provider %s, guessing from server features", provider_name
+        )
+
+    return guess_provider(base_url, **client_kwargs)
 
 
 # This should not be used often and I am using it in an pydantic model validator
 # to instantiate all clients, so no async
-def guess_provider(base_url: str) -> Type[ExtendedChatOpenAI]:
+def guess_provider(base_url: str, **client_kwargs) -> ExtendedChatOpenAI:
+    """Guess the provider type by checking available endpoints and return a client instance.
+
+    Args:
+        base_url: The base URL of the LLM provider
+        **client_kwargs: Additional arguments to pass to the client constructor
+
+    Returns:
+        An instance of the appropriate LLM client with pre-populated cache
+    """
     try:
         resp = requests.get(urljoin(base_url, "/info"))
         resp.raise_for_status()
-        resp.json()
+        data = resp.json()
         logger.info("Provider has `/info` endpoint, assuming it's TGI")
-        return TGIChatOpenAI
+        return TGIChatOpenAI(base_url=base_url, _server_info=data, **client_kwargs)
     except HTTPError:
         pass
 
     try:
         resp = requests.get(urljoin(base_url, "/get_server_info"))
         resp.raise_for_status()
-        resp.json()
+        data = resp.json()
         logger.info("Provider has `/get_server_info` endpoint, assuming it's SGLang")
         # TODO: implement SGLang provider
-        return ExtendedChatOpenAI
+        return ExtendedChatOpenAI(base_url=base_url, **client_kwargs)
     except HTTPError:
         pass
 
     try:
         resp = requests.get(urljoin(base_url, "/props"))
         resp.raise_for_status()
-        resp.json()
+        data = resp.json()
         logger.info("Provider has `/props` endpoint, assuming it's llamacpp")
-        return llamacppChatOpenAI
+        return llamacppChatOpenAI(
+            base_url=base_url, _server_props=data, **client_kwargs
+        )
     except HTTPError:
         pass
 
@@ -75,10 +112,13 @@ def guess_provider(base_url: str) -> Type[ExtendedChatOpenAI]:
 
     match models[0]["owned_by"].lower():
         case "vllm":
-            return VLLMChatOpenAI
+            models_meta = {model["id"]: model for model in models}
+            return VLLMChatOpenAI(
+                base_url=base_url, _models_meta=models_meta, **client_kwargs
+            )
         case _:
             logger.warning(
                 "Unknown provider %s, falling back to Default client",
                 models[0]["owned_by"],
             )
-            return ExtendedChatOpenAI
+            return ExtendedChatOpenAI(base_url=base_url, **client_kwargs)
