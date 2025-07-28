@@ -9,7 +9,7 @@ from .base import ExtendedChatOpenAI
 
 
 class VLLMChatOpenAI(ExtendedChatOpenAI):
-    _models_meta: dict[str, Any] | None = None
+    models_meta: dict[str, Any] | None = None
 
     # Note on caching:
     # Using `@functools.cache` or `@functools.lru_cache` on methods can prevent instance GC.
@@ -19,10 +19,10 @@ class VLLMChatOpenAI(ExtendedChatOpenAI):
     # Since I want to apply caching here, async is not used for this method.
     @cache
     def get_context_length(self) -> int:
-        if self._models_meta is None:
+        if self.models_meta is None:
             self._fetch_models_meta()
 
-        model_info = self._models_meta.get(self.model_name)
+        model_info = self.models_meta.get(self.model_name)
 
         max_model_len = model_info.get("max_model_len")
         # Should not happen, for type hint only.
@@ -56,7 +56,7 @@ class VLLMChatOpenAI(ExtendedChatOpenAI):
         ).raise_for_status()
         data = resp.json()
         models = data.get("data", [])
-        self._models_meta = {model["id"]: model for model in models}
+        self.models_meta = {model["id"]: model for model in models}
 
     def __hash__(self):
         # I use cache on `self` and cache doesn't work with mutable objects.

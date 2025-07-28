@@ -9,7 +9,7 @@ from .base import ExtendedChatOpenAI
 
 
 class TGIChatOpenAI(ExtendedChatOpenAI):
-    _server_info: dict[str, Any] | None = None
+    server_info: dict[str, Any] | None = None
 
     # Note on caching:
     # Using `@functools.cache` or `@functools.lru_cache` on methods can prevent instance GC.
@@ -19,10 +19,10 @@ class TGIChatOpenAI(ExtendedChatOpenAI):
     # Since I want to apply caching here, async is not used for this method.
     @cache
     def get_context_length(self) -> int:
-        if self._server_info is None:
+        if self.server_info is None:
             self._fetch_server_info()
 
-        max_model_len = self._server_info.get("max_total_tokens")
+        max_model_len = self.server_info.get("max_total_tokens")
 
         # Should not happen, for type hint only.
         assert max_model_len is not None, (
@@ -54,7 +54,7 @@ class TGIChatOpenAI(ExtendedChatOpenAI):
         resp = http_client.get(
             urljoin(self.openai_api_base, "/info")
         ).raise_for_status()
-        self._server_info = resp.json()
+        self.server_info = resp.json()
 
     def __hash__(self):
         # I use cache on `self` and cache doesn't work with mutable objects.

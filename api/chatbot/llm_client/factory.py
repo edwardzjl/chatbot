@@ -78,7 +78,7 @@ def guess_provider(base_url: str, **client_kwargs) -> ExtendedChatOpenAI:
         resp.raise_for_status()
         data = resp.json()
         logger.info("Provider has `/info` endpoint, assuming it's TGI")
-        return TGIChatOpenAI(base_url=base_url, _server_info=data, **client_kwargs)
+        return TGIChatOpenAI(base_url=base_url, server_info=data, **client_kwargs)
     except HTTPError:
         pass
 
@@ -97,9 +97,7 @@ def guess_provider(base_url: str, **client_kwargs) -> ExtendedChatOpenAI:
         resp.raise_for_status()
         data = resp.json()
         logger.info("Provider has `/props` endpoint, assuming it's llamacpp")
-        return llamacppChatOpenAI(
-            base_url=base_url, _server_props=data, **client_kwargs
-        )
+        return llamacppChatOpenAI(base_url=base_url, server_props=data, **client_kwargs)
     except HTTPError:
         pass
 
@@ -114,7 +112,7 @@ def guess_provider(base_url: str, **client_kwargs) -> ExtendedChatOpenAI:
         case "vllm":
             models_meta = {model["id"]: model for model in models}
             return VLLMChatOpenAI(
-                base_url=base_url, _models_meta=models_meta, **client_kwargs
+                base_url=base_url, models_meta=models_meta, **client_kwargs
             )
         case _:
             logger.warning(
