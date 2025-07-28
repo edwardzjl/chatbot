@@ -5,6 +5,7 @@ import requests
 from requests.exceptions import HTTPError
 
 from .base import ExtendedChatOpenAI
+from .github import GithubChatOpenAI
 from .llamacpp import llamacppChatOpenAI
 from .tgi import TGIChatOpenAI
 from .vllm import VLLMChatOpenAI
@@ -39,6 +40,8 @@ def llm_client_factory(
 def _get_client_type_by_name(provider_name: str) -> type[ExtendedChatOpenAI] | None:
     """Get client type by provider name, return None if unknown."""
     match provider_name.lower():
+        case "github":
+            return GithubChatOpenAI
         case "vllm":
             return VLLMChatOpenAI
         case "tgi":
@@ -79,6 +82,18 @@ def guess_provider(base_url: str, **client_kwargs) -> ExtendedChatOpenAI:
         data = resp.json()
         logger.info("Provider has `/info` endpoint, assuming it's TGI")
         return TGIChatOpenAI(base_url=base_url, server_info=data, **client_kwargs)
+    except HTTPError:
+        pass
+
+    try:
+        resp = requests.get(urljoin(base_url, "/catalog/models"))
+        resp.raise_for_status()
+        data = resp.json()
+        logger.info("Provider has `/catalog/models` endpoint, assuming it's github")
+        models_meta = {model["id"]: model for model in data}
+        return GithubChatOpenAI(
+            base_url=base_url, models_meta=models_meta, **client_kwargs
+        )
     except HTTPError:
         pass
 
