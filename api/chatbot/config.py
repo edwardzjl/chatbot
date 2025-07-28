@@ -15,7 +15,7 @@ from pydantic import (
 from pydantic.networks import _BaseMultiHostUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from chatbot.llm_client import ExtendedChatOpenAI, llm_client_type_factory
+from chatbot.llm_client import ExtendedChatOpenAI, llm_client_factory
 from chatbot.llm_client.base import StreamThinkingProcessor
 
 
@@ -81,24 +81,29 @@ class Settings(BaseSettings):
                 # {"repetition_penalty": "1.05", "chat_template_kwargs": {"enable_thinking": "True"}}
                 # Crucially, vLLM's "non-thinking mode" requires `extra_body['chat_template_kwargs']['enable_thinking']` to be the *boolean* `False`, not the string "False".
                 # IDK whether other parameters in `extra_body` also require specific types, but converting them proactively is a safe approach.
-                processed = {
+                client_kwargs = {
                     key: preprocess_value(val) if key == "extra_body" else val
                     for key, val in item.items()
                 }
+                base_url = client_kwargs.pop("base_url")
+                provider = (client_kwargs.get("metadata") or {}).get("provider")
+                # TODO: make it more configurable?
                 thinking_processor = StreamThinkingProcessor()
                 try:
-                    clz = llm_client_type_factory(
-                        processed["base_url"],
-                        (processed.get("metadata") or {}).get("provider"),
+                    client = llm_client_factory(
+                        base_url=base_url,
+                        provider=provider,
+                        thinking_processor=thinking_processor,
+                        **client_kwargs,
                     )
-                    clients.append(
-                        clz(thinking_processor=thinking_processor, **processed)
-                    )
+                    clients.append(client)
                 except:  # noqa: E722
-                    logger.exception("Error guessing provider for %s", processed)
+                    logger.exception("Error guessing provider for %s", client_kwargs)
                     clients.append(
                         ExtendedChatOpenAI(
-                            thinking_processor=thinking_processor, **processed
+                            base_url=base_url,
+                            thinking_processor=thinking_processor,
+                            **client_kwargs,
                         )
                     )
             else:

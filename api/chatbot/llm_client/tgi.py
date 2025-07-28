@@ -9,31 +9,21 @@ from .base import ExtendedChatOpenAI
 
 
 class TGIChatOpenAI(ExtendedChatOpenAI):
-    # Note on caching:
-    # Using @functools.cache/@lru_cache on methods can prevent instance GC.
-    # See <https://rednafi.com/python/lru_cache_on_methods/> for details.
-    # This is acceptable here as client instances (one per LLM) live for the app's lifespan.
-    # Standard functools caches do not support async methods.
-    # Since I want to apply caching here, async is not used for this method.
-    @cache
-    def get_model_info(self) -> dict[str, Any]:
-        http_client: Client = self.http_client or self.root_client._client
-        resp = http_client.get(
-            urljoin(self.openai_api_base, "/info")
-        ).raise_for_status()
-        return resp.json()
+    server_info: dict[str, Any] | None = None
 
     # Note on caching:
-    # Using @functools.cache/@lru_cache on methods can prevent instance GC.
+    # Using `@functools.cache` or `@functools.lru_cache` on methods can prevent instance GC.
     # See <https://rednafi.com/python/lru_cache_on_methods/> for details.
     # This is acceptable here as client instances (one per LLM) live for the app's lifespan.
-    # Standard functools caches do not support async methods.
+    # Also note that standard functools caches do not support async methods.
     # Since I want to apply caching here, async is not used for this method.
     @cache
     def get_context_length(self) -> int:
-        model_info = self.get_model_info()
+        if self.server_info is None:
+            self._fetch_server_info()
 
-        max_model_len = model_info.get("max_total_tokens")
+        max_model_len = self.server_info.get("max_total_tokens")
+
         # Should not happen, for type hint only.
         assert max_model_len is not None, (
             f"Model {self.model_name} does not have a max_context_length."
@@ -57,6 +47,14 @@ class TGIChatOpenAI(ExtendedChatOpenAI):
         ).raise_for_status()
         data = resp.json()
         return len(data["tokenize_response"])
+
+    def _fetch_server_info(self) -> None:
+        """Fetches server information."""
+        http_client: Client = self.http_client or self.root_client._client
+        resp = http_client.get(
+            urljoin(self.openai_api_base, "/info")
+        ).raise_for_status()
+        self.server_info = resp.json()
 
     def __hash__(self):
         # I use cache on `self` and cache doesn't work with mutable objects.
