@@ -66,8 +66,8 @@ class GithubChatOpenAI(ExtendedChatOpenAI):
                 " for information on how messages are converted to tokens."
             )
         num_tokens = 0
-        messages_dict = [self.convert_messages(m) for m in messages]
-        for message in messages_dict:
+        oai_messages = self.convert_messages(messages)
+        for message in oai_messages:
             num_tokens += tokens_per_message
             for key, value in message.items():
                 # This is an inferred approximation. OpenAI does not document how to
