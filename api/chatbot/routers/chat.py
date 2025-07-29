@@ -10,6 +10,7 @@ from fastapi import (
     WebSocketException,
 )
 from langchain_core.messages import AIMessage, BaseMessage
+from langchain_core.messages.ai import UsageMetadata
 from langchain_core.runnables import Runnable
 from langgraph.graph.state import CompiledStateGraph
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
@@ -21,7 +22,6 @@ from chatbot.metrics import connected_clients
 from chatbot.metrics.llm import input_tokens, output_tokens
 from chatbot.models import Conversation
 from chatbot.schemas import (
-    AIChatMessage,
     ChatMessage,
     InfoMessage,
     HumanChatMessage,
@@ -68,61 +68,36 @@ async def chat(
             runtime_configuration = {"thread_id": message.conversation}
 
             async with agent_wrapper(selected_model) as agent:
-                async for event in agent.astream_events(
+                async for stream_mode, chunk in agent.astream(
                     input={"messages": [message.to_lc()]},
                     config={
                         "run_name": "chat",
                         "metadata": chain_metadata,
                         "configurable": runtime_configuration,
                     },
-                    version="v2",
+                    stream_mode=["updates", "messages"],
+                    durability="async",
                 ):
-                    event_name: str = event["name"]
-                    if event_name.startswith("_") or event_name.startswith(
-                        "ChannelWrite"
-                    ):
-                        # events starts with "_" or "ChannelWrite" are langchain's internal events,
-                        # for example '_Exception' and 'ChannelWrite<agent,file,agent_outcome,intermediate_steps>'
-                        # skip for mainly 2 reasons:
-                        # 1. we don't want to expose internal event to the user (websocket or history)
-                        # 2. we want to keep the conversation history as short as possible
-                        continue
+                    if stream_mode == "updates":
+                        if (chatbot_chunk := chunk.get("chatbot")) and (
+                            msgs := chatbot_chunk.get("messages")
+                        ):
+                            msg: AIMessage = msgs[-1]
+                            update_usage_metrics(
+                                userid, msg.response_metadata, msg.usage_metadata
+                            )
 
-                    tags: list[str] = event["tags"]
-                    if "internal" in tags:
-                        # Our internal events are not supposed to be exposed to the user.
-                        continue
+                    elif stream_mode == "messages":
+                        message_chunk, metadata = chunk
+                        if "internal" in metadata.get("tags", []):
+                            continue  # Skip internal messages.
 
-                    logger.debug("event: %s", event)
-                    evt: str = event["event"]
-                    if evt == "on_chat_model_start":
-                        # Send an empty non-chunk message to start the streaming.
-                        msg = AIChatMessage(
-                            parent_id=message.id,
-                            id=f"run--{event['run_id']}",
-                            conversation=message.conversation,
-                            content="",  # Tired of handling null / undefined in js, simply sending an empty string.
-                        )
-                        await websocket.send_text(msg.model_dump_json())
-                    if evt == "on_chat_model_stream":
                         msg = ChatMessage.from_lc(
-                            event["data"]["chunk"],
+                            message_chunk,
                             parent_id=message.id,
                             conversation=message.conversation,
                         )
                         await websocket.send_text(msg.model_dump_json())
-                    if evt == "on_chat_model_end":
-                        msg: AIMessage = event["data"]["output"]
-                        if (usage_metadata := msg.usage_metadata) is not None:
-                            model_name = msg.response_metadata.get("model_name")
-                            input_tokens.labels(
-                                user_id=userid,
-                                model_name=model_name,
-                            ).inc(usage_metadata["input_tokens"])
-                            output_tokens.labels(
-                                user_id=userid,
-                                model_name=model_name,
-                            ).inc(usage_metadata["output_tokens"])
 
                 conv = await update_conversation_last_message_at(session_maker, conv)
 
@@ -207,3 +182,22 @@ async def generate_conversation_title(
         config={"metadata": chain_metadata},
     )
     return title_raw.strip('"')
+
+
+def update_usage_metrics(
+    userid: str, response_metadata: dict, usage_metadata: UsageMetadata | None = None
+) -> None:
+    if (model_name := response_metadata.get("model_name")) is None:
+        return
+
+    if usage_metadata is None:
+        return
+
+    input_tokens.labels(
+        user_id=userid,
+        model_name=model_name,
+    ).inc(usage_metadata["input_tokens"])
+    output_tokens.labels(
+        user_id=userid,
+        model_name=model_name,
+    ).inc(usage_metadata["output_tokens"])
