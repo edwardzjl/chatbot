@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, UTC
-from typing import TYPE_CHECKING, Any, Callable, Literal
+from typing import TYPE_CHECKING, Any, Callable
 
 from langchain_core.messages import BaseMessage, SystemMessage, trim_messages
 from langchain_core.prompts import ChatPromptTemplate
@@ -10,7 +10,7 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_core.tools import BaseTool
 from langchain_core.runnables.config import RunnableConfig
 from langgraph.graph import END, START, MessagesState, StateGraph
-from langgraph.prebuilt import ToolNode
+from langgraph.prebuilt import ToolNode, tools_condition
 
 from chatbot.safety import create_hazard_classifier, hazard_categories
 
@@ -55,24 +55,21 @@ def create_agent(
                 input={"messages": [last_message]}
             )
             if flag == "unsafe" and category is not None:
-                return {
-                    "messages": [
-                        SystemMessage(
-                            content=[
-                                {
-                                    "type": "guard_content",
-                                    "guard_content": {
-                                        "category": category,
-                                        "text": f"""The user input may contain inproper content related to:
+                message = SystemMessage(
+                    content=[
+                        {
+                            "type": "guard_content",
+                            "guard_content": {
+                                "category": category,
+                                "text": f"""The user input may contain inproper content related to:
 {hazard_categories.get(category)}
 
 Please respond with care and professionalism. Avoid engaging with harmful or unethical content. Instead, guide the user towards more constructive and respectful communication.""",
-                                    },
-                                }
-                            ]
-                        )
+                            },
+                        }
                     ]
-                }
+                )
+                return {"messages": [message]}
         return {"messages": []}
 
     async def run_output_guard(state: MessagesState) -> MessagesState:
@@ -142,24 +139,19 @@ Current date: {date}
         )
         return {"messages": [messages]}
 
-    # I cannot use `END` as the literal hint, as:
-    #  > Type arguments for "Literal" must be None, a literal value (int, bool, str, or bytes), or an enum value.
-    # As `END` is just an intern string of "__end__" (See `langgraph.constants`), So I use "__end__" here.
-    def should_continue(state: MessagesState) -> Literal["tools", "__end__"]:
-        messages = state["messages"]
-        last_message = messages[-1]
-        if last_message.tool_calls:
-            return "tools"
-        return END
-
     builder = StateGraph(MessagesState)
-    builder.add_node(input_guard)
     builder.add_node(chatbot)
-    builder.add_edge(START, "input_guard")
-    builder.add_edge("input_guard", "chatbot")
+
+    if hazard_classifier is not None:
+        builder.add_node(input_guard)
+        builder.add_edge(START, "input_guard")
+        builder.add_edge("input_guard", "chatbot")
+    else:
+        builder.add_edge(START, "chatbot")
+
     if tool_node:
         builder.add_node(tool_node)
-        builder.add_conditional_edges("chatbot", should_continue)
+        builder.add_conditional_edges("chatbot", tools_condition)
         builder.add_edge("tools", "chatbot")
     else:
         builder.add_edge("chatbot", END)
