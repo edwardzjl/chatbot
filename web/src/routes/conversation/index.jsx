@@ -69,7 +69,7 @@ const Conversation = () => {
     const { send } = useWebsocket();
     const { currentConv, dispatch } = useCurrentConv();
     // Only rendering messages of the following types
-    const rendering_messages = new Set(["human", "ai"]);
+    const rendering_messages = new Set(["human", "ai", "AIMessageChunk"]);
 
 
     useEffect(() => {

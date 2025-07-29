@@ -49,7 +49,7 @@ const Root = () => {
             case "human":
             case "ai":
                 dispatch({
-                    type: "added",
+                    type: "updated",
                     convId: message.conversation,
                     message: message,
                 });

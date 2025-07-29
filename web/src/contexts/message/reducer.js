@@ -14,7 +14,7 @@ export const messagesReducer = (currentConv, action) => {
             );
             return currentConv;
         }
-        // find reversly could potentially be faster as the full message usually is the last one (streamed).
+        // find reversely could potentially be faster as the full message usually is the last one (streamed).
         const match = currentConv.messages.findLastIndex(message => message.id === action.message.id);
         if (match !== -1) {
             console.warn(`Message with id ${action.message.id} already exists, skip adding...`);
@@ -30,12 +30,11 @@ export const messagesReducer = (currentConv, action) => {
             );
             return currentConv;
         }
+        // find reversely could potentially be faster as the full message usually is the last one (streamed).
         const match = currentConv.messages.findLastIndex(message => message.id === action.message.id);
         if (match === -1) {
-            // we don't have this message, ignore it
-            // this could happen when the user switch to another conversation and switch back
-            console.warn(`Message with id ${action.message.id} not found, skip appending...`);
-            return currentConv;
+            // If the message is not found, add it to the end.
+            return { ...currentConv, messages: [...currentConv.messages, { ...action.message }] };
         }
         const matched = currentConv.messages[match];
         return {
@@ -59,11 +58,11 @@ export const messagesReducer = (currentConv, action) => {
             );
             return currentConv;
         }
-        // find reversly could potentially be faster as the full message usually is the last one (streamed).
+        // find reversely could potentially be faster as the full message usually is the last one (streamed).
         const match = currentConv.messages.findLastIndex(message => message.id === action.message.id);
         if (match === -1) {
-            console.warn(`Message with id ${action.message.id} not found, skip updating...`);
-            return currentConv;
+            // If the message is not found, add it to the end.
+            return { ...currentConv, messages: [...currentConv.messages, { ...action.message }] };
         }
         return {
             ...currentConv,
