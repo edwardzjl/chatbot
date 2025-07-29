@@ -111,32 +111,31 @@ Current date: {date}
 
         bound = RunnablePassthrough.assign(date=_get_responding_at) | prompt | trimmer
 
-        selected_tools = []
+        # Default to select all tools
+        selected_tools = tools
         if tool_picker:
             try:
                 tool_names_out = await tool_picker.ainvoke(
                     input={"messages": state["messages"]}
                 )
-                tool_names = tool_names_out["parsed"].tool_names
-                selected_tools = (
-                    [tool for tool in tools if tool.name in tool_names]
-                    if tool_names
-                    else []
-                )
+                if (parsed := tool_names_out["parsed"]) is None:
+                    # Could happen if using early models that does not support json_schema. See:
+                    # - <https://platform.openai.com/docs/guides/structured-outputs?api-mode=responses#supported-models>
+                    # - <https://github.com/orgs/community/discussions/159087#discussioncomment-13920492>
+                    logger.warning(
+                        "Tool picker not working properly, you should check whether your model supports `json_schema`."
+                    )
+                elif tool_names := parsed.tool_names:
+                    selected_tools = [tool for tool in tools if tool.name in tool_names]
             except Exception:
                 logger.exception("Error picking tools, binding all")
-                selected_tools = tools
 
         if selected_tools:
             bound = bound | chat_model.bind_tools(selected_tools)
         else:
             bound = bound | chat_model
 
-        messages = await bound.ainvoke(
-            {
-                "messages": state["messages"],
-            }
-        )
+        messages = await bound.ainvoke({"messages": state["messages"]})
         return {"messages": [messages]}
 
     builder = StateGraph(MessagesState)
