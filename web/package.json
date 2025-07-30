@@ -48,5 +48,5 @@
     "vite-plugin-compression2": "^2.2.0",
     "vitest": "^3.2.4"
   },
-  "packageManager": "yarn@4.9.1"
+  "packageManager": "yarn@4.9.2"
 }
