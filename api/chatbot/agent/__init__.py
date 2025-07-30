@@ -125,7 +125,8 @@ Current date: {date}
                     logger.warning(
                         "Tool picker not working properly, you should check whether your model supports `json_schema`."
                     )
-                elif tool_names := parsed.tool_names:
+                # NOTE: Don't emit the `is not None` check, the `parsed.tool_names` might be an empty list.
+                elif (tool_names := parsed.tool_names) is not None:
                     selected_tools = [tool for tool in tools if tool.name in tool_names]
             except Exception:
                 logger.exception("Error picking tools, binding all")

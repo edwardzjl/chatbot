@@ -43,7 +43,7 @@ def create_tool_picker(
     ToolNamesType: TypeAlias = list[Literal[*tool_names]] | None  # type: ignore
 
     valid_options = [
-        "- `None`: No tool needed. You can answer based on your existing knowledge, or the task does not require fetching external information."
+        "- `None`: No tool needed -- you can answer based on your existing knowledge, or the task does not require fetching external information."
     ] + [f"- `{tool.name}`: {tool.description}" for tool in tools]
 
     class PickTools(BaseModel):
@@ -77,7 +77,6 @@ def create_tool_picker(
         method="json_schema",
         strict=True,
         include_raw=True,
-        tools=[PickTools],
     ).with_config(tags=["internal"])
 
     # Disable internal "thinking" behavior when using reasoning models.
