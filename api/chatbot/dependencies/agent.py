@@ -6,7 +6,7 @@ from functools import partial
 from typing import Annotated, AsyncGenerator
 
 from fastapi import Depends, Header
-from langchain_core.runnables import Runnable
+from langchain_core.runnables import Runnable, RunnableConfig
 from langchain_core.tools import BaseTool
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.base import BaseCheckpointSaver
@@ -147,7 +147,7 @@ AgentForStateDep = Annotated[
 async def get_agent_state(
     conversation_id: str, agent: AgentForStateDep
 ) -> StateSnapshot:
-    config = {"configurable": {"thread_id": conversation_id}}
+    config: RunnableConfig = {"configurable": {"thread_id": conversation_id}}
     return await agent.aget_state(config)
 
 

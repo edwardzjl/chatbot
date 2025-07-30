@@ -1,6 +1,5 @@
 import logging
 from functools import partial
-from typing import Any
 from uuid import UUID
 
 from fastapi import (
@@ -11,7 +10,7 @@ from fastapi import (
 )
 from langchain_core.messages import AIMessage, BaseMessage
 from langchain_core.messages.ai import UsageMetadata
-from langchain_core.runnables import Runnable
+from langchain_core.runnables import Runnable, RunnableConfig
 from langgraph.graph.state import CompiledStateGraph
 from openai import RateLimitError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
@@ -59,24 +58,21 @@ async def chat(
                 session_maker, message.conversation, userid
             )
 
-            selected_model = message.additional_kwargs.get("model_name")
-
-            chain_metadata = {
-                "conversation_id": message.conversation,
-                "userid": userid,
-                "client_ip": websocket.client.host,
+            runnable_config: RunnableConfig = {
+                "run_name": "chat",
+                "metadata": {
+                    "conversation_id": message.conversation,
+                    "userid": userid,
+                    "client_ip": websocket.client.host,
+                },
+                "configurable": {"thread_id": message.conversation},
             }
 
-            runtime_configuration = {"thread_id": message.conversation}
-
+            selected_model = message.additional_kwargs.get("model_name")
             async with agent_wrapper(selected_model) as agent:
                 async for msg, metadata in agent.astream(
                     input={"messages": [message.to_lc()]},
-                    config={
-                        "run_name": "chat",
-                        "metadata": chain_metadata,
-                        "configurable": runtime_configuration,
-                    },
+                    config=runnable_config,
                     stream_mode="messages",
                     durability="async",
                 ):
@@ -109,9 +105,8 @@ async def chat(
                     title = await generate_conversation_title(
                         agent=agent,
                         smry_chain_wrapper=smry_chain_wrapper,
-                        conversation_id=message.conversation,
                         selected_model=selected_model,
-                        chain_metadata=chain_metadata,
+                        runnable_config=runnable_config,
                     )
                     if title:
                         conv.title = title
@@ -172,20 +167,17 @@ async def update_conversation_last_message_at(
 async def generate_conversation_title(
     agent: CompiledStateGraph,
     smry_chain_wrapper: partial[Runnable],
-    conversation_id: str,
     selected_model: str,
-    chain_metadata: dict[str, Any],
+    runnable_config: RunnableConfig,
 ):
     """Generate a title for the conversation."""
-    smry_chain = smry_chain_wrapper(selected_model)
-
-    config = {"configurable": {"thread_id": conversation_id}}
-    state = await agent.aget_state(config)
+    state = await agent.aget_state(runnable_config)
     msgs: list[BaseMessage] = state.values.get("messages", [])
 
+    smry_chain = smry_chain_wrapper(selected_model)
     title_raw: str = await smry_chain.ainvoke(
         input={"messages": msgs},
-        config={"metadata": chain_metadata},
+        config=runnable_config,
     )
     return title_raw.strip('"')
 

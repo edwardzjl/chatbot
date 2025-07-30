@@ -3,6 +3,7 @@ from urllib.parse import urljoin
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, HTTPException
+from langchain_core.runnables import RunnableConfig
 from sqlalchemy import select
 from starlette.requests import Request
 
@@ -52,7 +53,7 @@ async def get_share(
     share: ORMShare = await session.get_one(ORMShare, share_id)
     res = Share.model_validate(share)
 
-    config = {"configurable": share.snapshot_ref}
+    config: RunnableConfig = {"configurable": share.snapshot_ref}
     agent_state = await agent.aget_state(config)
     lc_msgs: list[BaseMessage] = agent_state.values.get("messages", [])
     messages = [ChatMessage.from_lc(message) for message in lc_msgs]
@@ -73,7 +74,7 @@ async def create_share(
     if conv.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
 
-    config = {"configurable": {"thread_id": payload.source_id}}
+    config: RunnableConfig = {"configurable": {"thread_id": payload.source_id}}
     agent_state = await agent.aget_state(config)
     snapshot_ref = agent_state.config["configurable"]
 
