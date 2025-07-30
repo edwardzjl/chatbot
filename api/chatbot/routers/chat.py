@@ -70,36 +70,35 @@ async def chat(
             runtime_configuration = {"thread_id": message.conversation}
 
             async with agent_wrapper(selected_model) as agent:
-                async for stream_mode, chunk in agent.astream(
+                async for msg, metadata in agent.astream(
                     input={"messages": [message.to_lc()]},
                     config={
                         "run_name": "chat",
                         "metadata": chain_metadata,
                         "configurable": runtime_configuration,
                     },
-                    stream_mode=["updates", "messages"],
+                    stream_mode="messages",
                     durability="async",
                 ):
-                    if stream_mode == "updates":
-                        if (chatbot_chunk := chunk.get("chatbot")) and (
-                            msgs := chatbot_chunk.get("messages")
-                        ):
-                            msg: AIMessage = msgs[-1]
-                            update_usage_metrics(
-                                userid, msg.response_metadata, msg.usage_metadata
-                            )
+                    if "internal" in metadata.get("tags", []):
+                        continue  # Skip internal messages.
 
-                    elif stream_mode == "messages":
-                        message_chunk, metadata = chunk
-                        if "internal" in metadata.get("tags", []):
-                            continue  # Skip internal messages.
+                    _msg = ChatMessage.from_lc(
+                        msg,
+                        parent_id=message.id,
+                        conversation=message.conversation,
+                    )
+                    await websocket.send_text(_msg.model_dump_json())
 
-                        msg = ChatMessage.from_lc(
-                            message_chunk,
-                            parent_id=message.id,
-                            conversation=message.conversation,
+                    if (
+                        isinstance(msg, AIMessage)
+                        and (usage_metadata := msg.usage_metadata) is not None
+                    ):
+                        update_usage_metrics(
+                            userid,
+                            msg.response_metadata,
+                            usage_metadata,
                         )
-                        await websocket.send_text(msg.model_dump_json())
 
                 conv = await update_conversation_last_message_at(session_maker, conv)
 
