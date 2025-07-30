@@ -72,7 +72,7 @@ const Root = () => {
                 setSnackbar({
                     open: true,
                     severity: "error",
-                    message: "Something goes wrong, please try again later.",
+                    message: message.content,
                 });
                 break;
             default:

@@ -125,6 +125,10 @@ class InfoMessage(ChatMessage):
     type: Literal["info"] = "info"
 
 
+class ErrorMessage(ChatMessage):
+    type: Literal["error"] = "error"
+
+
 message_class_map: dict[str, Type[ChatMessage]] = {
     "human": HumanChatMessage,
     "ai": AIChatMessage,
