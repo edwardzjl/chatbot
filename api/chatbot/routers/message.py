@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING, Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException
+from langchain_core.runnables import RunnableConfig
 
 from chatbot.dependencies import (
     AgentForStateDep,
@@ -33,7 +34,7 @@ async def thumbup(
     if conv.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
 
-    config = {"configurable": {"thread_id": conversation_id}}
+    config: RunnableConfig = {"configurable": {"thread_id": conversation_id}}
     state = await agent.aget_state(config)
 
     # There should be only one message with the given id
@@ -61,7 +62,7 @@ async def thumbdown(
     if conv.owner != userid:
         raise HTTPException(status_code=403, detail="authorization error")
 
-    config = {"configurable": {"thread_id": conversation_id}}
+    config: RunnableConfig = {"configurable": {"thread_id": conversation_id}}
     state = await agent.aget_state(config)
 
     # There should be only one message with the given id

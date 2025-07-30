@@ -4,6 +4,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi_pagination.cursor import CursorPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from langchain_core.messages import BaseMessage
+from langchain_core.runnables import RunnableConfig
 from sqlalchemy import select
 from uuid import UUID
 
@@ -123,14 +124,15 @@ async def summarize(
 
     msgs: list[BaseMessage] = agent_state.values.get("messages", [])
 
+    config: RunnableConfig = {
+        "metadata": {
+            "conversation_id": conversation_id,
+            "userid": userid,
+        }
+    }
     title_raw: str = await smry_chain.ainvoke(
         input={"messages": msgs},
-        config={
-            "metadata": {
-                "conversation_id": conversation_id,
-                "userid": userid,
-            }
-        },
+        config=config,
     )
     title = title_raw.strip('"')
     conv.title = title
