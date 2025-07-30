@@ -13,6 +13,7 @@ from langchain_core.messages import AIMessage, BaseMessage
 from langchain_core.messages.ai import UsageMetadata
 from langchain_core.runnables import Runnable
 from langgraph.graph.state import CompiledStateGraph
+from openai import RateLimitError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from chatbot.dependencies import UserIdHeaderDep
@@ -23,6 +24,7 @@ from chatbot.metrics.llm import input_tokens, output_tokens
 from chatbot.models import Conversation
 from chatbot.schemas import (
     ChatMessage,
+    ErrorMessage,
     InfoMessage,
     HumanChatMessage,
 )
@@ -126,6 +128,11 @@ async def chat(
                             },
                         )
                         await websocket.send_text(info_message.model_dump_json())
+        except RateLimitError:
+            err_message = ErrorMessage(
+                content="Rate limit exceeded. Please try again later.",
+            )
+            await websocket.send_text(err_message.model_dump_json())
         except WebSocketDisconnect:
             logger.info("websocket disconnected")
             connected_clients.dec()
