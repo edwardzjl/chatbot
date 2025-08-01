@@ -7,7 +7,7 @@ import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 
 import { Dropdown, DropdownButton, DropdownMenu } from "@/components/DropdownMenu";
-import { useTheme } from "@/contexts/theme/hook";
+import { useTheme } from "@/hooks/useTheme";
 
 
 const ThemeIcon = ({ theme }) => {

@@ -4,7 +4,6 @@ import { useLoaderData, redirect } from "react-router-dom";
 
 import ChatLog from "@/components/ChatLog";
 import ChatMessage from "@/components/ChatMessage";
-import { useTheme } from "@/contexts/theme/hook";
 
 import { formatTimestamp } from "@/commons";
 
@@ -20,7 +19,6 @@ async function loader({ params }) {
 
 const Share = () => {
     const { share } = useLoaderData();
-    const { theme } = useTheme();
     const rendering_messages = new Set(["human", "ai"]);
 
     const goHome = () => {
@@ -30,7 +28,7 @@ const Share = () => {
     }
 
     return (
-        <div className={`${styles.App} theme-${theme}`}>
+        <div className={styles.App}>
             <div className={styles.sharebox}>
                 <div className={styles.shareHeader}>
                     <h1 className={styles.shareTitle}>{share.title}</h1>

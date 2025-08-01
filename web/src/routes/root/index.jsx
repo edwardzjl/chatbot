@@ -1,4 +1,4 @@
-import "./index.css";
+import styles from "./index.module.css";
 
 import { useCallback, useEffect } from "react";
 import { Outlet, redirect } from "react-router-dom";
@@ -7,7 +7,6 @@ import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 
 import { useSnackbar } from "@/contexts/snackbar/hook";
-import { useTheme } from "@/contexts/theme/hook";
 import { useConversations } from "@/contexts/conversation/hook";
 import { useCurrentConv } from "@/contexts/message/hook";
 import { useWebsocket } from "@/contexts/websocket/hook";
@@ -34,7 +33,6 @@ async function action({ request }) {
 const Root = () => {
     const { dispatch: dispatchConv } = useConversations();
 
-    const { theme } = useTheme();
     const { snackbar, setSnackbar, closeSnackbar  } = useSnackbar();
     const { dispatch } = useCurrentConv();
     const { registerMessageHandler, unregisterMessageHandler } = useWebsocket();
@@ -94,7 +92,7 @@ const Root = () => {
     }, [registerMessageHandler, unregisterMessageHandler, handleWebSocketMessage]);
 
     return (
-        <div className={`App theme-${theme}`}>
+        <div className={styles.App}>
             <Sidebar />
             <Outlet />
             <ShareConvDialog id="share-conv-dialog" />

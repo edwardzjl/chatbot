@@ -2,11 +2,9 @@ import styles from "./index.module.css";
 
 import { useRouteError, useNavigate } from "react-router-dom";
 
-import { useTheme } from "@/contexts/theme/hook";
 
 const ErrorPage = () => {
     const navigate = useNavigate();
-    const { theme } = useTheme();
     const error = useRouteError();
     console.error(error);
 
@@ -15,7 +13,7 @@ const ErrorPage = () => {
     };
 
     return (
-        <div className={`${styles.container} theme-${theme}`}>
+        <div className={styles.container}>
             <h1 className={styles.errorCode}>
                 <span>{error.status} {error.statusText || error.message}</span>
             </h1>
