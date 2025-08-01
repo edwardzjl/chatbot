@@ -1,3 +1,6 @@
+@import "open-props/style";
+@import "open-props/gray-hsl.min.css";
+
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -11,6 +14,22 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  --bg-primary: var(--gray-1);
+  --bg-secondary: var(--gray-3);
+  --text-primary: var(--gray-8);
+  --text-secondary: var(--gray-7);
+  --text-3: var(--gray-5);
+  --border-color: var(--gray-5);
+}
+
+.dark {
+  --bg-primary: var(--gray-8);
+  --bg-secondary: var(--gray-7);
+  --text-primary: var(--gray-3);
+  --text-secondary: var(--gray-4);
+  --text-3: var(--gray-6);
+  --border-color: var(--gray-6);
 }
 
 a {

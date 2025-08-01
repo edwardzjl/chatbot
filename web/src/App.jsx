@@ -15,7 +15,6 @@ import { ConversationProvider } from "@/contexts/conversation/provider";
 import { DialogProvider } from "@/contexts/dialog/provider";
 import { MessageProvider } from "@/contexts/message/provider";
 import { SnackbarProvider } from "@/contexts/snackbar/provider";
-import { ThemeProvider } from "@/contexts/theme/provider";
 import { UserProvider } from "@/contexts/user/provider";
 import { WebsocketProvider } from "@/contexts/websocket/provider";
 
@@ -58,23 +57,21 @@ const router = createBrowserRouter([
 
 function App() {
     return (
-        <ThemeProvider>
-            <SnackbarProvider>
-                <ConfigProvider>
-                    <UserProvider>
-                        <ConversationProvider>
-                            <WebsocketProvider>
-                                <MessageProvider>
-                                    <DialogProvider>
-                                        <RouterProvider router={router} />
-                                    </DialogProvider>
-                                </MessageProvider>
-                            </WebsocketProvider>
-                        </ConversationProvider>
-                    </UserProvider>
-                </ConfigProvider>
-            </SnackbarProvider>
-        </ThemeProvider>
+        <SnackbarProvider>
+            <ConfigProvider>
+                <UserProvider>
+                    <ConversationProvider>
+                        <WebsocketProvider>
+                            <MessageProvider>
+                                <DialogProvider>
+                                    <RouterProvider router={router} />
+                                </DialogProvider>
+                            </MessageProvider>
+                        </WebsocketProvider>
+                    </ConversationProvider>
+                </UserProvider>
+            </ConfigProvider>
+        </SnackbarProvider>
     )
 }
 

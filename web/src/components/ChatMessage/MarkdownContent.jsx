@@ -13,7 +13,7 @@ import Tooltip from "@mui/material/Tooltip";
 
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 
-import { useTheme } from "@/contexts/theme/hook";
+import { useTheme } from "@/hooks/useTheme";
 
 
 const MarkdownContent = ({content}) => {
