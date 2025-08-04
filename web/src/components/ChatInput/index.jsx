@@ -93,9 +93,7 @@ const ChatInput = ({ onSubmit }) => {
         }
     }, [inputRef, input]);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
+    const handleSubmit = async () => {
         const message = {
             id: crypto.randomUUID(),
             content: input,
