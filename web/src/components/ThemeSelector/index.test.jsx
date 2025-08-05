@@ -30,15 +30,15 @@ describe("ThemeSelector", () => {
     it("renders the theme menu and allows theme change", () => {
         setup();
         fireEvent.click(screen.getByText("Theme"));
-        expect(screen.getByLabelText("Set theme to light mode")).toBeDefined();
-        fireEvent.click(screen.getByLabelText("Set theme to dark mode"));
+        expect(screen.getByLabelText("Use light theme")).toBeDefined();
+        fireEvent.click(screen.getByLabelText("Use dark theme"));
         expect(mockSetTheme).toHaveBeenCalledWith("dark");
     });
 
     it("shows correct selected theme", () => {
         setup("dark");
         fireEvent.click(screen.getByText("Theme"));
-        const darkButton = screen.getByLabelText("Set theme to dark mode");
+        const darkButton = screen.getByLabelText("Use dark theme");
         expect(darkButton.className).toContain("selected");
     });
 });

@@ -2,9 +2,26 @@
     margin-left: auto;
     margin-right: auto;
     width: 40vw;
+    max-width: 800px;
+    min-width: 300px;
     border: 1px solid var(--border-color);
     border-radius: 1rem;
     padding: 8px;
+}
+
+/* Responsive width for mobile devices */
+@media (max-width: 768px) {
+    .inputContainer {
+        width: 90vw;
+        max-width: calc(100vw - 20px);
+    }
+}
+
+/* Tablet optimization */
+@media (max-width: 1200px) and (min-width: 769px) {
+    .inputContainer {
+        width: 50vw;
+    }
 }
 
 .attachments {
