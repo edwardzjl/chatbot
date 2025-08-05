@@ -3,11 +3,28 @@
  * align center and control max width
  */
 .messageContainer {
-    max-width: 40vw;
+    width: 40vw;
+    max-width: 800px;
+    min-width: 300px;
     margin-left: auto;
     margin-right: auto;
     padding-top: 1vw;
     text-align: left;
+}
+
+/* Responsive width for mobile devices */
+@media (max-width: 768px) {
+    .messageContainer {
+        width: 90vw;
+        max-width: calc(100vw - 20px);
+    }
+}
+
+/* Tablet optimization */
+@media (max-width: 1200px) and (min-width: 769px) {
+    .messageContainer {
+        width: 50vw;
+    }
 }
 
 .messageContainer.mine {
