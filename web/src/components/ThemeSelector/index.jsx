@@ -30,7 +30,7 @@ const ThemeSelector = () => {
 
     return (
         <Dropdown>
-            <DropdownButton className={styles.themeMenuTitle}>
+            <DropdownButton className={styles.themeMenuTitle} title="Change Theme" aria-label="Change Theme">
                 <ThemeIcon theme={theme} />
                 <span className={styles.themeMenuText}>Theme</span>
             </DropdownButton>
@@ -39,7 +39,8 @@ const ThemeSelector = () => {
                     <button
                         className={`${styles.themeMenuItem} ${theme === "system" && styles.selected}`}
                         onClick={() => setTheme("system")}
-                        aria-label="Set theme to system default"
+                        title="Use system theme"
+                        aria-label="Use system theme"
                     >
                         <BrightnessMediumIcon />
                         <span className={styles.themeMenuText}>OS Default</span>
@@ -49,7 +50,8 @@ const ThemeSelector = () => {
                     <button
                         className={`${styles.themeMenuItem} ${theme === "light" && styles.selected}`}
                         onClick={() => setTheme("light")}
-                        aria-label="Set theme to light mode"
+                        title="Use light theme"
+                        aria-label="Use light theme"
                     >
                         <LightModeIcon />
                         <span className={styles.themeMenuText}>Light</span>
@@ -59,7 +61,8 @@ const ThemeSelector = () => {
                     <button
                         className={`${styles.themeMenuItem} ${theme === "dark" && styles.selected}`}
                         onClick={() => setTheme("dark")}
-                        aria-label="Set theme to dark mode"
+                        title="Use dark theme"
+                        aria-label="Use dark theme"
                     >
                         <DarkModeIcon />
                         <span className={styles.themeMenuText}>Dark</span>
