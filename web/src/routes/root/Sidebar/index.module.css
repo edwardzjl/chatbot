@@ -6,6 +6,46 @@
     background-color: var(--bg-primary);
     display: flex;
     flex-direction: column;
+    transition: width 0.3s ease, padding 0.3s ease;
+    overflow: hidden;
+}
+
+.sidebar.collapsed {
+    width: 3rem;
+    padding: 10px 5px;
+}
+
+.sidebarHeader {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.toggleButton {
+    height: 2rem;
+    margin: 2px;
+    padding: 3px;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    border: none;
+    border-radius: 5px;
+    transition: ease 0.25s all;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.toggleButton:hover {
+    background-color: var(--bg-secondary);
+}
+
+.mobileToggle {
+    display: none;
+}
+
+.desktopToggle {
+    display: flex;
 }
 
 .sidebar a {
@@ -25,6 +65,12 @@
     display: flex;
     flex-direction: row;
     align-items: center;
+    gap: 0.5rem;
+}
+
+.sidebarButton.iconOnly {
+    justify-content: center;
+    gap: 0;
 }
 
 .sidebarButton:hover {
@@ -82,8 +128,54 @@
 .sidebarBottomGroup {
     margin: 1rem;
     display: flex;
+    justify-content: center;
+}
+
+.sidebar.collapsed .sidebarBottomGroup {
+    margin: 0.5rem;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
 .sidebarBottomGroupItem {
     margin: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar.collapsed .sidebarBottomGroupItem {
+    margin: 0.25rem;
+}
+
+/* Responsive behavior for mobile */
+@media (max-width: 768px) {
+    .mobileToggle {
+        display: flex;
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        z-index: 1001;
+        background-color: var(--bg-secondary);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+    
+    .desktopToggle {
+        display: none;
+    }
+    
+    .sidebar {
+        position: absolute;
+        z-index: 1000;
+        height: 100%;
+        transform: translateX(0);
+        transition: transform 0.3s ease;
+    }
+    
+    .sidebar.collapsed {
+        transform: translateX(-100%);
+        width: 16rem; /* Keep original width for slide animation */
+    }
 }
