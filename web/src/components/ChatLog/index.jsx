@@ -37,8 +37,19 @@ const ChatLog = ({ children, className = "", smoothScroll = true }) => {
     // Add scroll event handler to detect if user is near bottom
     useEffect(() => {
         const handleScroll = () => {
-            if (chatLogRef.current) {
-                const { scrollHeight, scrollTop, clientHeight } = chatLogRef.current;
+            // Find the scroll container (look for parent with overflow-y: auto)
+            let scrollContainer = chatLogRef.current;
+            while (scrollContainer && scrollContainer.parentElement) {
+                const styles = window.getComputedStyle(scrollContainer.parentElement);
+                if (styles.overflowY === 'auto' || styles.overflowY === 'scroll') {
+                    scrollContainer = scrollContainer.parentElement;
+                    break;
+                }
+                scrollContainer = scrollContainer.parentElement;
+            }
+
+            if (scrollContainer) {
+                const { scrollHeight, scrollTop, clientHeight } = scrollContainer;
                 const scrollBottom = scrollHeight - scrollTop - clientHeight;
                 const isNearBottom = scrollBottom < 50; // within 50px of bottom
                 isNearBottomRef.current = isNearBottom;
@@ -46,14 +57,24 @@ const ChatLog = ({ children, className = "", smoothScroll = true }) => {
             }
         };
 
-        const chatLogElement = chatLogRef.current;
-        if (chatLogElement) {
-            chatLogElement.addEventListener("scroll", handleScroll);
+        // Find the actual scroll container
+        let scrollContainer = chatLogRef.current;
+        while (scrollContainer && scrollContainer.parentElement) {
+            const styles = window.getComputedStyle(scrollContainer.parentElement);
+            if (styles.overflowY === 'auto' || styles.overflowY === 'scroll') {
+                scrollContainer = scrollContainer.parentElement;
+                break;
+            }
+            scrollContainer = scrollContainer.parentElement;
+        }
+
+        if (scrollContainer) {
+            scrollContainer.addEventListener("scroll", handleScroll);
         }
 
         return () => {
-            if (chatLogElement) {
-                chatLogElement.removeEventListener("scroll", handleScroll);
+            if (scrollContainer) {
+                scrollContainer.removeEventListener("scroll", handleScroll);
             }
         };
     }, []);

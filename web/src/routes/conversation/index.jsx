@@ -156,15 +156,21 @@ const Conversation = () => {
     return (
         <section className={styles.chatbox}>
             <ChatboxHeader />
-            <ChatLog className={navigation.state === "loading" ? styles.loading : ""}>
-                {/* We ignore system messages when displaying. */}
-                {conversation && currentConv?.messages?.filter(message => rendering_messages.has(message.type)).map((message, index) => (
-                    <ChatMessage key={index} convId={conversation.id} message={message} />
-                ))}
-            </ChatLog>
+            <div className={styles.chatLogWrapper}>
+                <div className={styles.contentContainer}>
+                    <ChatLog className={navigation.state === "loading" ? styles.loading : ""}>
+                        {/* We ignore system messages when displaying. */}
+                        {conversation && currentConv?.messages?.filter(message => rendering_messages.has(message.type)).map((message, index) => (
+                            <ChatMessage key={index} convId={conversation.id} message={message} />
+                        ))}
+                    </ChatLog>
+                </div>
+            </div>
             <div className={styles.inputBottom}>
-                <ChatInput onSubmit={sendMessage} />
-                <div className={styles.footer}>Chatbot can make mistakes. Consider checking important information.</div>
+                <div className={styles.inputContainer}>
+                    <ChatInput onSubmit={sendMessage} />
+                    <div className={styles.footer}>Chatbot can make mistakes. Consider checking important information.</div>
+                </div>
             </div>
         </section>
     );

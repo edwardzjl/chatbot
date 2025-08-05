@@ -1,3 +1,10 @@
+/* Shared width settings for content consistency */
+:root {
+    --content-max-width-mobile: 90vw;
+    --content-max-width-tablet: 70vw;
+    --content-max-width-desktop: 40vw;
+}
+
 .chatbox {
     display: flex;
     flex-direction: column;
@@ -5,11 +12,48 @@
     border: 1px solid var(--border-color);
     background-color: var(--bg-secondary);
     position: relative;
+    /* Prevent any unwanted scrolling at this level */
+    overflow: hidden;
 }
 
-.loading {
+/* ChatLog wrapper that handles scrolling at full width */
+.chatLogWrapper {
+    flex: 1;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    scrollbar-color: var(--border-color) transparent;
+    scrollbar-width: thin;
 }
 
+/* Unified content width container for consistent ChatLog and ChatInput sizing */
+.contentContainer {
+    max-width: var(--content-max-width-desktop);
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    padding-top: 1rem;
+}
+
+/* Responsive design for different screen sizes - using CSS custom properties */
+@media (max-width: 768px) {
+    .contentContainer {
+        max-width: var(--content-max-width-mobile);
+    }
+    .inputContainer {
+        max-width: var(--content-max-width-mobile);
+    }
+}
+
+@media (max-width: 1200px) and (min-width: 769px) {
+    .contentContainer {
+        max-width: var(--content-max-width-tablet);
+    }
+    .inputContainer {
+        max-width: var(--content-max-width-tablet);
+    }
+}
+
+/* Loading state styles */
 .loading::before {
   content: '';
   position: absolute;
@@ -49,8 +93,17 @@
 .inputBottom {
     position: sticky;
     bottom: 0;
-    margin-top: auto;
     background-color: var(--bg-secondary);
+    flex-shrink: 0; /* Prevent input area from shrinking */
+    padding: 1rem 0; /* Add some vertical padding */
+}
+
+/* Input area container with same responsive width as content */
+.inputContainer {
+    max-width: var(--content-max-width-desktop); /* Default for desktop (> 1200px) */
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
 }
 
 .footer {
