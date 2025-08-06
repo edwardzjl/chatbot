@@ -36,10 +36,6 @@
     cursor: pointer;
 }
 
-.toggleButton:hover {
-    background-color: var(--bg-secondary);
-}
-
 .desktopToggle {
     display: flex;
 }
@@ -77,10 +73,6 @@
 .sidebarButton.iconOnly {
     justify-content: center;
     gap: 0;
-}
-
-.sidebarButton:hover {
-    background-color: var(--bg-secondary);
 }
 
 .convList {

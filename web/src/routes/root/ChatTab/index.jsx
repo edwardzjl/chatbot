@@ -141,7 +141,7 @@ const ChatTab = ({ chat }) => {
 
     return (
         <div
-            className={`${styles.sidebarButton} ${params.convId === chat.id ? styles.active : ""}`}
+            className={`${styles.sidebarButton} ${params.convId === chat.id && styles.active}`}
         >
             <Tooltip title={titleText} placement="right-start">
                 <div

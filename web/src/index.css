@@ -25,6 +25,8 @@
   --text-secondary: var(--gray-7);
   --bg-secondary: var(--gray-3);
 
+  --bg-highlight: var(--gray-3);
+
   --text-3: var(--gray-5);
 }
 
@@ -38,6 +40,8 @@
 
   --text-secondary: var(--gray-4);
   --bg-secondary: var(--gray-7);
+
+  --bg-highlight: var(--gray-7);
 
   --text-3: var(--gray-6);
 }
@@ -87,6 +91,7 @@ button {
   transition: border-color 0.25s;
 }
 button:hover {
+  background-color: var(--bg-highlight);
   border-color: #646cff;
 }
 button:focus,
