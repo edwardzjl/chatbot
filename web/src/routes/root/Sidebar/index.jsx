@@ -55,17 +55,25 @@ const Sidebar = () => {
 
     return (
         <>
-            {/* Mobile floating toggle button - only visible when collapsed */}
+            {/* Mobile floating toggle button */}
             <button
-                className={`${styles.toggleButton} ${styles.mobileFloatingToggle} ${isCollapsed ? styles.visible : styles.hidden}`}
+                className={`${styles.toggleButton} ${styles.mobileFloatingToggle} ${isCollapsed && styles.collapsed}`}
                 onClick={toggleSidebar}
                 aria-label="Expand sidebar"
                 title="Expand sidebar"
             >
                 <MenuIcon />
             </button>
-            
-            <aside className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ''}`}>
+            {/* Mobile floating new chat button */}
+            <button
+                className={`${styles.sidebarButton} ${styles.mobileFloatingNewChat} ${isCollapsed && styles.collapsed}`}
+                onClick={() => navigate("/")}
+                aria-label="New Chat"
+                title="New Chat"
+            >
+                <AddOutlinedIcon />
+            </button>
+            <aside className={`${styles.sidebar} ${isCollapsed && styles.collapsed}`}>
                 <div className={styles.sidebarHeader}>
                     <button
                         className={`${styles.toggleButton} ${styles.desktopToggle}`}
@@ -76,7 +84,7 @@ const Sidebar = () => {
                         {isCollapsed ? <MenuIcon /> : <ChevronLeftIcon />}
                     </button>
                     <button
-                        className={`${styles.sidebarButton} ${isCollapsed ? styles.iconOnly : ''}`}
+                        className={`${styles.sidebarButton} ${isCollapsed && styles.iconOnly}`}
                         onClick={() => navigate("/")}
                         title="New Chat"
                         aria-label="New Chat"

@@ -45,14 +45,12 @@
 }
 
 .mobileFloatingToggle {
-    display: none;
+    /* Hidden by default */
+    display: none !important;
 }
 
-.visible {
-    display: flex !important;
-}
-
-.hidden {
+.mobileFloatingNewChat {
+    /* Hidden by default */
     display: none !important;
 }
 
@@ -162,17 +160,6 @@
 
 /* Responsive behavior for mobile */
 @media (max-width: 768px) {
-    .mobileFloatingToggle {
-        position: fixed;
-        top: 10px;
-        left: 10px;
-        z-index: 1001;
-        background-color: var(--bg-secondary);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        width: 2.5rem;
-        height: 2.5rem;
-    }
-
     .sidebar {
         position: absolute;
         z-index: 1000;
@@ -184,5 +171,32 @@
     /* Totally hide sidebar on small screens */
     .sidebar.collapsed {
         transform: translateX(-100%);
+    }
+
+    /* Mobile floating toggle button - only show when collapsed */
+    .mobileFloatingToggle.collapsed {
+        display: flex !important;
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        z-index: 1001;
+        background-color: var(--bg-secondary);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+
+    /* Mobile floating new chat button - only show when collapsed */
+    .mobileFloatingNewChat.collapsed {
+        display: flex !important;
+        position: fixed;
+        top: 65px; /* Position it below the toggle button */
+        left: 10px; /* Same left position as toggle button */
+        z-index: 1001;
+        background-color: var(--bg-secondary);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        width: 2.5rem;
+        height: 2.5rem;
+        justify-content: center;
     }
 }
