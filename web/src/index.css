@@ -6,17 +6,17 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  /* This is the dark color theme.
-   * For light color theme see `@media (prefers-color-scheme: light)` below.
-   */
-  color: var(--gray-3);
-  background-color: var(--gray-8);
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  color-scheme: light dark;
+  /* This is the light color theme.
+   * For dark color theme see `@media (prefers-color-scheme: dark)` below.
+   */
+  color: var(--gray-8);
+  background-color: var(--gray-1);
 
   --text-primary: var(--gray-8);
   --bg-primary: var(--gray-1);
@@ -29,6 +29,9 @@
 }
 
 .dark {
+  color: var(--gray-3);
+  background-color: var(--gray-8);
+
   --text-primary: var(--gray-3);
   --bg-primary: var(--gray-8);
   --border-color: var(--gray-6);
@@ -45,7 +48,7 @@ a {
   text-decoration: inherit;
 }
 a:hover {
-  color: #535bf2;
+  color: #747bff;
 }
 
 body {
@@ -79,7 +82,7 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: #f9f9f9;
   cursor: pointer;
   transition: border-color 0.25s;
 }
@@ -110,15 +113,24 @@ button:focus-visible {
   }
 }
 
-@media (prefers-color-scheme: light) {
+@media (prefers-color-scheme: dark) {
   :root {
-    color: var(--gray-8);
-    background-color: var(--gray-1);
+    color: var(--gray-3);
+    background-color: var(--gray-8);
+
+    --text-primary: var(--gray-3);
+    --bg-primary: var(--gray-8);
+    --border-color: var(--gray-6);
+
+    --text-secondary: var(--gray-4);
+    --bg-secondary: var(--gray-7);
+
+    --text-3: var(--gray-6);
   }
   a:hover {
-    color: #747bff;
+    color: #535bf2;
   }
   button {
-    background-color: #f9f9f9;
+    background-color: #1a1a1a;
   }
 }
