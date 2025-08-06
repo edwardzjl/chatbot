@@ -118,7 +118,7 @@ const ChatLog = ({ children, className = "", smoothScroll = true }) => {
 
     return (
         <>
-            <div ref={chatLogRef} className={`${styles.chatLog} ${className}`} role="region" aria-label="chat-log">
+            <div ref={chatLogRef} className={`${styles.chatLog} scroll-box ${className}`} role="region" aria-label="chat-log">
                 {children}
                 <div ref={messagesEndRef} />
             </div>

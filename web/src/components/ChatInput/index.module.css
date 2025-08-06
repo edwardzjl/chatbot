@@ -97,8 +97,6 @@
     font-size: 1.25em;
     border: unset;
     resize: none;
-    scrollbar-color: var(--border-color) transparent;
-    scrollbar-width: thin;
 }
 
 .inputText:focus {

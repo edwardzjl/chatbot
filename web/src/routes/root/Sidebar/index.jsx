@@ -87,7 +87,7 @@ const Sidebar = () => {
                 </div>
                 {!isCollapsed && (
                     <>
-                        <nav className={styles.convList}>
+                        <nav className={`${styles.convList} scroll-box`}>
                             {convs && convs
                                 .filter(group => group.conversations && group.conversations.length > 0) // Filter out empty lists
                                 .map(group => (
