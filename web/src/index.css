@@ -86,6 +86,8 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
+  /* button has some default color. I want to reset it and let it inherit from parent */
+  color: inherit;
   background-color: #f9f9f9;
   cursor: pointer;
   transition: border-color 0.25s;
@@ -97,6 +99,11 @@ button:hover {
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
+}
+
+textarea {
+  /* textarea has some default color. I want to reset it and let it inherit from parent */
+  color: inherit;
 }
 
 /* For browsers that support `scrollbar-*` properties */
