@@ -14,7 +14,8 @@
 }
 
 .sidebarButton:hover {
-  background-color: var(--bg-secondary);
+  /* This is not a button, so we still need this */
+  background-color: var(--bg-highlight);
 
   .chatOpMenuIcon {
     visibility: visible;
@@ -22,7 +23,7 @@
 }
 
 .sidebarButton.active {
-  background-color: var(--bg-secondary);
+  background-color: var(--bg-highlight);
 }
 
 .titleContainer {
@@ -74,6 +75,7 @@
 }
 
 .chatOpMenuIcon:hover {
+  /* The icon lays on --bg-highlight, so we need another color to highlight it */
   background-color: var(--bg-primary);
 }
 
@@ -93,10 +95,6 @@
   align-items: center;
   padding: 0.3vw;
   width: 100%;
-}
-
-.chatOpMenuItem:hover {
-  background-color: var(--bg-secondary);
 }
 
 .chatOpMenuItemText {
