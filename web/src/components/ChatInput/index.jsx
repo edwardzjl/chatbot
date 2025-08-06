@@ -297,7 +297,7 @@ const ChatInput = ({ onSubmit }) => {
                 <label htmlFor="input-text" className={styles.visuallyHidden}>Input chat message</label>
                 <textarea
                     id="input-text"
-                    className={styles.inputText}
+                    className={`${styles.inputText} scroll-box`}
                     ref={inputRef}
                     autoFocus
                     value={input}

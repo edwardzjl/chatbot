@@ -91,6 +91,25 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+/* For browsers that support `scrollbar-*` properties */
+@supports (scrollbar-color: auto) {
+  .scroll-box {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+    scroll-behavior: smooth;
+  }
+}
+
+/* TODO: I need to test it on Safari */
+/* Otherwise, use `::-webkit-scrollbar-*` pseudo-elements */
+@supports selector(::-webkit-scrollbar) {
+  .scroll-box::-webkit-scrollbar {
+    width: thin;
+    color: var(--border-color);
+    background-color: transparent;
+  }
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: var(--gray-8);
