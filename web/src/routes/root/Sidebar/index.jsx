@@ -55,14 +55,14 @@ const Sidebar = () => {
 
     return (
         <>
-            {/* Mobile toggle button - always visible on mobile */}
+            {/* Mobile floating toggle button - only visible when collapsed */}
             <button
-                className={`${styles.toggleButton} ${styles.mobileToggle}`}
+                className={`${styles.toggleButton} ${styles.mobileFloatingToggle} ${isCollapsed ? styles.visible : styles.hidden}`}
                 onClick={toggleSidebar}
-                aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-                title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                aria-label="Expand sidebar"
+                title="Expand sidebar"
             >
-                {isCollapsed ? <MenuIcon /> : <ChevronLeftIcon />}
+                <MenuIcon />
             </button>
             
             <aside className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ''}`}>
