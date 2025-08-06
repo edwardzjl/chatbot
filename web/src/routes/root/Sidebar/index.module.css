@@ -40,12 +40,20 @@
     background-color: var(--bg-secondary);
 }
 
-.mobileToggle {
+.desktopToggle {
+    display: flex;
+}
+
+.mobileFloatingToggle {
     display: none;
 }
 
-.desktopToggle {
-    display: flex;
+.visible {
+    display: flex !important;
+}
+
+.hidden {
+    display: none !important;
 }
 
 .sidebar a {
@@ -103,18 +111,24 @@
 }
 
 .spinner {
-  width: 24px;
-  height: 24px;
-  border: 3px solid #ccc;
-  border-top: 3px solid #3498db; /* TODO: change this */
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto;
+    width: 24px;
+    height: 24px;
+    border: 3px solid #ccc;
+    border-top: 3px solid #3498db;
+    /* TODO: change this */
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 .sidebarBottom {
@@ -148,8 +162,7 @@
 
 /* Responsive behavior for mobile */
 @media (max-width: 768px) {
-    .mobileToggle {
-        display: flex;
+    .mobileFloatingToggle {
         position: fixed;
         top: 10px;
         left: 10px;
@@ -159,11 +172,7 @@
         width: 2.5rem;
         height: 2.5rem;
     }
-    
-    .desktopToggle {
-        display: none;
-    }
-    
+
     .sidebar {
         position: absolute;
         z-index: 1000;
@@ -171,9 +180,9 @@
         transform: translateX(0);
         transition: transform 0.3s ease;
     }
-    
+
+    /* Totally hide sidebar on small screens */
     .sidebar.collapsed {
         transform: translateX(-100%);
-        width: 16rem; /* Keep original width for slide animation */
     }
 }
