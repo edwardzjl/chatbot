@@ -24,7 +24,7 @@
 
 ### Prerequisites
 - **Python 3.13** (3.12 works with warnings)
-- **Node.js LTS** (v20+)
+- **Node.js LTS** (v22+)
 - **pipenv** for Python dependency management
 - **Yarn 4.9.2** via corepack for Node.js dependencies
 
@@ -38,7 +38,7 @@ pipenv sync -d  # Install development dependencies
 # Web setup  
 cd web
 corepack enable
-yarn install --frozen-lockfile  # Use --immutable in newer versions
+yarn install --immutable
 ```
 
 ## Build, Test, and Lint Commands
@@ -58,7 +58,7 @@ make lint
 make format  
 # OR: pipenv run ruff check --fix && pipenv run ruff format
 
-# Testing (36 tests)
+# Testing
 make test
 # OR: pipenv run python -m unittest
 
@@ -73,7 +73,7 @@ cd web
 
 # Install dependencies
 corepack enable
-yarn install --frozen-lockfile
+yarn install --immutable
 
 # Linting (uses ESLint)
 make lint
@@ -83,7 +83,7 @@ make lint
 make format
 # OR: yarn format  
 
-# Testing (52 tests, 1 typically skipped)
+# Testing
 make test
 # OR: yarn test --run
 
@@ -97,20 +97,12 @@ yarn dev  # Runs on port 3000 with API proxy
 
 ## Known Issues & Workarounds
 
-### Python Version Compatibility
-- **Issue**: Pipfile specifies Python 3.13, but most systems have 3.12
-- **Workaround**: Use `pipenv --python python3.12 sync -d` to override version
-- **Warning**: Pipenv will show version mismatch warnings but builds succeed
 
 ### Web Build Warnings
 - **Issue**: Vite warns about chunks >500KB after minification
 - **Status**: Known issue, not breaking - application builds and runs correctly
 - **Details**: Main bundle is ~1.87MB, likely due to Material-UI and React dependencies
 
-### Yarn Lockfile Commands
-- **Issue**: `--frozen-lockfile` is deprecated
-- **Current**: Use `--frozen-lockfile` (still works)
-- **Future**: Migrate to `--immutable` when updating CI
 
 ### Database Requirements
 - **Development**: SQLite (default, no setup needed)
@@ -131,7 +123,7 @@ The repository uses GitHub Actions with separate workflows:
 - **Triggers**: Changes to `web/**` or workflow file
 - **Jobs**: lint, test, build
 - **Runtime**: Ubuntu latest with Node.js LTS
-- **Dependencies**: `corepack enable && yarn install --frozen-lockfile`
+- **Dependencies**: `corepack enable && yarn install --immutable`
 
 ### Pre-commit Hooks
 Configuration in `.pre-commit-config.yaml`:
@@ -186,14 +178,14 @@ Key configuration via environment variables (see README for full list):
 - **Framework**: Python unittest
 - **Coverage**: Agent, LLM client, schemas, configuration
 - **Command**: `make test` or `pipenv run python -m unittest`
-- **Duration**: ~0.2 seconds, 36 tests
+- **Duration**: ~0.2 seconds
 
 ### Web Tests  
 - **Location**: `web/src/**/*.test.js(x)`
 - **Framework**: Vitest with React Testing Library
 - **Coverage**: Components, contexts, utilities
 - **Command**: `make test` or `yarn test --run`
-- **Duration**: ~4 seconds, 52 tests (1 typically skipped)
+- **Duration**: ~4 seconds
 
 ## Deployment
 
