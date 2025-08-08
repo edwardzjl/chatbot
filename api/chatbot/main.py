@@ -43,12 +43,12 @@ metrics_route = Mount("/metrics", make_asgi_app())
 metrics_route.path_regex = re.compile("^/metrics(?P<path>.*)$")
 app.routes.append(metrics_route)
 
-app.include_router(chat_router, prefix="/api")
-app.include_router(conv_router, prefix="/api")
-app.include_router(files_router, prefix="/api")
-app.include_router(message_router, prefix="/api")
-app.include_router(probes_router, prefix="/api")
-app.include_router(share_router, prefix="/api")
+app.include_router(chat_router, prefix="/api", tags=["chat"])
+app.include_router(conv_router, prefix="/api", tags=["conversation"])
+app.include_router(files_router, prefix="/api", tags=["files"])
+app.include_router(message_router, prefix="/api", tags=["messages"])
+app.include_router(probes_router, prefix="/api", tags=["probes"])
+app.include_router(share_router, prefix="/api", tags=["share"])
 
 
 add_pagination(app)

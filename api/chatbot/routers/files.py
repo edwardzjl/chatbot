@@ -4,10 +4,7 @@ from chatbot.dependencies import S3ClientDep, UserIdHeaderDep
 from chatbot.dependencies.commons import SettingsDep
 
 
-router = APIRouter(
-    prefix="/files",
-    tags=["files"],
-)
+router = APIRouter(prefix="/files")
 
 
 @router.get("/upload-url")

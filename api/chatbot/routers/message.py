@@ -15,10 +15,7 @@ from chatbot.models import Conversation as ORMConversation
 if TYPE_CHECKING:
     from langchain_core.messages import BaseMessage
 
-router = APIRouter(
-    prefix="/conversations/{conversation_id}/messages",
-    tags=["messages"],
-)
+router = APIRouter(prefix="/conversations/{conversation_id}/messages")
 
 
 # TODO: merge thumbup and thumbdown into one endpoint called feedback?

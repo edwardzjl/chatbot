@@ -24,10 +24,7 @@ if TYPE_CHECKING:
     from langchain_core.messages import BaseMessage
 
 # jlzhou: The resource name ("shares") is recommended by gemini, don't blame me.
-router = APIRouter(
-    prefix="/shares",
-    tags=["share"],
-)
+router = APIRouter(prefix="/shares")
 
 
 @router.get("")

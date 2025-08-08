@@ -25,10 +25,7 @@ from chatbot.schemas import (
     UpdateConversation,
 )
 
-router = APIRouter(
-    prefix="/conversations",
-    tags=["conversation"],
-)
+router = APIRouter(prefix="/conversations")
 
 
 @router.get("")
