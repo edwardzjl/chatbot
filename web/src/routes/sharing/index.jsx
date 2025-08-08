@@ -62,69 +62,71 @@ const Sharing = () => {
     };
 
     return (
-        <div className="sharing-container">
-            <h1 className="sharing-title">My Shares</h1>
+        <div className="sharing-container scroll-box">
+            <div className="sharing-content">
+                <h1 className="sharing-title">My Shares</h1>
             
-            {shares.length === 0 ? (
-                <section className="empty-state">
-                    <p className="empty-state-text">
+                {shares.length === 0 ? (
+                    <section className="empty-state">
+                        <p className="empty-state-text">
                         You haven&apos;t shared any conversations yet.
-                    </p>
-                    <p className="empty-state-subtext">
+                        </p>
+                        <p className="empty-state-subtext">
                         Share a conversation to see it listed here.
-                    </p>
-                </section>
-            ) : (
-                <div>
-                    <p className="shares-count">
-                        {shares.length} shared conversation{shares.length !== 1 ? 's' : ''}
-                    </p>
+                        </p>
+                    </section>
+                ) : (
+                    <div>
+                        <p className="shares-count">
+                            {shares.length} shared conversation{shares.length !== 1 ? 's' : ''}
+                        </p>
                     
-                    <div className="shares-list">
-                        {shares.map((share) => (
-                            <div key={share.id} className="share-card">
-                                <div className="share-card-content">
-                                    <h2 className="share-title">
-                                        {share.title}
-                                    </h2>
-                                    <p className="share-meta">
+                        <div className="shares-list">
+                            {shares.map((share) => (
+                                <div key={share.id} className="share-card">
+                                    <div className="share-card-content">
+                                        <h2 className="share-title">
+                                            {share.title}
+                                        </h2>
+                                        <p className="share-meta">
                                         Created: {formatTimestamp(share.created_at)}
-                                    </p>
-                                    <p className="share-url">
+                                        </p>
+                                        <p className="share-url">
                                         URL: {share.url}
-                                    </p>
-                                </div>
-                                <div className="share-card-actions">
-                                    <Link 
-                                        to={`/share/${share.id}`}
-                                        className="action-button action-button-primary"
-                                        aria-label="View shared conversation"
-                                    >
-                                        <span className="material-icons">launch</span>
+                                        </p>
+                                    </div>
+                                    <div className="share-card-actions">
+                                        <Link 
+                                            to={`/share/${share.id}`}
+                                            className="action-button action-button-primary"
+                                            aria-label="View shared conversation"
+                                        >
+                                            <span className="material-icons">launch</span>
                                         View
-                                    </Link>
-                                    <button 
-                                        className="action-button action-button-secondary"
-                                        onClick={() => copyToClipboard(share.url)}
-                                        aria-label="Copy share URL"
-                                        title="Copy share URL"
-                                    >
-                                        <span className="material-icons">content_copy</span>
-                                    </button>
-                                    <button 
-                                        className="action-button action-button-danger"
-                                        onClick={() => deleteShare(share.id)}
-                                        aria-label="Delete share"
-                                        title="Delete share"
-                                    >
-                                        <span className="material-icons">delete</span>
-                                    </button>
+                                        </Link>
+                                        <button 
+                                            className="action-button action-button-secondary"
+                                            onClick={() => copyToClipboard(share.url)}
+                                            aria-label="Copy share URL"
+                                            title="Copy share URL"
+                                        >
+                                            <span className="material-icons">content_copy</span>
+                                        </button>
+                                        <button 
+                                            className="action-button action-button-danger"
+                                            onClick={() => deleteShare(share.id)}
+                                            aria-label="Delete share"
+                                            title="Delete share"
+                                        >
+                                            <span className="material-icons">delete</span>
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
         </div>
     );
 };

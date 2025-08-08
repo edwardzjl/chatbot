@@ -1,10 +1,13 @@
 /* Sharing page styles */
 .sharing-container {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.sharing-content {
     padding: 1.5rem;
     max-width: 800px;
     margin: 0 auto;
-    flex: 1;
-    overflow-y: auto;
 }
 
 .sharing-title {
@@ -147,7 +150,7 @@
 }
 
 @media (max-width: 768px) {
-    .sharing-container {
+    .sharing-content {
         padding: 1rem;
     }
     
