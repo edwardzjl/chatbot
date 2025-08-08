@@ -149,46 +149,6 @@
     margin: 0;
 }
 
-.pagination {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 2rem;
-    padding: 1rem 0;
-    border-top: 1px solid var(--border-color);
-}
-
-.pagination-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-    line-height: 1.4;
-    border-radius: 4px;
-    border: 1px solid var(--border-color);
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-}
-
-.pagination-button:hover:not(:disabled) {
-    background-color: var(--bg-secondary);
-    border-color: var(--text-secondary);
-}
-
-.pagination-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    color: var(--text-secondary);
-}
-
-.pagination-info {
-    color: var(--text-secondary);
-    font-size: 0.875rem;
-}
-
 @media (max-width: 768px) {
     .sharing-content {
         padding: 1rem;
@@ -205,15 +165,5 @@
     
     .share-card-actions {
         flex-wrap: wrap;
-    }
-    
-    .pagination {
-        flex-direction: column;
-        gap: 1rem;
-        text-align: center;
-    }
-    
-    .pagination-info {
-        order: -1;
     }
 }

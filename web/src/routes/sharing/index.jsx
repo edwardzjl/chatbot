@@ -5,13 +5,21 @@ import { Link, useLoaderData, useNavigate, useSearchParams } from "react-router-
 
 import { useSnackbar } from "@/contexts/snackbar/hook";
 import { formatTimestamp } from "@/commons";
+import Pagination from "@/components/Pagination";
 
 async function loader({ request }) {
     const url = new URL(request.url);
-    const page = url.searchParams.get("page") || "1";
-    const pageSize = url.searchParams.get("page_size") || "10";
+    const cursor = url.searchParams.get("cursor");
+    const size = url.searchParams.get("size") || "10";
     
-    const response = await fetch(`/api/shares?page=${page}&page_size=${pageSize}`);
+    // Build API URL with cursor-based pagination parameters
+    const apiUrl = new URL("/api/shares", url.origin);
+    if (cursor) {
+        apiUrl.searchParams.set("cursor", cursor);
+    }
+    apiUrl.searchParams.set("size", size);
+    
+    const response = await fetch(apiUrl.toString());
     if (!response.ok) {
         throw new Error(`Failed to fetch shares: ${response.statusText}`);
     }
@@ -19,18 +27,17 @@ async function loader({ request }) {
     
     // Handle both paginated and non-paginated responses
     if (Array.isArray(data)) {
-        // Non-paginated response (current format)
+        // Non-paginated response (legacy format)
         return { shares: data, pagination: null };
     } else {
-        // Paginated response
+        // Cursor-based paginated response
         return { 
-            shares: data.items || data.data || data.shares || [], 
+            shares: data.items || [], 
             pagination: {
-                page: parseInt(page),
-                pageSize: parseInt(pageSize),
-                total: data.total || 0,
-                hasNext: data.has_next || false,
-                hasPrev: data.has_prev || false
+                currentPage: data.current_page,
+                previousPage: data.previous_page,
+                nextPage: data.next_page,
+                total: data.total || 0
             }
         };
     }
@@ -84,21 +91,25 @@ const Sharing = () => {
         }
     };
 
-    const goToPage = (page) => {
+    const goToPage = (cursor) => {
         const params = new URLSearchParams(searchParams);
-        params.set("page", page.toString());
+        if (cursor) {
+            params.set("cursor", cursor);
+        } else {
+            params.delete("cursor");
+        }
         navigate(`/sharing?${params.toString()}`);
     };
 
     const nextPage = () => {
-        if (pagination && pagination.hasNext) {
-            goToPage(pagination.page + 1);
+        if (pagination && pagination.nextPage) {
+            goToPage(pagination.nextPage);
         }
     };
 
     const prevPage = () => {
-        if (pagination && pagination.hasPrev) {
-            goToPage(pagination.page - 1);
+        if (pagination && pagination.previousPage) {
+            goToPage(pagination.previousPage);
         }
     };
 
@@ -167,29 +178,14 @@ const Sharing = () => {
                         </div>
 
                         {pagination && (
-                            <div className="pagination">
-                                <button 
-                                    className="pagination-button"
-                                    onClick={prevPage}
-                                    disabled={!pagination.hasPrev}
-                                    aria-label="Previous page"
-                                >
-                                    <span className="material-icons">chevron_left</span>
-                                    Previous
-                                </button>
-                                <span className="pagination-info">
-                                    Page {pagination.page} of {Math.ceil(pagination.total / pagination.pageSize)}
-                                </span>
-                                <button 
-                                    className="pagination-button"
-                                    onClick={nextPage}
-                                    disabled={!pagination.hasNext}
-                                    aria-label="Next page"
-                                >
-                                    Next
-                                    <span className="material-icons">chevron_right</span>
-                                </button>
-                            </div>
+                            <Pagination
+                                currentPage={pagination.currentPage}
+                                previousPage={pagination.previousPage}
+                                nextPage={pagination.nextPage}
+                                total={pagination.total}
+                                onPrevious={prevPage}
+                                onNext={nextPage}
+                            />
                         )}
                     </div>
                 )}
