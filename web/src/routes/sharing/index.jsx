@@ -1,16 +1,13 @@
 import "./index.css";
 
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useLoaderData } from "react-router-dom";
 
-import CircularProgress from "@mui/material/CircularProgress";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardActions from "@mui/material/CardActions";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
-import Box from "@mui/material/Box";
-import Alert from "@mui/material/Alert";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -18,33 +15,21 @@ import LaunchIcon from "@mui/icons-material/Launch";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 
 import { useSnackbar } from "@/contexts/snackbar/hook";
+import { formatTimestamp } from "@/commons";
+
+async function loader() {
+    const response = await fetch("/api/shares");
+    if (!response.ok) {
+        throw new Error(`Failed to fetch shares: ${response.statusText}`);
+    }
+    const shares = await response.json();
+    return { shares };
+}
 
 const Sharing = () => {
-    const [shares, setShares] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const { shares: initialShares } = useLoaderData();
+    const [shares, setShares] = useState(initialShares);
     const { setSnackbar } = useSnackbar();
-
-    useEffect(() => {
-        fetchShares();
-    }, []);
-
-    const fetchShares = async () => {
-        try {
-            setLoading(true);
-            setError(null);
-            const response = await fetch("/api/shares");
-            if (!response.ok) {
-                throw new Error(`Failed to fetch shares: ${response.statusText}`);
-            }
-            const data = await response.json();
-            setShares(data);
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const deleteShare = async (shareId) => {
         try {
@@ -87,66 +72,38 @@ const Sharing = () => {
         }
     };
 
-    const formatDate = (dateString) => {
-        return new Date(dateString).toLocaleDateString(undefined, {
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-        });
-    };
-
-    if (loading) {
-        return (
-            <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-                <CircularProgress />
-            </Box>
-        );
-    }
-
-    if (error) {
-        return (
-            <Box p={3}>
-                <Alert severity="error">
-                    Error loading shares: {error}
-                </Alert>
-            </Box>
-        );
-    }
-
     return (
-        <Box p={3}>
+        <div className="sharing-container">
             <Typography variant="h4" component="h1" gutterBottom>
                 My Shares
             </Typography>
             
             {shares.length === 0 ? (
-                <Box textAlign="center" py={6}>
+                <section className="empty-state">
                     <Typography variant="body1" color="text.secondary" gutterBottom>
                         You haven&apos;t shared any conversations yet.
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                         Share a conversation to see it listed here.
                     </Typography>
-                </Box>
+                </section>
             ) : (
-                <Box>
-                    <Typography variant="body2" color="text.secondary" mb={2}>
+                <div>
+                    <Typography variant="body2" color="text.secondary" style={{ marginBottom: '1rem' }}>
                         {shares.length} shared conversation{shares.length !== 1 ? 's' : ''}
                     </Typography>
                     
-                    <Box display="flex" flexDirection="column" gap={2}>
+                    <div className="shares-list">
                         {shares.map((share) => (
-                            <Card key={share.id} variant="outlined">
+                            <Card key={share.id} variant="outlined" className="share-card">
                                 <CardContent>
                                     <Typography variant="h6" component="h2" gutterBottom>
                                         {share.title}
                                     </Typography>
                                     <Typography variant="body2" color="text.secondary" gutterBottom>
-                                        Created: {formatDate(share.created_at)}
+                                        Created: {formatTimestamp(share.created_at)}
                                     </Typography>
-                                    <Typography variant="body2" color="text.secondary" noWrap>
+                                    <Typography variant="body2" color="text.secondary" className="share-url">
                                         URL: {share.url}
                                     </Typography>
                                 </CardContent>
@@ -179,11 +136,12 @@ const Sharing = () => {
                                 </CardActions>
                             </Card>
                         ))}
-                    </Box>
-                </Box>
+                    </div>
+                </div>
             )}
-        </Box>
+        </div>
     );
 };
 
 export default Sharing;
+Sharing.loader = loader;

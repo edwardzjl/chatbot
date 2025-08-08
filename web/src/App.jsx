@@ -45,6 +45,7 @@ const router = createBrowserRouter([
             {
                 path: "sharing",
                 element: <Sharing />,
+                loader: Sharing.loader,
             },
         ]
     },
