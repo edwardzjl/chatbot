@@ -1,6 +1,7 @@
 import styles from "./index.module.css";
 
 import Avatar from "@mui/material/Avatar";
+import ShareIcon from "@mui/icons-material/Share";
 
 import { Dropdown, DropdownButton, DropdownMenu } from "@/components/DropdownMenu";
 import { useUserProfile } from "@/contexts/user/hook";
@@ -14,6 +15,10 @@ const UserMenu = () => {
         // See <https://oauth2-proxy.github.io/oauth2-proxy/docs/features/endpoints/>
         // This is a bit hard-coded?
         window.location.href = "/oauth2/sign_out";
+    };
+
+    const handleMyShares = () => {
+        window.location.href = "/sharing";
     };
 
     return (
@@ -32,6 +37,16 @@ const UserMenu = () => {
             <DropdownMenu className={styles.userInfoMenuList}>
                 <li><span>{username}</span></li>
                 <hr className={styles.userInfoMenuUsernameHr} />
+                <li>
+                    <button
+                        className={styles.userInfoMenuItem}
+                        onClick={handleMyShares}
+                        aria-label="My Shares"
+                    >
+                        <ShareIcon sx={{ fontSize: 16, marginRight: 1 }} />
+                        <span className={styles.themeMenuText}>My Shares</span>
+                    </button>
+                </li>
                 <li>
                     <button
                         className={styles.userInfoMenuItem}
