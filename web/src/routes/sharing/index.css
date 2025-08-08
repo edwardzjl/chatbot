@@ -7,6 +7,7 @@
     padding: 1.5rem;
     max-width: 800px;
     margin: 0 auto;
+    background-color: var(--bg-secondary);
 }
 
 .sharing-title {
@@ -35,10 +36,14 @@
     background-color: var(--bg-primary);
     padding: 1rem;
     margin-bottom: 0; /* Remove default margin since we use gap */
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
 }
 
 .share-card-content {
-    margin-bottom: 1rem;
+    flex: 1;
+    margin-right: 1rem;
 }
 
 .share-title {
@@ -59,14 +64,21 @@
     word-break: break-all;
     font-family: monospace;
     font-size: 0.75rem;
-    color: var(--text-secondary);
+    color: #0da37f;
     margin: 0;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.share-url:hover {
+    color: #0b8766;
 }
 
 .share-card-actions {
     display: flex;
     gap: 0.5rem;
-    align-items: center;
+    align-items: flex-start;
+    flex-shrink: 0;
 }
 
 .action-button {
@@ -162,7 +174,17 @@
         min-height: 200px;
     }
     
+    .share-card {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .share-card-content {
+        margin-right: 0;
+        margin-bottom: 1rem;
+    }
+    
     .share-card-actions {
-        flex-wrap: wrap;
+        align-self: flex-end;
     }
 }
