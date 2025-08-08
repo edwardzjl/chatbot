@@ -5,6 +5,20 @@
     margin: 0 auto;
 }
 
+.sharing-title {
+    font-size: 2.125rem;
+    font-weight: 400;
+    line-height: 1.2;
+    margin: 0 0 1.5rem 0;
+    color: var(--text-primary);
+}
+
+.shares-count {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin: 0 0 1rem 0;
+}
+
 .shares-list {
     display: flex;
     flex-direction: column;
@@ -12,13 +26,100 @@
 }
 
 .share-card {
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--bg-primary);
+    padding: 1rem;
     margin-bottom: 0; /* Remove default margin since we use gap */
+}
+
+.share-card-content {
+    margin-bottom: 1rem;
+}
+
+.share-title {
+    font-size: 1.25rem;
+    font-weight: 500;
+    line-height: 1.4;
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+}
+
+.share-meta {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin: 0 0 0.5rem 0;
 }
 
 .share-url {
     word-break: break-all;
     font-family: monospace;
-    font-size: 0.85em;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.share-card-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.action-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    border-radius: 4px;
+    border: 1px solid transparent;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.action-button:hover {
+    border-color: var(--border-color);
+}
+
+.action-button-primary {
+    color: #0da37f;
+    background-color: transparent;
+}
+
+.action-button-primary:hover {
+    background-color: var(--bg-secondary);
+    color: #0da37f;
+}
+
+.action-button-secondary {
+    color: var(--text-primary);
+    background-color: transparent;
+    padding: 0.5rem;
+    min-width: 2rem;
+    justify-content: center;
+}
+
+.action-button-secondary:hover {
+    background-color: var(--bg-secondary);
+}
+
+.action-button-danger {
+    color: #d32f2f;
+    background-color: transparent;
+    padding: 0.5rem;
+    min-width: 2rem;
+    justify-content: center;
+}
+
+.action-button-danger:hover {
+    background-color: rgba(211, 47, 47, 0.1);
+}
+
+.material-icons {
+    font-size: 16px;
+    line-height: 1;
 }
 
 .empty-state {
@@ -31,13 +132,33 @@
     min-height: 300px;
 }
 
+.empty-state-text {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin: 0 0 0.5rem 0;
+}
+
+.empty-state-subtext {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin: 0;
+}
+
 @media (max-width: 768px) {
     .sharing-container {
         padding: 1rem;
     }
     
+    .sharing-title {
+        font-size: 1.75rem;
+    }
+    
     .empty-state {
         padding: 3rem 1rem;
         min-height: 200px;
+    }
+    
+    .share-card-actions {
+        flex-wrap: wrap;
     }
 }
