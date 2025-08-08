@@ -10,4 +10,4 @@ cd ..
 nvm install --lts
 cd web
 corepack enable
-yarn install --frozen-lockfile
+yarn install --immutable
