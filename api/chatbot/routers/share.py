@@ -3,6 +3,8 @@ from urllib.parse import urljoin
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, HTTPException
+from fastapi_pagination.cursor import CursorPage
+from fastapi_pagination.ext.sqlalchemy import paginate
 from langchain_core.runnables import RunnableConfig
 from sqlalchemy import select
 from starlette.requests import Request
@@ -32,15 +34,15 @@ router = APIRouter(
 async def get_shares(
     userid: UserIdHeaderDep,
     session: SqlalchemyROSessionDep,
-) -> list[Share]:
+) -> CursorPage[Share]:
     """Get shares by userid"""
-    # TODO: support pagination
     stmt = (
         select(ORMShare)
         .where(ORMShare.owner == userid)
         .order_by(ORMShare.created_at.desc())
     )
-    return (await session.scalars(stmt)).all()
+    page = await paginate(session, stmt)
+    return page
 
 
 @router.get("/{share_id}")
