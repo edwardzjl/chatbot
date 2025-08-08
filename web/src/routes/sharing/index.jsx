@@ -3,6 +3,7 @@ import "./index.css";
 import { useState } from "react";
 import { Link, useLoaderData, useNavigate, useSearchParams } from "react-router-dom";
 
+import ChatboxHeader from "@/components/ChatboxHeader";
 import { useSnackbar } from "@/contexts/snackbar/hook";
 import { formatTimestamp } from "@/commons";
 import Pagination from "@/components/Pagination";
@@ -108,7 +109,8 @@ const Sharing = () => {
     };
 
     return (
-        <div className="sharing-container scroll-box">
+        <div className="sharing-container">
+            <ChatboxHeader />
             <div className="sharing-content">
                 <h1 className="sharing-title">My Shares</h1>
             
