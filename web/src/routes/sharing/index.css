@@ -1,7 +1,6 @@
 /* Sharing page styles */
 .sharing-container {
     flex: 1;
-    overflow-y: auto;
 }
 
 .sharing-content {
