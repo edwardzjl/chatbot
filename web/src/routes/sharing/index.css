@@ -1,0 +1,28 @@
+/* Sharing page styles */
+.sharing-container {
+    padding: 1rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.share-card {
+    margin-bottom: 1rem;
+}
+
+.share-url {
+    word-break: break-all;
+    font-family: monospace;
+    font-size: 0.85em;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-secondary);
+}
+
+@media (max-width: 768px) {
+    .sharing-container {
+        padding: 0.5rem;
+    }
+}
