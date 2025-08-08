@@ -6,7 +6,7 @@ ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 WORKDIR /build
 COPY web/package.json web/yarn.lock web/.yarnrc.yml ./
 RUN corepack enable \
-  && yarn install --frozen-lockfile
+  && yarn install --immutable
 COPY web/ ./
 RUN yarn build
 
