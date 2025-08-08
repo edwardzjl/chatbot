@@ -25,22 +25,16 @@ async function loader({ request }) {
     }
     const data = await response.json();
     
-    // Handle both paginated and non-paginated responses
-    if (Array.isArray(data)) {
-        // Non-paginated response (legacy format)
-        return { shares: data, pagination: null };
-    } else {
-        // Cursor-based paginated response
-        return { 
-            shares: data.items || [], 
-            pagination: {
-                currentPage: data.current_page,
-                previousPage: data.previous_page,
-                nextPage: data.next_page,
-                total: data.total || 0
-            }
-        };
-    }
+    // Cursor-based paginated response
+    return { 
+        shares: data.items || [], 
+        pagination: {
+            currentPage: data.current_page,
+            previousPage: data.previous_page,
+            nextPage: data.next_page,
+            total: data.total || 0
+        }
+    };
 }
 
 const Sharing = () => {
