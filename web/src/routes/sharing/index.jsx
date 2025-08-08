@@ -1,24 +1,47 @@
 import "./index.css";
 
 import { useState } from "react";
-import { Link, useLoaderData } from "react-router-dom";
+import { Link, useLoaderData, useNavigate, useSearchParams } from "react-router-dom";
 
 import { useSnackbar } from "@/contexts/snackbar/hook";
 import { formatTimestamp } from "@/commons";
 
-async function loader() {
-    const response = await fetch("/api/shares");
+async function loader({ request }) {
+    const url = new URL(request.url);
+    const page = url.searchParams.get("page") || "1";
+    const pageSize = url.searchParams.get("page_size") || "10";
+    
+    const response = await fetch(`/api/shares?page=${page}&page_size=${pageSize}`);
     if (!response.ok) {
         throw new Error(`Failed to fetch shares: ${response.statusText}`);
     }
-    const shares = await response.json();
-    return { shares };
+    const data = await response.json();
+    
+    // Handle both paginated and non-paginated responses
+    if (Array.isArray(data)) {
+        // Non-paginated response (current format)
+        return { shares: data, pagination: null };
+    } else {
+        // Paginated response
+        return { 
+            shares: data.items || data.data || data.shares || [], 
+            pagination: {
+                page: parseInt(page),
+                pageSize: parseInt(pageSize),
+                total: data.total || 0,
+                hasNext: data.has_next || false,
+                hasPrev: data.has_prev || false
+            }
+        };
+    }
 }
 
 const Sharing = () => {
-    const { shares: initialShares } = useLoaderData();
+    const { shares: initialShares, pagination } = useLoaderData();
     const [shares, setShares] = useState(initialShares);
     const { setSnackbar } = useSnackbar();
+    const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
 
     const deleteShare = async (shareId) => {
         try {
@@ -58,6 +81,24 @@ const Sharing = () => {
                 message: "Failed to copy URL",
                 severity: "error",
             });
+        }
+    };
+
+    const goToPage = (page) => {
+        const params = new URLSearchParams(searchParams);
+        params.set("page", page.toString());
+        navigate(`/sharing?${params.toString()}`);
+    };
+
+    const nextPage = () => {
+        if (pagination && pagination.hasNext) {
+            goToPage(pagination.page + 1);
+        }
+    };
+
+    const prevPage = () => {
+        if (pagination && pagination.hasPrev) {
+            goToPage(pagination.page - 1);
         }
     };
 
@@ -124,6 +165,32 @@ const Sharing = () => {
                                 </div>
                             ))}
                         </div>
+
+                        {pagination && (
+                            <div className="pagination">
+                                <button 
+                                    className="pagination-button"
+                                    onClick={prevPage}
+                                    disabled={!pagination.hasPrev}
+                                    aria-label="Previous page"
+                                >
+                                    <span className="material-icons">chevron_left</span>
+                                    Previous
+                                </button>
+                                <span className="pagination-info">
+                                    Page {pagination.page} of {Math.ceil(pagination.total / pagination.pageSize)}
+                                </span>
+                                <button 
+                                    className="pagination-button"
+                                    onClick={nextPage}
+                                    disabled={!pagination.hasNext}
+                                    aria-label="Next page"
+                                >
+                                    Next
+                                    <span className="material-icons">chevron_right</span>
+                                </button>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
