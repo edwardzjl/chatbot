@@ -52,3 +52,6 @@ Temporary Items
 .apdisk
 
 .vscode/
+
+# Package manager lock files (using yarn)
+web/package-lock.json
