@@ -1,7 +1,7 @@
 import "./index.css";
 
 import { useState } from "react";
-import { Link, useLoaderData, useNavigate, useSearchParams } from "react-router-dom";
+import { useLoaderData, useNavigate, useSearchParams } from "react-router-dom";
 
 import ChatboxHeader from "@/components/ChatboxHeader";
 import { useSnackbar } from "@/contexts/snackbar/hook";
@@ -139,19 +139,16 @@ const Sharing = () => {
                                         <p className="share-meta">
                                         Created: {formatTimestamp(share.created_at)}
                                         </p>
-                                        <p className="share-url">
-                                        URL: {share.url}
-                                        </p>
+                                        <a 
+                                            href={share.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="share-url"
+                                        >
+                                            {share.url}
+                                        </a>
                                     </div>
                                     <div className="share-card-actions">
-                                        <Link 
-                                            to={`/share/${share.id}`}
-                                            className="action-button action-button-primary"
-                                            aria-label="View shared conversation"
-                                        >
-                                            <span className="material-icons">launch</span>
-                                        View
-                                        </Link>
                                         <button 
                                             className="action-button action-button-secondary"
                                             onClick={() => copyToClipboard(share.url)}
