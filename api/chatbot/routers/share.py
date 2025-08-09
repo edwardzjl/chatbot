@@ -1,3 +1,4 @@
+import logging
 from typing import TYPE_CHECKING, Annotated, Any
 from urllib.parse import urljoin
 from uuid import UUID, uuid4
@@ -22,6 +23,9 @@ from chatbot.schemas import ChatMessage, CreateShare, Share
 
 if TYPE_CHECKING:
     from langchain_core.messages import BaseMessage
+
+
+logger = logging.getLogger(__name__)
 
 # jlzhou: The resource name ("shares") is recommended by gemini, don't blame me.
 router = APIRouter(prefix="/shares")
@@ -98,8 +102,12 @@ async def delete_share(
     userid: UserIdHeaderDep,
     session: SqlalchemySessionDep,
 ) -> None:
+    try:
+        _id = UUID(share_id)
+    except ValueError:
+        logger.warning("User requested invalid share_id: %s", share_id)
     # TODO: maybe only get the share.owner
-    share: ORMShare = await session.get(ORMShare, share_id)
+    share: ORMShare = await session.get(ORMShare, _id)
     if not share:
         return
     if share.owner != userid:
