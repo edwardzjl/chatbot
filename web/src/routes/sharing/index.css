@@ -1,13 +1,13 @@
 /* Sharing page styles */
 .sharing-container {
     flex: 1;
+    background-color: var(--bg-secondary);
 }
 
 .sharing-content {
     padding: 1.5rem;
     max-width: 800px;
     margin: 0 auto;
-    background-color: var(--bg-secondary);
 }
 
 .sharing-title {
