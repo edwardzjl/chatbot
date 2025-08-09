@@ -1,16 +1,16 @@
 /* Sharing page styles */
-.sharing-container {
+.sharingContainer {
     flex: 1;
     background-color: var(--bg-secondary);
 }
 
-.sharing-content {
+.sharingContent {
     padding: 1.5rem;
     max-width: 800px;
     margin: 0 auto;
 }
 
-.sharing-title {
+.sharingTitle {
     font-size: 2.125rem;
     font-weight: 400;
     line-height: 1.2;
@@ -18,19 +18,19 @@
     color: var(--text-primary);
 }
 
-.shares-count {
+.sharesCount {
     color: var(--text-secondary);
     font-size: 0.875rem;
     margin: 0 0 1rem 0;
 }
 
-.shares-list {
+.sharesList {
     display: flex;
     flex-direction: column;
     gap: 1rem;
 }
 
-.share-card {
+.shareCard {
     border: 1px solid var(--border-color);
     border-radius: 4px;
     background-color: var(--bg-primary);
@@ -41,12 +41,12 @@
     align-items: flex-start;
 }
 
-.share-card-content {
+.shareCardContent {
     flex: 1;
     margin-right: 1rem;
 }
 
-.share-title {
+.shareTitle {
     font-size: 1.25rem;
     font-weight: 500;
     line-height: 1.4;
@@ -54,13 +54,13 @@
     color: var(--text-primary);
 }
 
-.share-meta {
+.shareMeta {
     color: var(--text-secondary);
     font-size: 0.875rem;
     margin: 0 0 0.5rem 0;
 }
 
-.share-url {
+.shareUrl {
     word-break: break-all;
     font-family: monospace;
     font-size: 0.75rem;
@@ -70,58 +70,41 @@
     cursor: pointer;
 }
 
-.share-url:hover {
+.shareUrl:hover {
     color: #0b8766;
 }
 
-.share-card-actions {
+.shareCardActions {
     display: flex;
     gap: 0.5rem;
     align-items: flex-start;
     flex-shrink: 0;
 }
 
-.action-button {
+.actionButton {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 0.25rem;
-    padding: 0.375rem 0.75rem;
+    padding: 0.5rem;
+    min-width: 2rem;
     font-size: 0.875rem;
+    color: var(--text-primary);
     line-height: 1.4;
+    text-decoration: none;
+    background-color: transparent;
     border-radius: 4px;
     border: 1px solid transparent;
-    text-decoration: none;
     cursor: pointer;
     transition: all 0.2s ease-in-out;
 }
 
-.action-button:hover {
+.actionButton:hover {
+    background-color: var(--bg-secondary);
     border-color: var(--border-color);
 }
 
-.action-button-primary {
-    color: #0da37f;
-    background-color: transparent;
-}
-
-.action-button-primary:hover {
-    background-color: var(--bg-secondary);
-    color: #0da37f;
-}
-
-.action-button-secondary {
-    color: var(--text-primary);
-    background-color: transparent;
-    padding: 0.5rem;
-    min-width: 2rem;
-    justify-content: center;
-}
-
-.action-button-secondary:hover {
-    background-color: var(--bg-secondary);
-}
-
-.action-button-danger {
+.actionButtonDanger {
     color: #d32f2f;
     background-color: transparent;
     padding: 0.5rem;
@@ -129,16 +112,16 @@
     justify-content: center;
 }
 
-.action-button-danger:hover {
+.actionButtonDanger:hover {
     background-color: rgba(211, 47, 47, 0.1);
 }
 
-.material-icons {
+.materialIcons {
     font-size: 16px;
     line-height: 1;
 }
 
-.empty-state {
+.emptyState {
     text-align: center;
     padding: 4rem 1rem;
     display: flex;
@@ -148,60 +131,60 @@
     min-height: 300px;
 }
 
-.empty-state-text {
+.emptyStateText {
     color: var(--text-secondary);
     font-size: 1rem;
     margin: 0 0 0.5rem 0;
 }
 
-.empty-state-subtext {
+.emptyStateSubtext {
     color: var(--text-secondary);
     font-size: 0.875rem;
     margin: 0;
 }
 
 @media (max-width: 768px) {
-    .sharing-content {
+    .sharingContent {
         padding: 1rem;
         max-width: calc(100% - 2rem); /* Responsive: leave 1rem on each side */
     }
     
-    .sharing-title {
+    .sharingTitle {
         font-size: 1.75rem;
     }
     
-    .empty-state {
+    .emptyState {
         padding: 3rem 1rem;
         min-height: 200px;
     }
     
-    .share-card {
+    .shareCard {
         flex-direction: column;
         align-items: stretch;
     }
     
-    .share-card-content {
+    .shareCardContent {
         margin-right: 0;
         margin-bottom: 1rem;
     }
     
-    .share-card-actions {
+    .shareCardActions {
         align-self: flex-end;
     }
 }
 
 /* For very small screens */
 @media (max-width: 480px) {
-    .sharing-content {
+    .sharingContent {
         padding: 0.75rem;
         max-width: calc(100% - 1.5rem); /* Even less margin on tiny screens */
     }
     
-    .sharing-title {
+    .sharingTitle {
         font-size: 1.5rem;
     }
     
-    .empty-state {
+    .emptyState {
         padding: 2rem 0.5rem;
     }
 }

@@ -1,7 +1,8 @@
-import "./index.css";
+import styles from "./index.module.css";
 
 import { useState } from "react";
 import { useLoaderData, useNavigate, useSearchParams } from "react-router-dom";
+import Icon from "@mui/material/Icon";
 
 import ChatboxHeader from "@/components/ChatboxHeader";
 import { useSnackbar } from "@/contexts/snackbar/hook";
@@ -109,61 +110,61 @@ const Sharing = () => {
     };
 
     return (
-        <div className="sharing-container">
+        <div className={styles.sharingContainer}>
             <ChatboxHeader />
-            <div className="sharing-content">
-                <h1 className="sharing-title">My Shares</h1>
+            <div className={styles.sharingContent}>
+                <h1 className={styles.sharingTitle}>My Shares</h1>
             
                 {shares.length === 0 ? (
-                    <section className="empty-state">
-                        <p className="empty-state-text">
+                    <section className={styles.emptyState}>
+                        <p className={styles.EmptyStateText}>
                         You haven&apos;t shared any conversations yet.
                         </p>
-                        <p className="empty-state-subtext">
+                        <p className={styles.emptyStateSubtext}>
                         Share a conversation to see it listed here.
                         </p>
                     </section>
                 ) : (
                     <div>
-                        <p className="shares-count">
+                        <p className={styles.sharesCount}>
                             {shares.length} shared conversation{shares.length !== 1 ? 's' : ''}
                         </p>
                     
-                        <div className="shares-list">
+                        <div className={styles.sharesList}>
                             {shares.map((share) => (
-                                <div key={share.id} className="share-card">
-                                    <div className="share-card-content">
-                                        <h2 className="share-title">
+                                <div key={share.id} className={styles.shareCard}>
+                                    <div className={styles.shareCardContent}>
+                                        <h2 className={styles.shareTitle}>
                                             {share.title}
                                         </h2>
-                                        <p className="share-meta">
+                                        <p className={styles.shareMeta}>
                                         Created: {formatTimestamp(share.created_at)}
                                         </p>
                                         <a 
                                             href={share.url}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="share-url"
+                                            className={styles.shareUrl}
                                         >
                                             {share.url}
                                         </a>
                                     </div>
-                                    <div className="share-card-actions">
+                                    <div className={styles.shareCardActions}>
                                         <button 
-                                            className="action-button action-button-secondary"
+                                            className={styles.actionButton}
                                             onClick={() => copyToClipboard(share.url)}
                                             aria-label="Copy share URL"
                                             title="Copy share URL"
                                         >
-                                            <span className="material-icons">content_copy</span>
+                                            <Icon baseClassName="material-symbols-outlined">content_copy</Icon>
                                         </button>
                                         <button 
-                                            className="action-button action-button-danger"
+                                            className={`${styles.actionButton} ${styles.actionButtonDanger}`}
                                             onClick={() => deleteShare(share.id)}
                                             aria-label="Delete share"
                                             title="Delete share"
                                         >
-                                            <span className="material-icons">delete</span>
+                                            <Icon baseClassName="material-symbols-outlined">delete</Icon>
                                         </button>
                                     </div>
                                 </div>
