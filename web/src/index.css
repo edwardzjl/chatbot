@@ -1,5 +1,6 @@
 @import "open-props/style";
 @import "open-props/gray-hsl.min.css";
+@import "material-icons/iconfont/material-icons.css";
 
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
