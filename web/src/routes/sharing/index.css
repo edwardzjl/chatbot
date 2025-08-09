@@ -163,6 +163,7 @@
 @media (max-width: 768px) {
     .sharing-content {
         padding: 1rem;
+        max-width: calc(100% - 2rem); /* Responsive: leave 1rem on each side */
     }
     
     .sharing-title {
@@ -186,5 +187,21 @@
     
     .share-card-actions {
         align-self: flex-end;
+    }
+}
+
+/* For very small screens */
+@media (max-width: 480px) {
+    .sharing-content {
+        padding: 0.75rem;
+        max-width: calc(100% - 1.5rem); /* Even less margin on tiny screens */
+    }
+    
+    .sharing-title {
+        font-size: 1.5rem;
+    }
+    
+    .empty-state {
+        padding: 2rem 0.5rem;
     }
 }
