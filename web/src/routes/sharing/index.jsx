@@ -1,24 +1,49 @@
 import styles from "./index.module.css";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useLoaderData, useNavigate, useSearchParams } from "react-router-dom";
-import Icon from "@mui/material/Icon";
 
 import ChatboxHeader from "@/components/ChatboxHeader";
 import { useSnackbar } from "@/contexts/snackbar/hook";
-import { formatTimestamp } from "@/commons";
 import Pagination from "@/components/Pagination";
 import { useDynamicPageSize } from "@/hooks/useDynamicPageSize";
 
+// Local components
+import ShareCard from "./components/ShareCard";
+import EmptyState from "./components/EmptyState";
+import SharesHeader from "./components/SharesHeader";
+
+// Constants
+const DYNAMIC_PAGE_SIZE_CONFIG = {
+    minPageSize: 3,
+    maxPageSize: 15,
+    itemHeight: 120,
+    headerHeight: 150,
+    paginationHeight: 80,
+};
+
+// API helper function
+const fetchShares = async (size, cursor = null) => {
+    const apiUrl = new URL("/api/shares", window.location.origin);
+    if (cursor) {
+        apiUrl.searchParams.set("cursor", cursor);
+    }
+    apiUrl.searchParams.set("size", size.toString());
+
+    const response = await fetch(apiUrl.toString());
+    if (!response.ok) {
+        throw new Error(`Failed to fetch shares: ${response.statusText}`);
+    }
+    return response.json();
+};
+
 async function loader({ request }) {
-    // For initial load, we'll use a minimal loader that just returns empty state
-    // The component will fetch data once it calculates the optimal page size
     const url = new URL(request.url);
     const cursor = url.searchParams.get("cursor");
     const size = url.searchParams.get("size");
 
-    if (!!!size) {
-        // Initial load - return empty state, let component fetch with optimal size
+    // Initial load without size parameter - let component handle with dynamic sizing
+    if (!size) {
         return {
             shares: [],
             pagination: null,
@@ -27,69 +52,54 @@ async function loader({ request }) {
         };
     }
 
-    const apiUrl = new URL("/api/shares", url.origin);
-    if (cursor) {
-        apiUrl.searchParams.set("cursor", cursor);
+    // Navigation with known size - fetch data normally
+    try {
+        const data = await fetchShares(size, cursor);
+        return {
+            shares: data.items || [],
+            pagination: {
+                currentPage: data.current_page,
+                previousPage: data.previous_page,
+                nextPage: data.next_page,
+                total: null // Always null for cursor-based pagination
+            },
+            requestedSize: parseInt(size, 10),
+            isInitialLoad: false
+        };
+    } catch (error) {
+        throw new Error(`Failed to load shares: ${error.message}`);
     }
-    apiUrl.searchParams.set("size", size);
-
-    const response = await fetch(apiUrl.toString());
-    if (!response.ok) {
-        throw new Error(`Failed to fetch shares: ${response.statusText}`);
-    }
-    const data = await response.json();
-
-    return {
-        shares: data.items || [],
-        pagination: {
-            currentPage: data.current_page,
-            previousPage: data.previous_page,
-            nextPage: data.next_page,
-            total: data.total
-        },
-        requestedSize: parseInt(size, 10),
-        isInitialLoad: false
-    };
 }
 
 const Sharing = () => {
-    const { shares: initialShares, pagination: initialPagination, requestedSize, isInitialLoad } = useLoaderData();
+    const loaderData = useLoaderData();
+    const { shares: initialShares, pagination: initialPagination, requestedSize, isInitialLoad } = loaderData;
+
+    // State
     const [shares, setShares] = useState(initialShares);
     const [pagination, setPagination] = useState(initialPagination);
     const [isLoading, setIsLoading] = useState(isInitialLoad);
+
+    // Hooks
     const { setSnackbar } = useSnackbar();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
 
     // Dynamic page size calculation
-    const { pageSize, containerRef, isCalculated } = useDynamicPageSize({
-        minPageSize: 3,
-        maxPageSize: 15,
-        itemHeight: 120, // Estimated height of each share card
-        headerHeight: 150, // Height for header + title + count
-        paginationHeight: 80, // Height for pagination component
-    });
+    const { pageSize, containerRef, isCalculated } = useDynamicPageSize(DYNAMIC_PAGE_SIZE_CONFIG);
 
-    // Fetch data with optimal page size
-    const fetchSharesWithPageSize = async (size, cursor = null) => {
+    // Memoized values
+    const hasShares = shares.length > 0;
+    const shouldOptimizePage = isCalculated && !isInitialLoad && requestedSize && pageSize !== requestedSize;
+
+    // Load shares with specified parameters
+    const loadShares = useCallback(async (size, cursor = null) => {
         setIsLoading(true);
-        try {
-            const apiUrl = new URL("/api/shares", window.location.origin);
-            if (cursor) {
-                apiUrl.searchParams.set("cursor", cursor);
-            }
-            apiUrl.searchParams.set("size", size.toString());
 
-            const response = await fetch(apiUrl.toString());
-            if (!response.ok) {
-                throw new Error(`Failed to fetch shares: ${response.statusText}`);
-            }
-            const data = await response.json();
+        try {
+            const data = await fetchShares(size, cursor);
 
             setShares(data.items || []);
-
-            // Since API always returns total as null for cursor-based pagination,
-            // we'll set total to null and let the pagination component handle it
             setPagination({
                 currentPage: data.current_page,
                 previousPage: data.previous_page,
@@ -99,50 +109,48 @@ const Sharing = () => {
         } catch (err) {
             setSnackbar({
                 open: true,
-                message: `Error fetching shares: ${err.message}`,
+                message: `Error loading shares: ${err.message}`,
                 severity: "error",
             });
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [setSnackbar]);
 
-    // Fetch data when optimal page size is calculated (initial load)
-    useEffect(() => {
-        if (isCalculated && isInitialLoad) {
-            console.log(`Fetching initial data with optimal page size: ${pageSize}`);
-            fetchSharesWithPageSize(pageSize);
+    // Handle navigation
+    const navigateToPage = useCallback((cursor) => {
+        const params = new URLSearchParams(searchParams);
+        if (cursor) {
+            params.set("cursor", cursor);
+        } else {
+            params.delete("cursor");
         }
-    }, [isCalculated, pageSize, isInitialLoad]);
+        params.set("size", pageSize.toString());
+        navigate(`/sharing?${params.toString()}`);
+    }, [searchParams, pageSize, navigate]);
 
-    // Update component state when loader provides new data (navigation)
-    useEffect(() => {
-        if (!isInitialLoad && initialShares) {
-            setShares(initialShares);
-            setPagination(initialPagination);
-            setIsLoading(false);
+    // Page navigation handlers
+    const goToNextPage = useCallback(() => {
+        if (pagination?.nextPage) {
+            navigateToPage(pagination.nextPage);
         }
-    }, [initialShares, initialPagination, isInitialLoad]);
+    }, [pagination?.nextPage, navigateToPage]);
 
-    // Handle page size changes for subsequent loads
-    useEffect(() => {
-        if (isCalculated && !isInitialLoad && requestedSize && pageSize !== requestedSize) {
-            console.log(`Reloading with optimal page size: ${pageSize} (was ${requestedSize})`);
-            const newSearchParams = new URLSearchParams(searchParams);
-            newSearchParams.set("size", pageSize.toString());
-            // Reset cursor to start from beginning with new page size
-            newSearchParams.delete("cursor");
-            navigate(`?${newSearchParams.toString()}`, { replace: true });
+    const goToPreviousPage = useCallback(() => {
+        if (pagination?.previousPage) {
+            navigateToPage(pagination.previousPage);
         }
-    }, [isCalculated, pageSize, requestedSize, searchParams, navigate, isInitialLoad]);
+    }, [pagination?.previousPage, navigateToPage]);
 
-    const deleteShare = async (shareId) => {
+    // Share actions
+    const deleteShare = useCallback(async (shareId) => {
         try {
             const response = await fetch(`/api/shares/${shareId}`, {
                 method: "DELETE",
             });
+
             if (response.ok) {
-                setShares(shares.filter(share => share.id !== shareId));
+                setShares(current => current.filter(share => share.id !== shareId));
                 setSnackbar({
                     open: true,
                     message: "Share deleted successfully",
@@ -158,9 +166,9 @@ const Sharing = () => {
                 severity: "error",
             });
         }
-    };
+    }, [setSnackbar]);
 
-    const copyToClipboard = async (url) => {
+    const copyToClipboard = useCallback(async (url) => {
         try {
             await navigator.clipboard.writeText(url);
             setSnackbar({
@@ -175,31 +183,34 @@ const Sharing = () => {
                 severity: "error",
             });
         }
-    };
+    }, [setSnackbar]);
 
-    const goToPage = (cursor) => {
-        const params = new URLSearchParams(searchParams);
-        if (cursor) {
-            params.set("cursor", cursor);
-        } else {
-            params.delete("cursor");
+    // Effects
+    // Handle initial load with dynamic page size
+    useEffect(() => {
+        if (isCalculated && isInitialLoad) {
+            loadShares(pageSize);
         }
-        // Ensure we use the calculated page size for navigation
-        params.set("size", pageSize.toString());
-        navigate(`/sharing?${params.toString()}`);
-    };
+    }, [isCalculated, isInitialLoad, pageSize, loadShares]);
 
-    const nextPage = () => {
-        if (pagination && pagination.nextPage) {
-            goToPage(pagination.nextPage);
+    // Update state when loader provides new data (navigation)
+    useEffect(() => {
+        if (!isInitialLoad && initialShares) {
+            setShares(initialShares);
+            setPagination(initialPagination);
+            setIsLoading(false);
         }
-    };
+    }, [initialShares, initialPagination, isInitialLoad]);
 
-    const prevPage = () => {
-        if (pagination && pagination.previousPage) {
-            goToPage(pagination.previousPage);
+    // Handle page size optimization for existing data
+    useEffect(() => {
+        if (shouldOptimizePage) {
+            const newSearchParams = new URLSearchParams(searchParams);
+            newSearchParams.set("size", pageSize.toString());
+            newSearchParams.delete("cursor"); // Reset to first page with new size
+            navigate(`?${newSearchParams.toString()}`, { replace: true });
         }
-    };
+    }, [shouldOptimizePage, searchParams, pageSize, navigate]);
 
     return (
         <div className={styles.sharingContainer}>
@@ -207,73 +218,24 @@ const Sharing = () => {
             <div className={styles.sharingContent} ref={containerRef}>
                 <h1 className={styles.sharingTitle}>My Shares</h1>
 
-                {isLoading ? (
-                    <section className={styles.emptyState}>
-                        <p className={styles.EmptyStateText}>
-                            Loading shares...
-                        </p>
-                        <p className={styles.emptyStateSubtext}>
-                            Optimizing layout for your screen size
-                        </p>
-                    </section>
-                ) : shares.length === 0 ? (
-                    <section className={styles.emptyState}>
-                        <p className={styles.EmptyStateText}>
-                            You haven&apos;t shared any conversations yet.
-                        </p>
-                        <p className={styles.emptyStateSubtext}>
-                            Share a conversation to see it listed here.
-                        </p>
-                    </section>
+                {(isLoading || !hasShares) ? (
+                    <EmptyState isLoading={isLoading} />
                 ) : (
                     <div>
-                        <p className={styles.sharesCount}>
-                            {shares.length} shared conversation{shares.length !== 1 ? 's' : ''}
-                            {isCalculated && (
-                                <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>
-                                    • Showing {pageSize} per page (optimized for your screen)
-                                </span>
-                            )}
-                        </p>
+                        <SharesHeader
+                            sharesCount={shares.length}
+                            pageSize={pageSize}
+                            isCalculated={isCalculated}
+                        />
 
                         <div className={styles.sharesList}>
                             {shares.map((share) => (
-                                <div key={share.id} className={styles.shareCard}>
-                                    <div className={styles.shareCardContent}>
-                                        <h2 className={styles.shareTitle}>
-                                            {share.title}
-                                        </h2>
-                                        <p className={styles.shareMeta}>
-                                            Created: {formatTimestamp(share.created_at)}
-                                        </p>
-                                        <a
-                                            href={share.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className={styles.shareUrl}
-                                        >
-                                            {share.url}
-                                        </a>
-                                    </div>
-                                    <div className={styles.shareCardActions}>
-                                        <button
-                                            className={styles.actionButton}
-                                            onClick={() => copyToClipboard(share.url)}
-                                            aria-label="Copy share URL"
-                                            title="Copy share URL"
-                                        >
-                                            <Icon baseClassName="material-symbols-outlined">content_copy</Icon>
-                                        </button>
-                                        <button
-                                            className={`${styles.actionButton} ${styles.actionButtonDanger}`}
-                                            onClick={() => deleteShare(share.id)}
-                                            aria-label="Delete share"
-                                            title="Delete share"
-                                        >
-                                            <Icon baseClassName="material-symbols-outlined">delete</Icon>
-                                        </button>
-                                    </div>
-                                </div>
+                                <ShareCard
+                                    key={share.id}
+                                    share={share}
+                                    onCopy={copyToClipboard}
+                                    onDelete={deleteShare}
+                                />
                             ))}
                         </div>
 
@@ -283,8 +245,8 @@ const Sharing = () => {
                                 previousPage={pagination.previousPage}
                                 nextPage={pagination.nextPage}
                                 total={pagination.total}
-                                onPrevious={prevPage}
-                                onNext={nextPage}
+                                onPrevious={goToPreviousPage}
+                                onNext={goToNextPage}
                             />
                         )}
                     </div>
