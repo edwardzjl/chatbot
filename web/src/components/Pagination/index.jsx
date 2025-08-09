@@ -14,6 +14,22 @@ const Pagination = ({
 }) => {
     const hasPrevious = !!previousPage;
     const hasNext = !!nextPage;
+    
+    // For cursor-based pagination, show meaningful info even if total is unknown
+    const getPaginationInfo = () => {
+        // Check if currentPage is a meaningful integer (not a cursor string)
+        const isNumericPage = currentPage && !isNaN(parseInt(currentPage, 10)) && parseInt(currentPage, 10).toString() === currentPage.toString();
+        
+        if (total && total > 0 && isNumericPage) {
+            // Non cursor pagination usually has total count
+            return `Page ${currentPage} • ${total} total`;
+        } else if (isNumericPage) {
+            return `Page ${currentPage}`;
+        } else {
+            // Probably a cursor-based pagination
+            return "Navigate pages";
+        }
+    };
 
     return (
         <div className={`${styles.pagination} ${className}`}>
@@ -27,7 +43,7 @@ const Pagination = ({
                 <span className={styles.paginationButtonText}>Previous</span>
             </button>
             <span className={styles.paginationInfo}>
-                {total > 0 ? `Page ${currentPage} • ${total} total` : "No items"}
+                {getPaginationInfo()}
             </span>
             <button 
                 className={styles.paginationButton}
