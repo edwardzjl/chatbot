@@ -5,7 +5,7 @@ import { formatTimestamp } from "@/commons";
 
 const ShareCard = memo(({ share, onCopy, onDelete }) => {
     return (
-        <div className={styles.shareCard}>
+        <div className={styles.shareCard} data-list-item>
             <div className={styles.shareCardContent}>
                 <h2 className={styles.shareTitle}>
                     {share.title}
