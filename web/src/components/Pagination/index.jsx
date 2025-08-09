@@ -1,6 +1,7 @@
+import styles from "./index.module.css";
 import PropTypes from "prop-types";
+import Icon from "@mui/material/Icon";
 
-import "./index.css";
 
 const Pagination = ({ 
     currentPage, 
@@ -15,27 +16,27 @@ const Pagination = ({
     const hasNext = !!nextPage;
 
     return (
-        <div className={`pagination ${className}`}>
+        <div className={`${styles.pagination} ${className}`}>
             <button 
-                className="pagination-button"
+                className={styles.paginationButton}
                 onClick={onPrevious}
                 disabled={!hasPrevious}
                 aria-label="Previous page"
             >
-                <span className="material-icons">chevron_left</span>
-                <span className="pagination-button-text">Previous</span>
+                <Icon baseClassName="material-symbols-outlined">chevron_left</Icon>
+                <span className={styles.paginationButtonText}>Previous</span>
             </button>
-            <span className="pagination-info">
+            <span className={styles.paginationInfo}>
                 {total > 0 ? `Page ${currentPage} • ${total} total` : "No items"}
             </span>
             <button 
-                className="pagination-button"
+                className={styles.paginationButton}
                 onClick={onNext}
                 disabled={!hasNext}
                 aria-label="Next page"
             >
-                <span className="pagination-button-text">Next</span>
-                <span className="material-icons">chevron_right</span>
+                <span className={styles.paginationButtonText}>Next</span>
+                <Icon baseClassName="material-symbols-outlined">chevron_right</Icon>
             </button>
         </div>
     );
