@@ -7,7 +7,7 @@
   padding: 1rem 0;
 }
 
-.pagination-button {
+.paginationButton {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -22,33 +22,33 @@
   font-weight: 500;
 }
 
-.pagination-button:hover:not(:disabled) {
+.paginationButton:hover:not(:disabled) {
   background: var(--color-surface-container);
   border-color: var(--color-outline-variant);
 }
 
-.pagination-button:disabled {
+.paginationButton:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.pagination-button .material-icons {
+.paginationButton .materialIcons {
   font-size: 1.25rem;
 }
 
-.pagination-info {
+.paginationInfo {
   color: var(--color-on-surface-variant);
   font-size: 0.875rem;
   font-weight: 500;
 }
 
 @media (max-width: 480px) {
-  .pagination-button {
+  .paginationButton {
     padding: 0.5rem;
     min-width: 2.5rem;
   }
   
-  .pagination-button-text {
+  .paginationButtonText {
     display: none;
   }
   
