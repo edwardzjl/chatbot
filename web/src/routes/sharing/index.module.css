@@ -44,6 +44,7 @@
 .shareCardContent {
     flex: 1;
     margin-right: 1rem;
+    text-align: left;
 }
 
 .shareTitle {
@@ -52,12 +53,14 @@
     line-height: 1.4;
     margin: 0 0 0.5rem 0;
     color: var(--text-primary);
+    text-align: left;
 }
 
 .shareMeta {
     color: var(--text-secondary);
     font-size: 0.875rem;
     margin: 0 0 0.5rem 0;
+    text-align: left;
 }
 
 .shareUrl {
@@ -68,6 +71,8 @@
     margin: 0;
     text-decoration: underline;
     cursor: pointer;
+    text-align: left;
+    display: block;
 }
 
 .shareUrl:hover {
