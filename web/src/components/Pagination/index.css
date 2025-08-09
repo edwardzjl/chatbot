@@ -42,14 +42,17 @@
   font-weight: 500;
 }
 
-@media (max-width: 768px) {
-  .pagination {
-    flex-direction: column;
-    gap: 0.75rem;
+@media (max-width: 480px) {
+  .pagination-button {
+    padding: 0.5rem;
+    min-width: 2.5rem;
   }
   
-  .pagination-button {
-    width: 100%;
-    justify-content: center;
+  .pagination-button-text {
+    display: none;
+  }
+  
+  .pagination-info {
+    font-size: 0.8rem;
   }
 }

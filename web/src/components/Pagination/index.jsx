@@ -23,7 +23,7 @@ const Pagination = ({
                 aria-label="Previous page"
             >
                 <span className="material-icons">chevron_left</span>
-                Previous
+                <span className="pagination-button-text">Previous</span>
             </button>
             <span className="pagination-info">
                 {total > 0 ? `Page ${currentPage} • ${total} total` : "No items"}
@@ -34,7 +34,7 @@ const Pagination = ({
                 disabled={!hasNext}
                 aria-label="Next page"
             >
-                Next
+                <span className="pagination-button-text">Next</span>
                 <span className="material-icons">chevron_right</span>
             </button>
         </div>
