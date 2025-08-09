@@ -17,7 +17,6 @@ async function loader({ request }) {
     const cursor = url.searchParams.get("cursor");
     const size = url.searchParams.get("size");
 
-    // If size is specified (user is navigating), fetch normally
     if (!!!size) {
         // Initial load - return empty state, let component fetch with optimal size
         return {
@@ -46,7 +45,7 @@ async function loader({ request }) {
             currentPage: data.current_page,
             previousPage: data.previous_page,
             nextPage: data.next_page,
-            total: data.total || 0
+            total: data.total
         },
         requestedSize: parseInt(size, 10),
         isInitialLoad: false
@@ -115,6 +114,15 @@ const Sharing = () => {
             fetchSharesWithPageSize(pageSize);
         }
     }, [isCalculated, pageSize, isInitialLoad]);
+
+    // Update component state when loader provides new data (navigation)
+    useEffect(() => {
+        if (!isInitialLoad && initialShares) {
+            setShares(initialShares);
+            setPagination(initialPagination);
+            setIsLoading(false);
+        }
+    }, [initialShares, initialPagination, isInitialLoad]);
 
     // Handle page size changes for subsequent loads
     useEffect(() => {
