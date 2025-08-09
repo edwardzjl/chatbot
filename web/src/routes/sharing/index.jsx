@@ -15,11 +15,11 @@ import SharesHeader from "./components/SharesHeader";
 
 // Constants
 const DYNAMIC_PAGE_SIZE_CONFIG = {
-    minPageSize: 3,
+    minPageSize: 2, // Allow 2 items minimum for very small screens
     maxPageSize: 15,
-    itemHeight: 120,
-    headerHeight: 150,
-    paginationHeight: 80,
+    fallbackItemHeight: 120,
+    listSelector: '[data-list-container]',
+    itemSelector: '[data-list-item]',
 };
 
 // API helper function
@@ -86,7 +86,7 @@ const Sharing = () => {
     const [searchParams] = useSearchParams();
 
     // Dynamic page size calculation
-    const { pageSize, containerRef, isCalculated } = useDynamicPageSize(DYNAMIC_PAGE_SIZE_CONFIG);
+    const { pageSize, containerRef, isCalculated, recalculate, measuredItemHeight, availableHeight } = useDynamicPageSize(DYNAMIC_PAGE_SIZE_CONFIG);
 
     // Memoized values
     const hasShares = shares.length > 0;
@@ -202,6 +202,18 @@ const Sharing = () => {
         }
     }, [initialShares, initialPagination, isInitialLoad]);
 
+    // Recalculate page size when shares are rendered (to measure actual heights)
+    useEffect(() => {
+        if (hasShares && isCalculated) {
+            // Small delay to ensure DOM is updated
+            const timer = setTimeout(() => {
+                recalculate();
+            }, 100);
+            
+            return () => clearTimeout(timer);
+        }
+    }, [hasShares, isCalculated, recalculate, shares.length]);
+
     // Handle page size optimization for existing data
     useEffect(() => {
         if (shouldOptimizePage) {
@@ -228,7 +240,7 @@ const Sharing = () => {
                             isCalculated={isCalculated}
                         />
 
-                        <div className={styles.sharesList}>
+                        <div className={styles.sharesList} data-list-container>
                             {shares.map((share) => (
                                 <ShareCard
                                     key={share.id}
