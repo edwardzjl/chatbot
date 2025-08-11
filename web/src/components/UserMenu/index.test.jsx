@@ -1,14 +1,17 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
+import { BrowserRouter } from "react-router-dom";
 
 import { UserContext } from "@/contexts/user";
 
 import UserMenu from "./index";
 
 const setup = () => render(
-    <UserContext.Provider value={mockUserContextValue}>
-        <UserMenu />
-    </UserContext.Provider>
+    <BrowserRouter>
+        <UserContext.Provider value={mockUserContextValue}>
+            <UserMenu />
+        </UserContext.Provider>
+    </BrowserRouter>
 );
 
 const mockUserContextValue = {

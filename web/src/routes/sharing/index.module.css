@@ -1,0 +1,329 @@
+/* Sharing page styles */
+.sharingContainer {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100vh;
+    background-color: var(--bg-secondary);
+    overflow-y: auto;
+}
+
+.sharingContent {
+    padding: 1.5rem;
+    max-width: 800px;
+    margin: 0 auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    /* Allow content to shrink */
+}
+
+.sharingTitle {
+    font-size: 2.125rem;
+    font-weight: 400;
+    line-height: 1.2;
+    margin: 0 0 1.5rem 0;
+    color: var(--text-primary);
+}
+
+.sharingInfo {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin: 0 0 1.5rem 0;
+    line-height: 1.5;
+    text-align: left;
+}
+
+.sharesList {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    flex: 1;
+}
+
+.shareCard {
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--bg-primary);
+    padding: 1rem;
+    margin-bottom: 0;
+    /* Remove default margin since we use gap */
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.shareCardContent {
+    flex: 1;
+    margin-right: 1rem;
+    text-align: left;
+}
+
+.shareTitle {
+    font-size: 1.25rem;
+    font-weight: 500;
+    line-height: 1.4;
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+    text-align: left;
+}
+
+.shareMeta {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin: 0 0 0.5rem 0;
+    text-align: left;
+}
+
+.shareUrl {
+    word-break: break-all;
+    font-family: monospace;
+    font-size: 0.75rem;
+    color: #0da37f;
+    margin: 0;
+    text-decoration: underline;
+    cursor: pointer;
+    text-align: left;
+    display: block;
+}
+
+.shareUrl:hover {
+    color: #0b8766;
+}
+
+.shareCardActions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+    flex-shrink: 0;
+}
+
+.actionButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 0.5rem;
+    min-width: 2rem;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    line-height: 1.4;
+    text-decoration: none;
+    background-color: transparent;
+    border-radius: 4px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.actionButton:hover {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-color);
+}
+
+.actionButtonDanger {
+    color: #d32f2f;
+    background-color: transparent;
+    padding: 0.5rem;
+    min-width: 2rem;
+    justify-content: center;
+}
+
+.actionButtonDanger:hover {
+    background-color: rgba(211, 47, 47, 0.1);
+}
+
+.emptyState {
+    text-align: center;
+    padding: 4rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+}
+
+.emptyStateText {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin: 0 0 0.5rem 0;
+}
+
+.emptyStateSubtext {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+/* Loading effect */
+.loading {
+    position: relative;
+}
+
+.loading::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.2);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(1px);
+    -webkit-backdrop-filter: blur(1px);
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    z-index: 1001;
+}
+
+@keyframes spin {
+    0% {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    100% {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+/* Infinite scroll styles */
+.loadMoreAnchor {
+    min-height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--text-secondary);
+    font-size: 12px;
+    text-align: center;
+    margin: 1rem 0;
+}
+
+.spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid var(--border-color);
+    border-top: 3px solid #3498db;
+    border-radius: 50%;
+    animation: spinInfinite 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spinInfinite {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 768px) {
+    .sharingContent {
+        padding: 1rem;
+        max-width: calc(100% - 2rem);
+        /* Responsive: leave 1rem on each side */
+    }
+
+    .sharingTitle {
+        font-size: 1.75rem;
+    }
+
+    .emptyState {
+        padding: 3rem 1rem;
+        min-height: 200px;
+    }
+}
+
+/* For very small screens */
+@media (max-width: 480px) {
+    .sharingContainer {
+        height: 100vh;
+        height: 100dvh;
+        /* Use dynamic viewport height for mobile */
+    }
+
+    .sharingContent {
+        padding: 0.75rem;
+        max-width: calc(100% - 1.5rem);
+        min-height: 0;
+        /* Allow shrinking */
+    }
+
+    .sharingTitle {
+        font-size: 1.5rem;
+        margin: 0 0 1rem 0;
+        /* Reduce margin */
+    }
+
+    .sharesCount {
+        font-size: 0.8rem;
+        margin: 0 0 0.75rem 0;
+        /* Reduce margin */
+    }
+
+    .sharesList {
+        gap: 0.75rem;
+        /* Smaller gap between items */
+        min-height: 0;
+        /* Allow shrinking */
+    }
+
+    .shareCard {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 0.75rem;
+        /* Smaller padding */
+    }
+
+    .shareCardContent {
+        margin-right: 0;
+        margin-bottom: 1rem;
+    }
+
+    .shareCardActions {
+        align-self: flex-end;
+    }
+
+    .emptyState {
+        padding: 2rem 0.5rem;
+        min-height: 150px;
+        /* Smaller min height */
+    }
+}
+
+/* For iPhone SE and similar small screens */
+@media (max-width: 375px) and (max-height: 700px) {
+    .sharingContent {
+        padding: 0.5rem;
+    }
+
+    .sharingTitle {
+        font-size: 1.25rem;
+        margin: 0 0 0.75rem 0;
+    }
+
+    .sharesList {
+        gap: 0.5rem;
+    }
+
+    .shareCard {
+        padding: 0.5rem;
+    }
+}
