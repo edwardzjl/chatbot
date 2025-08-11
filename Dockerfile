@@ -12,9 +12,17 @@ RUN yarn build
 
 
 FROM python:3.13 AS backend-builder
+
+ENV UV_COMPILE_BYTECODE=1
+
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
 COPY api/pyproject.toml api/uv.lock ./
-RUN uv sync --frozen --no-dev --group prod --compile-bytecode
+
+# Install dependencies
+# Ref: https://docs.astral.sh/uv/guides/integration/docker/#using-uv-temporarily
+# Ref: https://docs.astral.sh/uv/guides/integration/docker/#intermediate-layers
+RUN --mount=from=ghcr.io/astral-sh/uv,source=/uv,target=/bin/uv \
+    uv sync --locked --no-install-project --no-dev --group prod --no-cache
 
 
 FROM python:3.13-slim AS app
@@ -27,6 +35,9 @@ COPY --from=backend-builder /.venv ./.venv
 ENV PATH="/app/.venv/bin:$PATH"
 COPY api/ .
 COPY --from=frontend-builder /build/dist ./static
+
+RUN --mount=from=ghcr.io/astral-sh/uv,source=/uv,target=/bin/uv \
+    uv sync --locked --no-dev --group prod --group mysql --group oracle --no-cache
 
 RUN adduser --system --no-create-home --group chatbot \
   && chown -R chatbot:chatbot /app

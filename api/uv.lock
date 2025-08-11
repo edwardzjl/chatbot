@@ -360,7 +360,7 @@ wheels = [
 [[package]]
 name = "chatbot"
 version = "0.1.0"
-source = { editable = "." }
+source = { virtual = "." }
 dependencies = [
     { name = "aiohttp", extra = ["speedups"] },
     { name = "aiohttp-client-cache" },
@@ -390,14 +390,6 @@ dependencies = [
     { name = "websockets" },
 ]
 
-[package.optional-dependencies]
-dev = [
-    { name = "alembic" },
-    { name = "pre-commit" },
-    { name = "psycopg", extra = ["binary"] },
-    { name = "ruff" },
-]
-
 [package.dev-dependencies]
 dev = [
     { name = "alembic" },
@@ -414,7 +406,6 @@ requires-dist = [
     { name = "aiohttp", extras = ["speedups"], specifier = ">=3.11.14,<4.0.0" },
     { name = "aiohttp-client-cache", specifier = ">=0.12.4,<1.0.0" },
     { name = "aiosqlite", specifier = ">=0.21.0,<1.0.0" },
-    { name = "alembic", marker = "extra == 'dev'" },
     { name = "beautifulsoup4", specifier = ">=4.13.4,<5.0.0" },
     { name = "fake-useragent", specifier = ">=2.2.0,<3.0.0" },
     { name = "fastapi", specifier = ">=0.100.0,<1.0.0" },
@@ -426,15 +417,12 @@ requires-dist = [
     { name = "langgraph-checkpoint-sqlite", specifier = ">=2.0.0,<3.0.0" },
     { name = "markdownify", specifier = ">=1.1.0,<2.0.0" },
     { name = "minio", specifier = ">=7.2.15,<8.0.0" },
-    { name = "pre-commit", marker = "extra == 'dev'" },
     { name = "prometheus-client", specifier = ">=0.20.0,<1.0.0" },
     { name = "psycopg", specifier = ">=3.2.1,<4.0.0" },
-    { name = "psycopg", extras = ["binary"], marker = "extra == 'dev'" },
     { name = "pydantic", specifier = ">=2.0.0,<3.0.0" },
     { name = "pydantic-settings", specifier = ">=2.0,<3.0" },
     { name = "requests", specifier = ">=2.31,<3.0" },
     { name = "requests-cache", specifier = ">=1.2.1,<2.0.0" },
-    { name = "ruff", marker = "extra == 'dev'" },
     { name = "sqlakeyset", specifier = ">=2.0.0,<3.0.0" },
     { name = "sqlalchemy", extras = ["asyncio"], specifier = ">=2.0.28,<3.0.0" },
     { name = "tenacity", specifier = ">=9.0.0,<10.0.0" },
@@ -442,7 +430,6 @@ requires-dist = [
     { name = "uvloop", marker = "sys_platform != 'win32'" },
     { name = "websockets", specifier = ">=12.0" },
 ]
-provides-extras = ["dev"]
 
 [package.metadata.requires-dev]
 dev = [

@@ -1,9 +1,9 @@
 #!/bin/bash -i
 
 # install python dependencies
-python -m pip install uv --user
+curl -LsSf https://astral.sh/uv/install.sh | sh
 cd api
-uv sync
+uv sync --locked --group dev
 cd ..
 
 # install node dependencies
