@@ -7,9 +7,6 @@ import asyncio
 from fastapi import (
     APIRouter,
     HTTPException,
-    WebSocket,
-    WebSocketDisconnect,
-    WebSocketException,
 )
 from fastapi.responses import StreamingResponse
 from langchain_core.messages import AIMessage, BaseMessage
@@ -22,7 +19,6 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from chatbot.dependencies import UserIdHeaderDep
 from chatbot.dependencies.agent import AgentWrapperDep, SmrChainWrapperDep
 from chatbot.dependencies.db import SqlalchemySessionMakerDep
-from chatbot.metrics import connected_clients
 from chatbot.metrics.llm import input_tokens, output_tokens
 from chatbot.models import Conversation
 from chatbot.schemas import (
@@ -39,103 +35,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/chat")
 
 
-@router.websocket("")
-async def chat(
-    websocket: WebSocket,
-    userid: UserIdHeaderDep,
-    agent_wrapper: AgentWrapperDep,
-    smry_chain_wrapper: SmrChainWrapperDep,
-    session_maker: SqlalchemySessionMakerDep,
-):
-    await websocket.accept()
-    connected_clients.inc()
-    logger.info("websocket connected")
-    while True:
-        try:
-            payload: str = await websocket.receive_text()
-            message = HumanChatMessage.model_validate_json(payload)
-
-            conv = await validate_conversation_owner(
-                session_maker, message.conversation, userid
-            )
-
-            runnable_config: RunnableConfig = {
-                "run_name": "chat",
-                "metadata": {
-                    "conversation_id": message.conversation,
-                    "userid": userid,
-                    "client_ip": websocket.client.host,
-                },
-                "configurable": {"thread_id": message.conversation},
-            }
-
-            selected_model = message.additional_kwargs.get("model_name")
-            async with agent_wrapper(selected_model) as agent:
-                async for msg, metadata in agent.astream(
-                    input={"messages": [message.to_lc()]},
-                    config=runnable_config,
-                    stream_mode="messages",
-                    durability="async",
-                ):
-                    if "internal" in metadata.get("tags", []):
-                        continue  # Skip internal messages.
-
-                    _msg = ChatMessage.from_lc(
-                        msg,
-                        parent_id=message.id,
-                        conversation=message.conversation,
-                    )
-                    await websocket.send_text(_msg.model_dump_json())
-
-                    if (
-                        isinstance(msg, AIMessage)
-                        and (usage_metadata := msg.usage_metadata) is not None
-                    ):
-                        update_usage_metrics(
-                            userid,
-                            msg.response_metadata,
-                            usage_metadata,
-                        )
-
-                conv = await update_conversation_last_message_at(session_maker, conv)
-
-                # summarize if required
-                if message.additional_kwargs and message.additional_kwargs.get(
-                    "require_summarization", False
-                ):
-                    title = await generate_conversation_title(
-                        agent=agent,
-                        smry_chain_wrapper=smry_chain_wrapper,
-                        selected_model=selected_model,
-                        runnable_config=runnable_config,
-                    )
-                    if title:
-                        conv.title = title
-                        async with session_maker() as session:
-                            conv = await session.merge(conv)
-                            await session.commit()
-
-                        info_message = InfoMessage(
-                            conversation=message.conversation,
-                            content={
-                                "type": "title-generated",
-                                "payload": title,
-                            },
-                        )
-                        await websocket.send_text(info_message.model_dump_json())
-        except RateLimitError:
-            err_message = ErrorMessage(
-                content="Rate limit exceeded. Please try again later.",
-            )
-            await websocket.send_text(err_message.model_dump_json())
-        except WebSocketDisconnect:
-            logger.info("websocket disconnected")
-            connected_clients.dec()
-            return
-        except Exception as e:  # noqa: BLE001
-            logger.exception("Something goes wrong: %s", e)
-
-
 @router.post("/stream")
 async def chat_stream(
     message: HumanChatMessage,
@@ -148,7 +47,7 @@ async def chat_stream(
     
     async def generate_stream():
         try:
-            conv = await validate_conversation_owner_http(
+            conv = await validate_conversation_owner(
                 session_maker, message.conversation, userid
             )
 
@@ -252,25 +151,7 @@ async def validate_conversation_owner(
     conversation_id: UUID | str,
     userid: str,
 ) -> Conversation:
-    """Validate that the user owns the conversation (WebSocket version)."""
-    if not isinstance(conversation_id, UUID):
-        # In most cases, I don't need to do anything. SQLAlchemy will do the conversion for me.
-        # However, SQLite doesn't have a native UUID type.
-        # See <https://github.com/sqlalchemy/sqlalchemy/discussions/9290#discussioncomment-4953349>
-        conversation_id = UUID(conversation_id)
-    async with session_maker() as session:
-        conv: Conversation = await session.get(Conversation, conversation_id)
-    if conv.owner != userid:
-        raise WebSocketException(code=3403, reason="authorization error")
-    return conv
-
-
-async def validate_conversation_owner_http(
-    session_maker: async_sessionmaker[AsyncSession],
-    conversation_id: UUID | str,
-    userid: str,
-) -> Conversation:
-    """Validate that the user owns the conversation (HTTP version)."""
+    """Validate that the user owns the conversation."""
     if not isinstance(conversation_id, UUID):
         conversation_id = UUID(conversation_id)
     async with session_maker() as session:
