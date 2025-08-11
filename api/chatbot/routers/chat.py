@@ -1,12 +1,11 @@
 import logging
 from functools import partial
 from uuid import UUID
-import json
-import asyncio
 
 from fastapi import (
     APIRouter,
     HTTPException,
+    Request,
 )
 from fastapi.responses import StreamingResponse
 from langchain_core.messages import AIMessage, BaseMessage
@@ -35,16 +34,36 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/chat")
 
 
+def get_client_ip(request: Request) -> str:
+    """Extract client IP address from request, considering proxy headers."""
+    # Check X-Forwarded-For header (common when behind reverse proxy/load balancer)
+    if forwarded_for := request.headers.get("x-forwarded-for"):
+        # X-Forwarded-For can contain multiple IPs, take the first one (original client)
+        return forwarded_for.split(",")[0].strip()
+
+    # Check X-Real-IP header (common with nginx)
+    if real_ip := request.headers.get("x-real-ip"):
+        return real_ip.strip()
+
+    # Fall back to direct connection IP
+    if request.client and request.client.host:
+        return request.client.host
+
+    # Final fallback
+    return "unknown"
+
+
 @router.post("/stream")
 async def chat_stream(
     message: HumanChatMessage,
+    request: Request,
     userid: UserIdHeaderDep,
     agent_wrapper: AgentWrapperDep,
     smry_chain_wrapper: SmrChainWrapperDep,
     session_maker: SqlalchemySessionMakerDep,
 ):
     """HTTP streaming endpoint for chat interactions using Server-Sent Events."""
-    
+
     async def generate_stream():
         try:
             conv = await validate_conversation_owner(
@@ -56,7 +75,7 @@ async def chat_stream(
                 "metadata": {
                     "conversation_id": message.conversation,
                     "userid": userid,
-                    "client_ip": "unknown",  # HTTP doesn't have direct client IP like WebSocket
+                    "client_ip": get_client_ip(request),
                 },
                 "configurable": {"thread_id": message.conversation},
             }
@@ -77,7 +96,7 @@ async def chat_stream(
                         parent_id=message.id,
                         conversation=message.conversation,
                     )
-                    
+
                     # Send as Server-Sent Event
                     sse_data = f"data: {_msg.model_dump_json()}\n\n"
                     yield sse_data
