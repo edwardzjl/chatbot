@@ -9,7 +9,7 @@ import MuiAlert from "@mui/material/Alert";
 import { useSnackbar } from "@/contexts/snackbar/hook";
 import { useConversations } from "@/contexts/conversation/hook";
 import { useCurrentConv } from "@/contexts/message/hook";
-import { useWebsocket } from "@/contexts/websocket/hook";
+import { useHttpStream } from "@/contexts/httpstream/hook";
 
 import ChatboxHeader from "@/components/ChatboxHeader";
 import ShareConvDialog from "@/components/dialogs/ShareConvDialog";
@@ -36,7 +36,7 @@ const Root = () => {
 
     const { snackbar, setSnackbar, closeSnackbar } = useSnackbar();
     const { dispatch } = useCurrentConv();
-    const { registerMessageHandler, unregisterMessageHandler } = useWebsocket();
+    const { registerMessageHandler, unregisterMessageHandler } = useHttpStream();
 
     const handleWebSocketMessage = useCallback((data) => {
         if (data === null || data === undefined) {

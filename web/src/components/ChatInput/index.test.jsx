@@ -2,22 +2,22 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { BrowserRouter } from "react-router-dom";
 
-import { WebsocketContext } from "@/contexts/websocket";
+import { HttpStreamContext } from "@/contexts/httpstream";
 
 import ChatInput from "./index";
 
-// Mock the WebSocket context provider
-const mockWebSocketContext = {
-    ready: true,  // Simulate that the WebSocket is ready
+// Mock the HTTP Stream context provider
+const mockHttpStreamContext = {
+    ready: true,  // HTTP streaming is always ready
 };
 
-// Helper function to render the component with the WebSocket context
+// Helper function to render the component with the HTTP Stream context
 const renderWithContext = (component) => {
     return render(
         <BrowserRouter>
-            <WebsocketContext.Provider value={mockWebSocketContext}>
+            <HttpStreamContext.Provider value={mockHttpStreamContext}>
                 {component}
-            </WebsocketContext.Provider>
+            </HttpStreamContext.Provider>
         </BrowserRouter>
     );
 };
@@ -30,15 +30,9 @@ describe("ChatInput", () => {
         expect(textarea.value).toBe("");
     });
 
-    it("should disable the submit button when WebSocket is not ready", () => {
-        mockWebSocketContext.ready = false;
-        renderWithContext(<ChatInput onSubmit={vi.fn()} />);
-        const submitButton = screen.getByRole("button", { name: /send message/i });
-        expect(submitButton.disabled).toBe(true);  // Native DOM property check for disabled
-    });
-
-    it("should enable the submit button when WebSocket is ready", () => {
-        mockWebSocketContext.ready = true;
+    it("should enable the submit button since HTTP Stream is always ready", () => {
+        // HTTP streaming doesn't have a "not ready" state like WebSocket
+        mockHttpStreamContext.ready = true;
         renderWithContext(<ChatInput onSubmit={vi.fn()} />);
         const submitButton = screen.getByRole("button", { name: /send message/i });
         expect(submitButton.disabled).toBe(false);  // Native DOM property check for disabled
@@ -51,9 +45,9 @@ describe("ChatInput", () => {
 
         rerender(
             <BrowserRouter>
-                <WebsocketContext.Provider value={mockWebSocketContext}>
+                <HttpStreamContext.Provider value={mockHttpStreamContext}>
                     <ChatInput onSubmit={vi.fn()} />
-                </WebsocketContext.Provider>
+                </HttpStreamContext.Provider>
             </BrowserRouter>
         );
         expect(document.activeElement).toBe(textarea);

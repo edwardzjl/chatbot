@@ -1,13 +1,17 @@
 import logging
 from functools import partial
 from uuid import UUID
+import json
+import asyncio
 
 from fastapi import (
     APIRouter,
+    HTTPException,
     WebSocket,
     WebSocketDisconnect,
     WebSocketException,
 )
+from fastapi.responses import StreamingResponse
 from langchain_core.messages import AIMessage, BaseMessage
 from langchain_core.messages.ai import UsageMetadata
 from langchain_core.runnables import Runnable, RunnableConfig
@@ -132,12 +136,123 @@ async def chat(
             logger.exception("Something goes wrong: %s", e)
 
 
+@router.post("/stream")
+async def chat_stream(
+    message: HumanChatMessage,
+    userid: UserIdHeaderDep,
+    agent_wrapper: AgentWrapperDep,
+    smry_chain_wrapper: SmrChainWrapperDep,
+    session_maker: SqlalchemySessionMakerDep,
+):
+    """HTTP streaming endpoint for chat interactions using Server-Sent Events."""
+    
+    async def generate_stream():
+        try:
+            conv = await validate_conversation_owner_http(
+                session_maker, message.conversation, userid
+            )
+
+            runnable_config: RunnableConfig = {
+                "run_name": "chat",
+                "metadata": {
+                    "conversation_id": message.conversation,
+                    "userid": userid,
+                    "client_ip": "unknown",  # HTTP doesn't have direct client IP like WebSocket
+                },
+                "configurable": {"thread_id": message.conversation},
+            }
+
+            selected_model = message.additional_kwargs.get("model_name")
+            async with agent_wrapper(selected_model) as agent:
+                async for msg, metadata in agent.astream(
+                    input={"messages": [message.to_lc()]},
+                    config=runnable_config,
+                    stream_mode="messages",
+                    durability="async",
+                ):
+                    if "internal" in metadata.get("tags", []):
+                        continue  # Skip internal messages.
+
+                    _msg = ChatMessage.from_lc(
+                        msg,
+                        parent_id=message.id,
+                        conversation=message.conversation,
+                    )
+                    
+                    # Send as Server-Sent Event
+                    sse_data = f"data: {_msg.model_dump_json()}\n\n"
+                    yield sse_data
+
+                    if (
+                        isinstance(msg, AIMessage)
+                        and (usage_metadata := msg.usage_metadata) is not None
+                    ):
+                        update_usage_metrics(
+                            userid,
+                            msg.response_metadata,
+                            usage_metadata,
+                        )
+
+                conv = await update_conversation_last_message_at(session_maker, conv)
+
+                # summarize if required
+                if message.additional_kwargs and message.additional_kwargs.get(
+                    "require_summarization", False
+                ):
+                    title = await generate_conversation_title(
+                        agent=agent,
+                        smry_chain_wrapper=smry_chain_wrapper,
+                        selected_model=selected_model,
+                        runnable_config=runnable_config,
+                    )
+                    if title:
+                        conv.title = title
+                        async with session_maker() as session:
+                            conv = await session.merge(conv)
+                            await session.commit()
+
+                        info_message = InfoMessage(
+                            conversation=message.conversation,
+                            content={
+                                "type": "title-generated",
+                                "payload": title,
+                            },
+                        )
+                        # Send title update as SSE
+                        sse_data = f"data: {info_message.model_dump_json()}\n\n"
+                        yield sse_data
+
+        except RateLimitError:
+            err_message = ErrorMessage(
+                content="Rate limit exceeded. Please try again later.",
+            )
+            sse_data = f"data: {err_message.model_dump_json()}\n\n"
+            yield sse_data
+        except Exception as e:  # noqa: BLE001
+            logger.exception("Something goes wrong: %s", e)
+            err_message = ErrorMessage(
+                content="An error occurred while processing your request.",
+            )
+            sse_data = f"data: {err_message.model_dump_json()}\n\n"
+            yield sse_data
+
+    return StreamingResponse(
+        generate_stream(),
+        media_type="text/plain",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",  # Disable nginx buffering
+        },
+    )
+
+
 async def validate_conversation_owner(
     session_maker: async_sessionmaker[AsyncSession],
     conversation_id: UUID | str,
     userid: str,
 ) -> Conversation:
-    """Validate that the user owns the conversation."""
+    """Validate that the user owns the conversation (WebSocket version)."""
     if not isinstance(conversation_id, UUID):
         # In most cases, I don't need to do anything. SQLAlchemy will do the conversion for me.
         # However, SQLite doesn't have a native UUID type.
@@ -147,6 +262,21 @@ async def validate_conversation_owner(
         conv: Conversation = await session.get(Conversation, conversation_id)
     if conv.owner != userid:
         raise WebSocketException(code=3403, reason="authorization error")
+    return conv
+
+
+async def validate_conversation_owner_http(
+    session_maker: async_sessionmaker[AsyncSession],
+    conversation_id: UUID | str,
+    userid: str,
+) -> Conversation:
+    """Validate that the user owns the conversation (HTTP version)."""
+    if not isinstance(conversation_id, UUID):
+        conversation_id = UUID(conversation_id)
+    async with session_maker() as session:
+        conv: Conversation = await session.get(Conversation, conversation_id)
+    if conv.owner != userid:
+        raise HTTPException(status_code=403, detail="authorization error")
     return conv
 
 

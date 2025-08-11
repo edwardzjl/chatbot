@@ -10,7 +10,7 @@ import ChatInput from "@/components/ChatInput";
 import { useConversations } from "@/contexts/conversation/hook";
 import { useCurrentConv } from "@/contexts/message/hook";
 import { useUserProfile } from "@/contexts/user/hook";
-import { useWebsocket } from "@/contexts/websocket/hook";
+import { useHttpStream } from "@/contexts/httpstream/hook";
 
 
 async function loader({ params }) {
@@ -65,7 +65,7 @@ const Conversation = () => {
     const navigation = useNavigation();
     const { groupedConvsArray: convs, dispatch: dispatchConv } = useConversations();
     const { username } = useUserProfile();
-    const { send } = useWebsocket();
+    const { send } = useHttpStream();
     const { currentConv, dispatch } = useCurrentConv();
     // Only rendering messages of the following types
     const rendering_messages = new Set(["human", "ai", "AIMessageChunk"]);

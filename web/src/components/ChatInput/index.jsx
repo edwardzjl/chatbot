@@ -13,7 +13,7 @@ import PreviewImage from "@/components/PreviewImage";
 
 import { useConfig } from "@/contexts/config/hook";
 import { useSnackbar } from "@/contexts/snackbar/hook";
-import { useWebsocket } from "@/contexts/websocket/hook";
+import { useHttpStream } from "@/contexts/httpstream/hook";
 
 import { toLocalISOString } from "@/commons";
 
@@ -58,7 +58,7 @@ import { uploadFile } from "./utils";
  */
 const ChatInput = ({ onSubmit }) => {
     const params = useParams();
-    const { ready } = useWebsocket();
+    const { ready } = useHttpStream();
     const { setSnackbar } = useSnackbar();
     const { models, selectedModel } = useConfig();
 
