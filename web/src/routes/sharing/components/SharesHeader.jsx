@@ -1,4 +1,5 @@
 import styles from "../index.module.css";
+import PropTypes from "prop-types";
 
 const SharesHeader = ({ sharesCount, pageSize, isCalculated }) => {
     return (
@@ -11,6 +12,12 @@ const SharesHeader = ({ sharesCount, pageSize, isCalculated }) => {
             )}
         </p>
     );
+};
+
+SharesHeader.propTypes = {
+    sharesCount: PropTypes.number.isRequired,
+    pageSize: PropTypes.number.isRequired,
+    isCalculated: PropTypes.bool,
 };
 
 export default SharesHeader;

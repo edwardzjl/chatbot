@@ -1,6 +1,9 @@
 import styles from "../index.module.css";
+
 import { memo } from "react";
+import PropTypes from "prop-types";
 import Icon from "@mui/material/Icon";
+
 import { formatTimestamp } from "@/commons";
 
 const ShareCard = memo(({ share, onCopy, onDelete }) => {
@@ -43,6 +46,25 @@ const ShareCard = memo(({ share, onCopy, onDelete }) => {
         </div>
     );
 });
+
+ShareCard.propTypes = {
+    share: PropTypes.shape({
+        id: PropTypes.string.isRequired, // UUID string
+        title: PropTypes.string.isRequired,
+        url: PropTypes.string.isRequired,
+        created_at: PropTypes.oneOfType([
+            // API returns ISO string; accept a few common timestamp forms
+            PropTypes.string,
+            PropTypes.number, // epoch millis
+            PropTypes.instanceOf(Date),
+        ]).isRequired,
+        owner: PropTypes.string, // not displayed here but part of schema
+        messages: PropTypes.arrayOf(PropTypes.object), // messages not rendered in card list
+    }).isRequired,
+    onCopy: PropTypes.func.isRequired,
+    onDelete: PropTypes.func.isRequired,
+};
+
 
 ShareCard.displayName = 'ShareCard';
 

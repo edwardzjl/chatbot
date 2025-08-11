@@ -1,4 +1,6 @@
 import styles from "../index.module.css";
+import PropTypes from "prop-types";
+
 
 const EmptyState = ({ isLoading }) => {
     if (isLoading) {
@@ -24,6 +26,11 @@ const EmptyState = ({ isLoading }) => {
             </p>
         </section>
     );
+};
+
+
+EmptyState.propTypes = {
+    isLoading: PropTypes.bool,
 };
 
 export default EmptyState;
