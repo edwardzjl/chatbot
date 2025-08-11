@@ -1,6 +1,6 @@
 import styles from "./index.module.css";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useLoaderData, useNavigate, useSearchParams } from "react-router-dom";
 
 import ChatboxHeader from "@/components/ChatboxHeader";
@@ -86,7 +86,7 @@ const Sharing = () => {
     const [searchParams] = useSearchParams();
 
     // Dynamic page size calculation
-    const { pageSize, containerRef, isCalculated, recalculate, measuredItemHeight, availableHeight } = useDynamicPageSize(DYNAMIC_PAGE_SIZE_CONFIG);
+    const { pageSize, containerRef, isCalculated, recalculate } = useDynamicPageSize(DYNAMIC_PAGE_SIZE_CONFIG);
 
     // Memoized values
     const hasShares = shares.length > 0;

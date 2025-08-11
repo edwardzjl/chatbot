@@ -3,23 +3,23 @@ import PropTypes from "prop-types";
 import Icon from "@mui/material/Icon";
 
 
-const Pagination = ({ 
-    currentPage, 
-    previousPage, 
-    nextPage, 
+const Pagination = ({
+    currentPage,
+    previousPage,
+    nextPage,
     total,
-    onPrevious, 
+    onPrevious,
     onNext,
-    className = "" 
+    className = ""
 }) => {
     const hasPrevious = !!previousPage;
     const hasNext = !!nextPage;
-    
+
     // For cursor-based pagination, show meaningful info even if total is unknown
     const getPaginationInfo = () => {
         // Check if currentPage is a meaningful integer (not a cursor string)
         const isNumericPage = currentPage && !isNaN(parseInt(currentPage, 10)) && parseInt(currentPage, 10).toString() === currentPage.toString();
-        
+
         if (total && total > 0 && isNumericPage) {
             // Non cursor pagination usually has total count
             return `Page ${currentPage} • ${total} total`;
@@ -33,7 +33,7 @@ const Pagination = ({
 
     return (
         <div className={`${styles.pagination} ${className}`}>
-            <button 
+            <button
                 className={styles.paginationButton}
                 onClick={onPrevious}
                 disabled={!hasPrevious}
@@ -45,7 +45,7 @@ const Pagination = ({
             <span className={styles.paginationInfo}>
                 {getPaginationInfo()}
             </span>
-            <button 
+            <button
                 className={styles.paginationButton}
                 onClick={onNext}
                 disabled={!hasNext}
