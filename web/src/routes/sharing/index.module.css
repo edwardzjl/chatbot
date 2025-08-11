@@ -172,20 +172,6 @@
         padding: 3rem 1rem;
         min-height: 200px;
     }
-    
-    .shareCard {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    
-    .shareCardContent {
-        margin-right: 0;
-        margin-bottom: 1rem;
-    }
-    
-    .shareCardActions {
-        align-self: flex-end;
-    }
 }
 
 /* For very small screens */
@@ -217,9 +203,20 @@
     }
     
     .shareCard {
+        flex-direction: column;
+        align-items: stretch;
         padding: 0.75rem; /* Smaller padding */
     }
+
+    .shareCardContent {
+        margin-right: 0;
+        margin-bottom: 1rem;
+    }
     
+    .shareCardActions {
+        align-self: flex-end;
+    }
+
     .emptyState {
         padding: 2rem 0.5rem;
         min-height: 150px; /* Smaller min height */
