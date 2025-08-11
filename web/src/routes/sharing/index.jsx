@@ -11,15 +11,13 @@ import { useDynamicPageSize } from "@/hooks/useDynamicPageSize";
 // Local components
 import ShareCard from "./components/ShareCard";
 import EmptyState from "./components/EmptyState";
-import SharesHeader from "./components/SharesHeader";
 
 // Constants
 const DYNAMIC_PAGE_SIZE_CONFIG = {
-    minPageSize: 2, // Allow 2 items minimum for very small screens
     maxPageSize: 15,
-    fallbackItemHeight: 120,
-    listSelector: '[data-list-container]',
     itemSelector: '[data-list-item]',
+    minAvailableHeight: 160,
+    debounceMs: 120,
 };
 
 // API helper function
@@ -227,20 +225,21 @@ const Sharing = () => {
     return (
         <div className={styles.sharingContainer}>
             <ChatboxHeader />
-            <div className={styles.sharingContent} ref={containerRef}>
+            <div className={`${styles.sharingContent} ${isLoading ? styles.loading : ""}`} ref={containerRef}>
                 <h1 className={styles.sharingTitle}>My Shares</h1>
+                <p className={styles.sharingInfo}>
+                    Your shared links will remain publicly accessible as long as the related conversation 
+                    is still saved in your chat history. If any part of the conversation is deleted, 
+                    its public link will also be removed. When you delete a link, the corresponding 
+                    conversation in your chat history is not deleted, nor is any content you may have 
+                    posted on other websites.
+                </p>
 
-                {(isLoading || !hasShares) ? (
-                    <EmptyState isLoading={isLoading} />
+                {(!hasShares) ? (
+                    <EmptyState />
                 ) : (
-                    <div>
-                        <SharesHeader
-                            sharesCount={shares.length}
-                            pageSize={pageSize}
-                            isCalculated={isCalculated}
-                        />
-
-                        <div className={styles.sharesList} data-list-container>
+                    <div className={styles.sharesSection}>
+                        <div className={styles.sharesList}>
                             {shares.map((share) => (
                                 <ShareCard
                                     key={share.id}
@@ -253,6 +252,7 @@ const Sharing = () => {
 
                         {pagination && (
                             <Pagination
+                                className={styles.paginationBottom}
                                 currentPage={pagination.currentPage}
                                 previousPage={pagination.previousPage}
                                 nextPage={pagination.nextPage}

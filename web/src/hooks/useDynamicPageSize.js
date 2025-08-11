@@ -1,159 +1,114 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useLayoutEffect, useRef, useCallback } from "react";
 
 /**
  * Custom hook to calculate optimal page size based on actual available screen space
  * This approach measures the real available space rather than estimating component heights
- * @param {number} minPageSize - Minimum number of items per page (default: 3)
  * @param {number} maxPageSize - Maximum number of items per page (default: 20)
- * @param {number} fallbackItemHeight - Fallback height when measurement isn't available (default: 120)
- * @param {string} listSelector - CSS selector for the list container (default: '[data-list-container]')
- * @param {string} itemSelector - CSS selector to find items for measurement (default: '[data-list-item]')
- * @returns {object} { pageSize, containerRef, recalculate, isCalculated, measuredItemHeight, availableHeight }
+ * @param {string} itemSelector - CSS selector to find items for measurement inside the container (default: '[data-list-item]')
+ * @param {number} minAvailableHeight - Minimum usable height applied regardless of list render state (default: 160)
+ * @param {number} debounceMs - Debounce delay (ms) for resizing recalculations (default: 120)
+ * @returns {object} { pageSize, containerRef, recalculate, isCalculated }
  */
 export const useDynamicPageSize = ({
-    minPageSize = 3,
     maxPageSize = 20,
-    fallbackItemHeight = 120,
-    listSelector = '[data-list-container]',
     itemSelector = '[data-list-item]',
+    minAvailableHeight = 160,
+    debounceMs = 120,
 } = {}) => {
-    const [pageSize, setPageSize] = useState(minPageSize);
-    const [measuredItemHeight, setMeasuredItemHeight] = useState(fallbackItemHeight);
-    const [availableHeight, setAvailableHeight] = useState(0);
+    const [pageSize, setPageSize] = useState(1);
     const containerRef = useRef(null);
     const [isCalculated, setIsCalculated] = useState(false);
+    const resizeTimerRef = useRef(null);
+    const rafRef = useRef(null);
 
-    const measureActualItemHeight = () => {
-        if (!containerRef.current) {
-            return fallbackItemHeight;
+    // Guard / normalize maxPageSize
+    const safeMax = Math.max(1, maxPageSize || 1);
+
+    const computeAndSetPageSize = useCallback(() => {
+        const root = containerRef.current;
+        if (!root || typeof window === 'undefined') return;
+
+        // The container itself is the list element
+        const listEl = root;
+        const vh = window.innerHeight;
+
+        // Measure rects only once per element to avoid repeated layouts
+        const listRect = listEl.getBoundingClientRect();
+        const containerRect = root.getBoundingClientRect();
+
+        // Available vertical space (conservative)
+        const optionContainer = containerRect.bottom - listRect.top;
+        const optionViewport = vh - listRect.top;
+        const availableRaw = Math.min(optionContainer, optionViewport);
+        const available = Math.max(minAvailableHeight, availableRaw);
+
+        // Fit items by checking if each item's bottom stays within limit
+        const items = listEl.querySelectorAll(itemSelector);
+        let fittedCount = 0;
+        let lastBottom = listRect.top;
+        const limit = listRect.top + available;
+        if (items.length) {
+            for (let i = 0; i < items.length; i++) {
+                const rect = items[i].getBoundingClientRect();
+                if (rect.bottom > limit) break; // this item would overflow
+                fittedCount += 1;
+                lastBottom = rect.bottom;
+            }
         }
 
-        // Find actual rendered items
-        const items = containerRef.current.querySelectorAll(itemSelector);
-        if (items.length === 0) {
-            return fallbackItemHeight;
+        let pageByFit = fittedCount;
+        if (fittedCount === 0) {
+            // No items yet or first item too tall; default to 1 until items render and a manual recalc occurs
+            pageByFit = 1;
+        } else if (fittedCount === items.length && lastBottom < limit) {
+            // All rendered items fit and extra space remains -> extrapolate using average per-item span
+            const totalSpan = lastBottom - listRect.top;
+            const avgSpan = totalSpan / fittedCount;
+            if (avgSpan > 0) {
+                const extra = Math.floor((limit - lastBottom) / avgSpan);
+                pageByFit += extra;
+            }
         }
 
-        // Measure the height of the first few items and take average
-        const itemsToMeasure = Math.min(items.length, 3);
-        let totalHeight = 0;
-        
-        for (let i = 0; i < itemsToMeasure; i++) {
-            const rect = items[i].getBoundingClientRect();
-            totalHeight += rect.height;
-        }
-        
-        const averageHeight = totalHeight / itemsToMeasure;
-        
-        // Add gap between items (from CSS gap property)
-        const heightWithGap = averageHeight + 16; // 1rem gap
-        
-        return Math.ceil(heightWithGap);
-    };
+        const finalPage = Math.min(safeMax, Math.max(1, pageByFit));
 
-    const measureAvailableSpace = () => {
-        if (!containerRef.current) return 0;
-
-        // Find the list container within our main container
-        const listContainer = containerRef.current.querySelector(listSelector);
-        if (!listContainer) {
-            // If list container doesn't exist yet, calculate based on viewport and container
-            const containerRect = containerRef.current.getBoundingClientRect();
-            const viewportHeight = window.innerHeight;
-            const estimatedHeaderSpace = 200; // Conservative estimate for header space
-            const estimatedPaginationSpace = 100; // Conservative estimate for pagination
-            const availableSpace = viewportHeight - containerRect.top - estimatedHeaderSpace - estimatedPaginationSpace;
-            return Math.max(200, availableSpace); // Minimum 200px
-        }
-
-        // Method 1: Measure from list position to container bottom
-        const listRect = listContainer.getBoundingClientRect();
-        const containerRect = containerRef.current.getBoundingClientRect();
-        
-        // Calculate available height: from list top to container bottom, minus pagination space
-        const fromListToContainerBottom = (containerRect.bottom - listRect.top) - 100; // 100px for pagination + buffer
-        
-        // Method 2: Calculate based on viewport
-        const viewportHeight = window.innerHeight;
-        const fromListToViewportBottom = viewportHeight - listRect.top - 100; // 100px for pagination + buffer
-        
-        // Use the more conservative (smaller) measurement
-        const availableSpace = Math.min(fromListToContainerBottom, fromListToViewportBottom);
-        
-        return Math.max(150, availableSpace); // Minimum 150px to fit at least minPageSize items
-    };
-
-    const calculatePageSize = () => {
-        if (!containerRef.current) return;
-
-        // Measure actual available space for the list
-        const actualAvailableHeight = measureAvailableSpace();
-        setAvailableHeight(actualAvailableHeight);
-
-        // Always use a conservative approach for small screens
-        const viewportHeight = window.innerHeight;
-        const isSmallScreen = viewportHeight <= 700;
-        
-        let workingAvailableHeight = actualAvailableHeight;
-        
-        // For small screens, be extra conservative
-        if (isSmallScreen) {
-            const containerRect = containerRef.current.getBoundingClientRect();
-            const conservativeHeight = viewportHeight - containerRect.top - 150; // More buffer for small screens
-            workingAvailableHeight = Math.min(actualAvailableHeight, conservativeHeight);
-        }
-
-        // Measure actual item height
-        const actualItemHeight = measureActualItemHeight();
-        setMeasuredItemHeight(actualItemHeight);
-
-        // Calculate how many items can fit
-        const calculatedPageSize = Math.floor(workingAvailableHeight / actualItemHeight);
-
-        // For small screens, be more conservative with page size
-        let finalPageSize = Math.max(minPageSize, Math.min(maxPageSize, calculatedPageSize));
-        
-        if (isSmallScreen && finalPageSize > 4) {
-            finalPageSize = Math.min(4, finalPageSize); // Cap at 4 items for small screens
-        }
-
-        setPageSize(finalPageSize);
+        setPageSize(finalPage);
         setIsCalculated(true);
-    };
+    }, [itemSelector, minAvailableHeight, safeMax]);
 
-    // Recalculate on resize
-    useEffect(() => {
-        const handleResize = () => {
-            calculatePageSize();
-        };
+    // Debounced scheduling (shared by events / observers)
+    const scheduleRecalc = useCallback(() => {
+        if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
+        resizeTimerRef.current = setTimeout(() => {
+            if (typeof requestAnimationFrame !== 'undefined') {
+                if (rafRef.current) cancelAnimationFrame(rafRef.current);
+                rafRef.current = requestAnimationFrame(computeAndSetPageSize);
+            } else {
+                computeAndSetPageSize();
+            }
+        }, debounceMs);
+    }, [computeAndSetPageSize, debounceMs]);
 
-        // Calculate initial page size
-        const timer1 = setTimeout(calculatePageSize, 100);
-        
-        // Add resize listener
-        window.addEventListener("resize", handleResize);
+    // Initial + resize listener
+    useLayoutEffect(() => {
+        if (typeof window === 'undefined') return undefined;
 
-        // Recalculate when DOM settles
-        const timer2 = setTimeout(calculatePageSize, 300);
+        scheduleRecalc(); // asap
 
+        const t2 = setTimeout(scheduleRecalc, 80);
+        const t3 = setTimeout(scheduleRecalc, 200);
+        const onResize = () => scheduleRecalc();
+
+        window.addEventListener('resize', onResize);
         return () => {
-            window.removeEventListener("resize", handleResize);
-            clearTimeout(timer1);
-            clearTimeout(timer2);
+            window.removeEventListener('resize', onResize);
+            clearTimeout(t2);
+            clearTimeout(t3);
         };
-    }, []);
+    }, [scheduleRecalc]);
 
     // Provide a method to manually recalculate (useful after DOM updates)
-    const recalculate = () => {
-        setTimeout(calculatePageSize, 100);
-    };
+    const recalculate = scheduleRecalc;
 
-    return {
-        pageSize,
-        containerRef,
-        recalculate,
-        isCalculated,
-        measuredItemHeight,
-        availableHeight
-    };
+    return { pageSize, containerRef, recalculate, isCalculated };
 };
