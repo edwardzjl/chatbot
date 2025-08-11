@@ -12,10 +12,9 @@ RUN yarn build
 
 
 FROM python:3.13 AS backend-builder
-ENV PIPENV_VENV_IN_PROJECT=1
-RUN pip install pipenv
-COPY api/Pipfile api/Pipfile.lock ./
-RUN pipenv install --deploy --categories="packages prod-packages"
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
+COPY api/pyproject.toml api/uv.lock ./
+RUN uv sync --frozen --no-dev --compile-bytecode
 
 
 FROM python:3.13-slim AS app

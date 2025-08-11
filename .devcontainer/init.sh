@@ -1,9 +1,9 @@
 #!/bin/bash -i
 
 # install python dependencies
-python -m pip install pipenv --user
+python -m pip install uv --user
 cd api
-PIPENV_VENV_IN_PROJECT=1 pipenv sync -d
+uv sync
 cd ..
 
 # install node dependencies
