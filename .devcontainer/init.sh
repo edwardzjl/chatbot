@@ -3,7 +3,7 @@
 # install python dependencies
 curl -LsSf https://astral.sh/uv/install.sh | sh
 cd api
-uv sync --locked --group dev
+uv sync --locked
 cd ..
 
 # install node dependencies

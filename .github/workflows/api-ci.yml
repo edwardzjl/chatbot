@@ -37,7 +37,7 @@ jobs:
           version: "0.7.4"
           enable-cache: true
       - name: Install Dependencies
-        run: uv sync --locked --group dev
+        run: uv sync --locked
       - name: Lint
         run: make lint
 
@@ -58,7 +58,7 @@ jobs:
           version: "0.7.4"
           enable-cache: true
       - name: Install Dependencies
-        run: uv sync --locked --group dev
+        run: uv sync --locked
       - name: Test
         run: make test
 
@@ -81,6 +81,6 @@ jobs:
           version: "0.7.4"
           enable-cache: true
       - name: Install Dependencies
-        run: uv sync --locked --group dev
+        run: uv sync --locked
       - name: Check Database
         run: uv run alembic check

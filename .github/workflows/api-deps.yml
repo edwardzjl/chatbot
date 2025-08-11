@@ -39,4 +39,4 @@ jobs:
           version: "0.7.4"
           enable-cache: true
       - name: Check Dependencies Hash
-        run: uv lock --locked
+        run: uv lock --check

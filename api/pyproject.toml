@@ -43,11 +43,11 @@ dev = [
     "pre-commit",
 ]
 
-[tool.uv]
-package = false
-
 [tool.ruff]
 # Ruff configuration will be read from ruff.toml if it exists
+
+[tool.uv]
+package = false
 
 [[tool.uv.index]]
 name = "pypi"
