@@ -3,15 +3,15 @@
 all: help
 
 lint:
-	pipenv run ruff check
-	pipenv run ruff format --check
+	uv run ruff check
+	uv run ruff format --check
 
 format:
-	pipenv run ruff check --fix
-	pipenv run ruff format
+	uv run ruff check --fix
+	uv run ruff format
 
 test:
-	pipenv run python -m unittest
+	uv run python -m unittest
 
 ######################
 # HELP

@@ -1,9 +1,9 @@
 #!/bin/bash -i
 
 # install python dependencies
-python -m pip install pipenv --user
+curl -LsSf https://astral.sh/uv/install.sh | sh
 cd api
-PIPENV_VENV_IN_PROJECT=1 pipenv sync -d
+uv sync --locked
 cd ..
 
 # install node dependencies
