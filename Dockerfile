@@ -14,7 +14,7 @@ RUN yarn build
 FROM python:3.13 AS backend-builder
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
 COPY api/pyproject.toml api/uv.lock ./
-RUN uv sync --frozen --no-dev --compile-bytecode
+RUN uv sync --frozen --no-dev --group prod --compile-bytecode
 
 
 FROM python:3.13-slim AS app

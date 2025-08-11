@@ -25,15 +25,15 @@
 ### Prerequisites
 - **Python 3.13** (3.12 works with warnings)
 - **Node.js LTS** (v22+)
-- **pipenv** for Python dependency management
+- **uv** for Python dependency management
 - **Yarn 4.9.2** via corepack for Node.js dependencies
 
 ### Initial Setup Commands
 ```bash
 # API setup
 cd api
-pip install pipenv
-pipenv sync -d  # Install development dependencies
+pip install uv
+uv sync  # Install development dependencies
 
 # Web setup  
 cd web
@@ -48,23 +48,23 @@ yarn install --immutable
 cd api
 
 # Install dependencies
-pipenv sync -d
+uv sync
 
 # Linting (uses ruff)
 make lint
-# OR: pipenv run ruff check && pipenv run ruff format --check
+# OR: uv run ruff check && uv run ruff format --check
 
 # Formatting
 make format  
-# OR: pipenv run ruff check --fix && pipenv run ruff format
+# OR: uv run ruff check --fix && uv run ruff format
 
 # Testing
 make test
-# OR: pipenv run python -m unittest
+# OR: uv run python -m unittest
 
 # Database migrations (requires PostgreSQL connection)
-pipenv run alembic check
-pipenv run alembic upgrade head
+uv run alembic check
+uv run alembic upgrade head
 ```
 
 ### Web (React/Vite)
@@ -117,7 +117,7 @@ The repository uses GitHub Actions with separate workflows:
 - **Triggers**: Changes to `api/**` or workflow file
 - **Jobs**: lint, test, check-db (disabled)
 - **Runtime**: Ubuntu latest with Python 3.13
-- **Dependencies**: `pipenv sync -d`
+- **Dependencies**: `uv sync`
 
 ### Web CI (`.github/workflows/web-ci.yml`)  
 - **Triggers**: Changes to `web/**` or workflow file
@@ -134,7 +134,8 @@ Configuration in `.pre-commit-config.yaml`:
 ## Configuration Files
 
 ### Python/API Configuration
-- **`api/Pipfile`**: Dependencies for packages, dev-packages, and prod-packages
+- **`api/pyproject.toml`**: Dependencies and project configuration
+- **`api/uv.lock`**: Locked dependency versions for reproducible builds
 - **`api/ruff.toml`**: Minimal ruff configuration for flake8-type-checking
 - **`api/alembic.ini`**: Database migration configuration with PostgreSQL default
 - **`api/Makefile`**: Build commands (lint, format, test)
@@ -152,7 +153,7 @@ Configuration in `.pre-commit-config.yaml`:
 ```bash
 # Start API server (port 8000)
 cd api
-pipenv run uvicorn chatbot.main:app --reload
+uv run uvicorn chatbot.main:app --reload
 
 # Start web dev server (port 3000)  
 cd web
@@ -177,7 +178,7 @@ Key configuration via environment variables (see README for full list):
 - **Location**: `api/tests/`
 - **Framework**: Python unittest
 - **Coverage**: Agent, LLM client, schemas, configuration
-- **Command**: `make test` or `pipenv run python -m unittest`
+- **Command**: `make test` or `uv run python -m unittest`
 - **Duration**: ~0.2 seconds
 
 ### Web Tests  
@@ -228,7 +229,7 @@ kubectl kustomize manifests/overlays/knative-serving | kubectl apply -f -
 **ALWAYS follow these practices when working in this repository:**
 
 1. **Run builds in correct order**: Install dependencies before linting/testing/building
-2. **Use pipenv for Python**: Never use pip directly for this project's dependencies
+2. **Use uv for Python**: Never use pip directly for this project's dependencies
 3. **Enable corepack for yarn**: Always run `corepack enable` before yarn commands
 4. **Work in appropriate directories**: `cd api/` for backend changes, `cd web/` for frontend
 5. **Test incrementally**: Run tests after each significant change to catch issues early
