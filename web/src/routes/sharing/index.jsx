@@ -1,32 +1,25 @@
 import styles from "./index.module.css";
 
-import { useState, useEffect, useCallback } from "react";
-import { useLoaderData, useNavigate, useSearchParams } from "react-router-dom";
+import { useState, useCallback, useRef } from "react";
+import { useLoaderData } from "react-router-dom";
 
 import ChatboxHeader from "@/components/ChatboxHeader";
 import { useSnackbar } from "@/contexts/snackbar/hook";
-import Pagination from "@/components/Pagination";
-import { useDynamicPageSize } from "@/hooks/useDynamicPageSize";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 
 // Local components
 import ShareCard from "./components/ShareCard";
 import EmptyState from "./components/EmptyState";
 
-// Constants
-const DYNAMIC_PAGE_SIZE_CONFIG = {
-    maxPageSize: 15,
-    itemSelector: '[data-list-item]',
-    minAvailableHeight: 160,
-    debounceMs: 120,
-};
-
 // API helper function
-const fetchShares = async (size, cursor = null) => {
+const fetchShares = async (size = null, cursor = null) => {
     const apiUrl = new URL("/api/shares", window.location.origin);
     if (cursor) {
         apiUrl.searchParams.set("cursor", cursor);
     }
-    apiUrl.searchParams.set("size", size.toString());
+    if (size) {
+        apiUrl.searchParams.set("size", size.toString());
+    }
 
     const response = await fetch(apiUrl.toString());
     if (!response.ok) {
@@ -35,34 +28,12 @@ const fetchShares = async (size, cursor = null) => {
     return response.json();
 };
 
-async function loader({ request }) {
-    const url = new URL(request.url);
-    const cursor = url.searchParams.get("cursor");
-    const size = url.searchParams.get("size");
-
-    // Initial load without size parameter - let component handle with dynamic sizing
-    if (!size) {
-        return {
-            shares: [],
-            pagination: null,
-            requestedSize: null,
-            isInitialLoad: true
-        };
-    }
-
-    // Navigation with known size - fetch data normally
+async function loader() {
     try {
-        const data = await fetchShares(size, cursor);
+        const data = await fetchShares();
         return {
             shares: data.items || [],
-            pagination: {
-                currentPage: data.current_page,
-                previousPage: data.previous_page,
-                nextPage: data.next_page,
-                total: null // Always null for cursor-based pagination
-            },
-            requestedSize: parseInt(size, 10),
-            isInitialLoad: false
+            nextCursor: data.next_page || null,
         };
     } catch (error) {
         throw new Error(`Failed to load shares: ${error.message}`);
@@ -71,74 +42,50 @@ async function loader({ request }) {
 
 const Sharing = () => {
     const loaderData = useLoaderData();
-    const { shares: initialShares, pagination: initialPagination, requestedSize, isInitialLoad } = loaderData;
+    const { shares: initialShares, nextCursor: initialCursor } = loaderData;
 
     // State
     const [shares, setShares] = useState(initialShares);
-    const [pagination, setPagination] = useState(initialPagination);
-    const [isLoading, setIsLoading] = useState(isInitialLoad);
+    const [nextCursor, setNextCursor] = useState(initialCursor);
+    const [isLoading, setIsLoading] = useState(false);
+    const loadMoreRef = useRef();
 
     // Hooks
     const { setSnackbar } = useSnackbar();
-    const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
-
-    // Dynamic page size calculation
-    const { pageSize, containerRef, isCalculated, recalculate } = useDynamicPageSize(DYNAMIC_PAGE_SIZE_CONFIG);
 
     // Memoized values
     const hasShares = shares.length > 0;
-    const shouldOptimizePage = isCalculated && !isInitialLoad && requestedSize && pageSize !== requestedSize;
+    const hasMore = !!nextCursor;
 
-    // Load shares with specified parameters
-    const loadShares = useCallback(async (size, cursor = null) => {
+    // Fetch more shares for infinite scrolling
+    const fetchMoreShares = useCallback(async () => {
+        if (isLoading || !hasMore) {
+            return;
+        }
+
         setIsLoading(true);
-
         try {
-            const data = await fetchShares(size, cursor);
-
-            setShares(data.items || []);
-            setPagination({
-                currentPage: data.current_page,
-                previousPage: data.previous_page,
-                nextPage: data.next_page,
-                total: null // Always null for cursor-based pagination
-            });
+            const data = await fetchShares(20, nextCursor);
+            setShares(current => [...current, ...(data.items || [])]);
+            setNextCursor(data.next_page || null);
         } catch (err) {
             setSnackbar({
                 open: true,
-                message: `Error loading shares: ${err.message}`,
+                message: `Error loading more shares: ${err.message}`,
                 severity: "error",
             });
         } finally {
             setIsLoading(false);
         }
-    }, [setSnackbar]);
+    }, [nextCursor, isLoading, hasMore, setSnackbar]);
 
-    // Handle navigation
-    const navigateToPage = useCallback((cursor) => {
-        const params = new URLSearchParams(searchParams);
-        if (cursor) {
-            params.set("cursor", cursor);
-        } else {
-            params.delete("cursor");
-        }
-        params.set("size", pageSize.toString());
-        navigate(`/sharing?${params.toString()}`);
-    }, [searchParams, pageSize, navigate]);
-
-    // Page navigation handlers
-    const goToNextPage = useCallback(() => {
-        if (pagination?.nextPage) {
-            navigateToPage(pagination.nextPage);
-        }
-    }, [pagination?.nextPage, navigateToPage]);
-
-    const goToPreviousPage = useCallback(() => {
-        if (pagination?.previousPage) {
-            navigateToPage(pagination.previousPage);
-        }
-    }, [pagination?.previousPage, navigateToPage]);
+    // Set up infinite scroll
+    useInfiniteScroll({
+        targetRef: loadMoreRef,
+        onLoadMore: fetchMoreShares,
+        isLoading,
+        hasMore,
+    });
 
     // Share actions
     const deleteShare = useCallback(async (shareId) => {
@@ -183,84 +130,40 @@ const Sharing = () => {
         }
     }, [setSnackbar]);
 
-    // Effects
-    // Handle initial load with dynamic page size
-    useEffect(() => {
-        if (isCalculated && isInitialLoad) {
-            loadShares(pageSize);
-        }
-    }, [isCalculated, isInitialLoad, pageSize, loadShares]);
-
-    // Update state when loader provides new data (navigation)
-    useEffect(() => {
-        if (!isInitialLoad && initialShares) {
-            setShares(initialShares);
-            setPagination(initialPagination);
-            setIsLoading(false);
-        }
-    }, [initialShares, initialPagination, isInitialLoad]);
-
-    // Recalculate page size when shares are rendered (to measure actual heights)
-    useEffect(() => {
-        if (hasShares && isCalculated) {
-            // Small delay to ensure DOM is updated
-            const timer = setTimeout(() => {
-                recalculate();
-            }, 100);
-            
-            return () => clearTimeout(timer);
-        }
-    }, [hasShares, isCalculated, recalculate, shares.length]);
-
-    // Handle page size optimization for existing data
-    useEffect(() => {
-        if (shouldOptimizePage) {
-            const newSearchParams = new URLSearchParams(searchParams);
-            newSearchParams.set("size", pageSize.toString());
-            newSearchParams.delete("cursor"); // Reset to first page with new size
-            navigate(`?${newSearchParams.toString()}`, { replace: true });
-        }
-    }, [shouldOptimizePage, searchParams, pageSize, navigate]);
-
     return (
-        <div className={styles.sharingContainer}>
+        <div className={`${styles.sharingContainer} scroll-box`}>
             <ChatboxHeader />
-            <div className={`${styles.sharingContent} ${isLoading ? styles.loading : ""}`} ref={containerRef}>
+            <div className={styles.sharingContent}>
                 <h1 className={styles.sharingTitle}>My Shares</h1>
                 <p className={styles.sharingInfo}>
-                    Your shared links will remain publicly accessible as long as the related conversation 
-                    is still saved in your chat history. If any part of the conversation is deleted, 
-                    its public link will also be removed. When you delete a link, the corresponding 
-                    conversation in your chat history is not deleted, nor is any content you may have 
+                    Your shared links will remain publicly accessible as long as the related conversation
+                    is still saved in your chat history. If any part of the conversation is deleted,
+                    its public link will also be removed. When you delete a link, the corresponding
+                    conversation in your chat history is not deleted, nor is any content you may have
                     posted on other websites.
                 </p>
 
-                {(!hasShares) ? (
+                {!hasShares ? (
                     <EmptyState />
                 ) : (
-                    <div className={styles.sharesSection}>
-                        <div className={styles.sharesList}>
-                            {shares.map((share) => (
-                                <ShareCard
-                                    key={share.id}
-                                    share={share}
-                                    onCopy={copyToClipboard}
-                                    onDelete={deleteShare}
-                                />
-                            ))}
-                        </div>
-
-                        {pagination && (
-                            <Pagination
-                                className={styles.paginationBottom}
-                                currentPage={pagination.currentPage}
-                                previousPage={pagination.previousPage}
-                                nextPage={pagination.nextPage}
-                                total={pagination.total}
-                                onPrevious={goToPreviousPage}
-                                onNext={goToNextPage}
+                    <div className={styles.sharesList}>
+                        {shares.map((share) => (
+                            <ShareCard
+                                key={share.id}
+                                share={share}
+                                onCopy={copyToClipboard}
+                                onDelete={deleteShare}
                             />
-                        )}
+                        ))}
+
+                        {/* Infinite scroll anchor */}
+                        <div ref={loadMoreRef} className={styles.loadMoreAnchor}>
+                            {isLoading ? (
+                                <div className={styles.spinner} />
+                            ) : (
+                                <div style={{ width: 24, height: 24, visibility: "hidden" }} />
+                            )}
+                        </div>
                     </div>
                 )}
             </div>
