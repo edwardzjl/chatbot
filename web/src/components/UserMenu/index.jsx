@@ -1,5 +1,6 @@
 import styles from "./index.module.css";
 
+import { useNavigate } from "react-router-dom";
 import Avatar from "@mui/material/Avatar";
 import ShareIcon from "@mui/icons-material/Share";
 
@@ -9,6 +10,7 @@ import { useUserProfile } from "@/contexts/user/hook";
 
 const UserMenu = () => {
     const { username, avatar } = useUserProfile();
+    const navigate = useNavigate();
 
     const handleLogout = async (e) => {
         e.preventDefault();
@@ -18,7 +20,7 @@ const UserMenu = () => {
     };
 
     const handleMyShares = () => {
-        window.location.href = "/sharing";
+        navigate("/sharing");
     };
 
     return (
