@@ -1,11 +1,10 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef } from "react";
 import PropTypes from "prop-types";
 
 import { HttpStreamContext } from "./index";
 
 
 export const HttpStreamProvider = ({ children }) => {
-    const [isReady, setIsReady] = useState(true); // HTTP is always "ready"
     const messageHandlers = useRef([]);
 
     const send = useCallback(async (message) => {
@@ -79,7 +78,7 @@ export const HttpStreamProvider = ({ children }) => {
     return (
         <HttpStreamContext.Provider
             value={{
-                ready: isReady,
+                ready: true,
                 send,
                 registerMessageHandler,
                 unregisterMessageHandler,
