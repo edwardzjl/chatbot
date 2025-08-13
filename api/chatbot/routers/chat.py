@@ -1,9 +1,11 @@
 import logging
 from functools import partial
+from typing import Any
 from uuid import UUID
 
 from fastapi import (
     APIRouter,
+    BackgroundTasks,
     HTTPException,
     Request,
 )
@@ -13,6 +15,7 @@ from langchain_core.messages.ai import UsageMetadata
 from langchain_core.runnables import Runnable, RunnableConfig
 from langgraph.graph.state import CompiledStateGraph
 from openai import RateLimitError
+from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from chatbot.dependencies import UserIdHeaderDep
@@ -61,26 +64,24 @@ async def chat_stream(
     agent_wrapper: AgentWrapperDep,
     smry_chain_wrapper: SmrChainWrapperDep,
     session_maker: SqlalchemySessionMakerDep,
+    background_tasks: BackgroundTasks,
 ):
     """HTTP streaming endpoint for chat interactions using Server-Sent Events."""
 
+    await validate_conversation_owner(session_maker, message.conversation, userid)
+    selected_model = message.additional_kwargs.get("model_name")
+    runnable_config: RunnableConfig = {
+        "run_name": "chat",
+        "metadata": {
+            "conversation_id": message.conversation,
+            "userid": userid,
+            "client_ip": get_client_ip(request),
+        },
+        "configurable": {"thread_id": message.conversation},
+    }
+
     async def generate_stream():
         try:
-            conv = await validate_conversation_owner(
-                session_maker, message.conversation, userid
-            )
-
-            runnable_config: RunnableConfig = {
-                "run_name": "chat",
-                "metadata": {
-                    "conversation_id": message.conversation,
-                    "userid": userid,
-                    "client_ip": get_client_ip(request),
-                },
-                "configurable": {"thread_id": message.conversation},
-            }
-
-            selected_model = message.additional_kwargs.get("model_name")
             async with agent_wrapper(selected_model) as agent:
                 async for msg, metadata in agent.astream(
                     input={"messages": [message.to_lc()]},
@@ -111,7 +112,12 @@ async def chat_stream(
                             usage_metadata,
                         )
 
-                conv = await update_conversation_last_message_at(session_maker, conv)
+                background_tasks.add_task(
+                    update_conv,
+                    session_maker,
+                    message.conversation,
+                    last_message_at=utcnow(),
+                )
 
                 # summarize if required
                 if message.additional_kwargs and message.additional_kwargs.get(
@@ -124,10 +130,12 @@ async def chat_stream(
                         runnable_config=runnable_config,
                     )
                     if title:
-                        conv.title = title
-                        async with session_maker() as session:
-                            conv = await session.merge(conv)
-                            await session.commit()
+                        background_tasks.add_task(
+                            update_conv,
+                            session_maker,
+                            message.conversation,
+                            title=title,
+                        )
 
                         info_message = InfoMessage(
                             conversation=message.conversation,
@@ -180,17 +188,6 @@ async def validate_conversation_owner(
     return conv
 
 
-async def update_conversation_last_message_at(
-    session_maker: async_sessionmaker[AsyncSession], conv: Conversation
-):
-    """Update the conversation's last_message_at timestamp."""
-    conv.last_message_at = utcnow()
-    async with session_maker() as session:
-        conv = await session.merge(conv)
-        await session.commit()
-    return conv
-
-
 async def generate_conversation_title(
     agent: CompiledStateGraph,
     smry_chain_wrapper: partial[Runnable],
@@ -226,3 +223,19 @@ def update_usage_metrics(
         user_id=userid,
         model_name=model_name,
     ).inc(usage_metadata["output_tokens"])
+
+
+async def update_conv(
+    session_maker: async_sessionmaker[AsyncSession],
+    conv_id: UUID,
+    **fields: Any,
+) -> None:
+    """Update arbitrary fields of a conversation."""
+    if not fields:
+        return  # nothing to update
+
+    async with session_maker() as session:
+        await session.execute(
+            update(Conversation).where(Conversation.id == conv_id).values(**fields)
+        )
+        await session.commit()
