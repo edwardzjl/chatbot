@@ -1,10 +1,5 @@
 /* Sharing page styles */
 .sharingContainer {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    height: 100vh;
-    background-color: var(--bg-secondary);
     overflow-y: auto;
 }
 

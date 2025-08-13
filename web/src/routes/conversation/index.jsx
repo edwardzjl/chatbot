@@ -3,7 +3,6 @@ import styles from "./index.module.css";
 import { useEffect } from "react";
 import { redirect, useLoaderData, useNavigation } from "react-router-dom";
 
-import ChatboxHeader from "@/components/ChatboxHeader";
 import ChatLog from "@/components/ChatLog";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
@@ -154,8 +153,7 @@ const Conversation = () => {
     };
 
     return (
-        <section className={styles.chatbox}>
-            <ChatboxHeader />
+        <>
             <ChatLog className={navigation.state === "loading" ? styles.loading : ""}>
                 {/* We ignore system messages when displaying. */}
                 {conversation && currentConv?.messages?.filter(message => rendering_messages.has(message.type)).map((message, index) => (
@@ -166,7 +164,7 @@ const Conversation = () => {
                 <ChatInput onSubmit={sendMessage} />
                 <div className={styles.footer}>Chatbot can make mistakes. Consider checking important information.</div>
             </div>
-        </section>
+        </>
     );
 }
 
