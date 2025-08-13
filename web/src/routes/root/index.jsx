@@ -11,6 +11,7 @@ import { useConversations } from "@/contexts/conversation/hook";
 import { useCurrentConv } from "@/contexts/message/hook";
 import { useWebsocket } from "@/contexts/websocket/hook";
 
+import ChatboxHeader from "@/components/ChatboxHeader";
 import ShareConvDialog from "@/components/dialogs/ShareConvDialog";
 import ConvSharedDialog from "@/components/dialogs/ConvSharedDialog";
 import DeleteConvDialog from "@/components/dialogs/DeleteConvDialog";
@@ -33,7 +34,7 @@ async function action({ request }) {
 const Root = () => {
     const { dispatch: dispatchConv } = useConversations();
 
-    const { snackbar, setSnackbar, closeSnackbar  } = useSnackbar();
+    const { snackbar, setSnackbar, closeSnackbar } = useSnackbar();
     const { dispatch } = useCurrentConv();
     const { registerMessageHandler, unregisterMessageHandler } = useWebsocket();
 
@@ -61,7 +62,7 @@ const Root = () => {
                 break;
             case "info":
                 if (message.content.type === "title-generated") {
-                    dispatchConv({ type: "renamed", conv: {id: message.conversation, title: message.content.payload} });
+                    dispatchConv({ type: "renamed", conv: { id: message.conversation, title: message.content.payload } });
                 } else {
                     console.debug("unhandled info message", message);
                 }
@@ -94,7 +95,10 @@ const Root = () => {
     return (
         <div className={styles.App}>
             <Sidebar />
-            <Outlet />
+            <section className={styles.chatbox}>
+                <ChatboxHeader />
+                <Outlet />
+            </section>
             <ShareConvDialog id="share-conv-dialog" />
             <ConvSharedDialog id="conv-shared-dialog" />
             <DeleteConvDialog id="del-conv-dialog" />

@@ -3,7 +3,6 @@ import styles from "./index.module.css";
 import { useState, useCallback, useRef } from "react";
 import { useLoaderData } from "react-router-dom";
 
-import ChatboxHeader from "@/components/ChatboxHeader";
 import { useSnackbar } from "@/contexts/snackbar/hook";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 
@@ -132,7 +131,6 @@ const Sharing = () => {
 
     return (
         <div className={`${styles.sharingContainer} scroll-box`}>
-            <ChatboxHeader />
             <div className={styles.sharingContent}>
                 <h1 className={styles.sharingTitle}>My Shares</h1>
                 <p className={styles.sharingInfo}>

@@ -2,7 +2,6 @@ import styles from './index.module.css';
 
 import { useNavigate } from "react-router-dom";
 
-import ChatboxHeader from "@/components/ChatboxHeader";
 import ChatInput from "@/components/ChatInput";
 
 import { useUserProfile } from "@/contexts/user/hook";
@@ -36,8 +35,7 @@ const Conversation = () => {
     };
 
     return (
-        <section className={styles.chatbox}>
-            <ChatboxHeader />
+        <>
             <div className={styles.welcomeContainer}>
                 <div className={styles.welcome}>{username ? `${username}, hello!` : "Hello!"}</div >
                 <div className={styles.welcome}>How can I help you today?</div >
@@ -47,7 +45,7 @@ const Conversation = () => {
                 <ChatInput onSubmit={handleSubmit} />
                 <div className={styles.footer}>Chatbot can make mistakes. Consider checking important information.</div>
             </div>
-        </section>
+        </>
     );
 }
 
