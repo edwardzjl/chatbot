@@ -49,7 +49,6 @@ async function loader({ params }) {
  *   Also reorders conversations based on the latest message timestamp.
  *
  * UI Components:
- * - ChatboxHeader: Displays the header for the chatbox.
  * - ChatLog: Renders a scrollable area containing the chat messages.
  * - ChatMessage: Renders individual chat messages, excluding system messages.
  * - ChatInput: Provides a text input field for sending messages.
