@@ -79,7 +79,6 @@ export const HttpStreamProvider = ({ children }) => {
     return (
         <HttpStreamContext.Provider
             value={{
-                ready: true,
                 send,
                 registerMessageHandler,
                 unregisterMessageHandler,

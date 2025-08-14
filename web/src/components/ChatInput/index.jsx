@@ -13,7 +13,6 @@ import PreviewImage from "@/components/PreviewImage";
 
 import { useConfig } from "@/contexts/config/hook";
 import { useSnackbar } from "@/contexts/snackbar/hook";
-import { useHttpStream } from "@/contexts/httpstream/hook";
 
 import { toLocalISOString } from "@/commons";
 
@@ -58,7 +57,6 @@ import { uploadFile } from "./utils";
  */
 const ChatInput = ({ onSubmit }) => {
     const params = useParams();
-    const { ready } = useHttpStream();
     const { setSnackbar } = useSnackbar();
     const { models, selectedModel } = useConfig();
 
@@ -316,7 +314,7 @@ const ChatInput = ({ onSubmit }) => {
                         onChange={handleFileChange}
                         style={{ display: "none" }}
                     />
-                    <button disabled={!ready} className={`${styles.inputButton} ${styles.submitButton}`} type="submit" aria-label="send message">
+                    <button className={`${styles.inputButton} ${styles.submitButton}`} type="submit" aria-label="send message">
                         <SendRoundedIcon sx={{ fontSize: "1.5rem" }} />
                     </button>
                 </div>
