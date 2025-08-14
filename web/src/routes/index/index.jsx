@@ -10,7 +10,7 @@ import { useConversations } from "@/contexts/conversation/hook";
 import { DEFAULT_CONV_TITLE } from "@/commons";
 
 
-const Conversation = () => {
+const Index = () => {
     const { username } = useUserProfile();
     const { dispatch } = useConversations();
     const navigate = useNavigate();
@@ -25,7 +25,6 @@ const Conversation = () => {
         });
         const conversation = await response.json();
         const payload = {
-            conversation: conversation.id,
             from: username,
             ...message,
         };
@@ -49,4 +48,4 @@ const Conversation = () => {
     );
 }
 
-export default Conversation;
+export default Index;

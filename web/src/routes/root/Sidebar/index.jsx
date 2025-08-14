@@ -3,12 +3,12 @@ import styles from "./index.module.css";
 import { useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import MailOutlineIcon from "@mui/icons-material/MailOutline";
+import MapsUgcOutlinedIcon from "@mui/icons-material/MapsUgcOutlined";
 import MenuIcon from "@mui/icons-material/Menu";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import MenuOpenOutlinedIcon from "@mui/icons-material/MenuOpenOutlined";
 
 import { useConversations } from "@/contexts/conversation/hook";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
@@ -19,7 +19,7 @@ import ChatTab from "../ChatTab";
 const Sidebar = () => {
     const { groupedConvsArray: convs, fetchMoreConvs, isLoading, hasMore } = useConversations();
     const loadMoreRef = useRef();
-    
+
     // Check if device is mobile on initial load
     const [isCollapsed, setIsCollapsed] = useState(() => {
         if (typeof window !== 'undefined') {
@@ -62,7 +62,7 @@ const Sidebar = () => {
                     title="New Chat"
                     aria-label="New Chat"
                 >
-                    <AddOutlinedIcon />
+                    <MapsUgcOutlinedIcon />
                     {!isCollapsed && "New Chat"}
                 </button>
                 <button
@@ -71,7 +71,7 @@ const Sidebar = () => {
                     aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
                     title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
                 >
-                    {isCollapsed ? <MenuIcon /> : <ChevronLeftIcon />}
+                    {isCollapsed ? <MenuIcon /> : <MenuOpenOutlinedIcon />}
                 </button>
             </div>
             {!isCollapsed && (

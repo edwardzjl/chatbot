@@ -1,9 +1,9 @@
 import styles from "./index.module.css";
 
 import ThemeSelector from "@/components/ThemeSelector";
-import UserMenu from "@/components/UserMenu";
 
 import ModelSelector from "./ModelSelector";
+import UserMenu from "./UserMenu";
 
 const ChatboxHeader = () => {
     return (
