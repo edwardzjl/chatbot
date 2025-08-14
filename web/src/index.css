@@ -118,25 +118,3 @@ button:focus-visible {
     background-color: transparent;
   }
 }
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    color: var(--gray-3);
-    background-color: var(--gray-8);
-
-    --text-primary: var(--gray-3);
-    --bg-primary: var(--gray-8);
-    --border-color: var(--gray-6);
-
-    --text-secondary: var(--gray-4);
-    --bg-secondary: var(--gray-7);
-
-    --text-3: var(--gray-6);
-  }
-  a:hover {
-    color: #535bf2;
-  }
-  button {
-    background-color: #1a1a1a;
-  }
-}
