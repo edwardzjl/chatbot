@@ -2,9 +2,11 @@ import styles from "../index.module.css";
 
 import { memo } from "react";
 import PropTypes from "prop-types";
-import Icon from "@mui/material/Icon";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 
 import { formatTimestamp } from "@/commons";
+
 
 const ShareCard = memo(({ share, onCopy, onDelete }) => {
     return (
@@ -32,7 +34,7 @@ const ShareCard = memo(({ share, onCopy, onDelete }) => {
                     aria-label="Copy share URL"
                     title="Copy share URL"
                 >
-                    <Icon baseClassName="material-symbols-outlined">content_copy</Icon>
+                    <ContentCopyIcon />
                 </button>
                 <button
                     className={`${styles.actionButton} ${styles.actionButtonDanger}`}
@@ -40,7 +42,7 @@ const ShareCard = memo(({ share, onCopy, onDelete }) => {
                     aria-label="Delete share"
                     title="Delete share"
                 >
-                    <Icon baseClassName="material-symbols-outlined">delete</Icon>
+                    <DeleteOutlinedIcon />
                 </button>
             </div>
         </div>
@@ -66,6 +68,6 @@ ShareCard.propTypes = {
 };
 
 
-ShareCard.displayName = 'ShareCard';
+ShareCard.displayName = "ShareCard";
 
 export default ShareCard;
