@@ -197,13 +197,26 @@
         left: -100%;
     }
 
-    /* Floating action buttons on mobile when collapsed */
-    .sidebar.collapsed .toggleButton {
+    /* Floating action buttons on mobile when collapsed - horizontal layout */
+    .sidebar.collapsed .newChatButton {
         display: flex !important;
         justify-content: center;
         position: fixed !important;
         top: 10px;
         left: 10px;
+        z-index: 1001;
+        width: 2.5rem;
+        height: 2.5rem;
+        background-color: var(--bg-secondary);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .sidebar.collapsed .toggleButton {
+        display: flex !important;
+        justify-content: center;
+        position: fixed !important;
+        top: 10px;
+        left: 65px;
         width: 2.5rem;
         height: 2.5rem;
         z-index: 1001;
@@ -211,17 +224,4 @@
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     }
 
-    .sidebar.collapsed .newChatButton {
-        display: flex !important;
-        justify-content: center;
-        flex: none;
-        position: fixed !important;
-        top: 65px; /* Position below toggle button */
-        left: 10px;
-        z-index: 1001;
-        width: 2.5rem;
-        height: 2.5rem;
-        background-color: var(--bg-secondary);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    }
 }
