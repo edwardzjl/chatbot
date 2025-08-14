@@ -1,4 +1,4 @@
-import styles from "../index.module.css";
+import styles from "./index.module.css";
 
 import { memo } from "react";
 import PropTypes from "prop-types";
