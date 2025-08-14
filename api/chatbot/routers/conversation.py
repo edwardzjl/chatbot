@@ -1,3 +1,4 @@
+import logging
 from typing import Annotated
 
 from fastapi import APIRouter, HTTPException
@@ -24,6 +25,9 @@ from chatbot.schemas import (
     CreateConversation,
     UpdateConversation,
 )
+
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/conversations")
 
@@ -98,7 +102,12 @@ async def delete_conversation(
     userid: UserIdHeaderDep,
     session: SqlalchemySessionDep,
 ) -> None:
-    conv: ORMConversation = await session.get(ORMConversation, conversation_id)
+    try:
+        conv_uuid = UUID(conversation_id)
+    except ValueError:
+        logger.warning("User requested invalid conversation ID: %s", conversation_id)
+        return
+    conv: ORMConversation = await session.get(ORMConversation, conv_uuid)
     if not conv:
         return
     if conv.owner != userid:
