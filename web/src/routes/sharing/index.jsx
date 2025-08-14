@@ -6,9 +6,9 @@ import { useLoaderData } from "react-router-dom";
 import { useSnackbar } from "@/contexts/snackbar/hook";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 
-// Local components
-import ShareCard from "./components/ShareCard";
-import EmptyState from "./components/EmptyState";
+import ShareCard from "./ShareCard";
+import EmptyState from "./EmptyState";
+
 
 // API helper function
 const fetchShares = async (size = null, cursor = null) => {
