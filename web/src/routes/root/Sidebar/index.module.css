@@ -10,34 +10,58 @@
     overflow: hidden;
 }
 
-.sidebar.collapsed {
-    width: 3rem;
-    padding: 10px 5px;
-}
-
 .sidebarHeader {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: 5px;
 }
 
 .toggleButton {
-    height: 2rem;
-    margin: 2px;
-    padding: 3px;
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
-    border: none;
-    border-radius: 5px;
-    transition: ease 0.25s all;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
+    width: 2rem;
+    height: 2rem;
+    margin: 2px;
+    padding: 3px;
+    color: var(--text-primary);
+    background-color: var(--bg-primary);
+    border: none;
+    border-radius: 5px;
+    transition: ease 0.25s all;
 }
 
-.desktopToggle {
+.newChatButton {
     display: flex;
+    flex: 1;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+    height: 2rem;
+    margin: 2px;
+    padding: 3px;
+    color: var(--text-primary);
+    background-color: var(--bg-primary);
+    border: none;
+    border-radius: 5px;
+    transition: ease 0.25s all;
+}
+
+.sidebar.collapsed {
+    width: 3rem;
+
+    .sidebarHeader {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .toggleButton {
+        order: 1;
+    }
+
+    .newChatButton {
+        order: 2;
+    }
 }
 
 .mobileFloatingToggle {
@@ -70,7 +94,7 @@
     gap: 0.5rem;
 }
 
-.sidebarButton.iconOnly {
+.iconButton {
     justify-content: center;
     gap: 0;
 }

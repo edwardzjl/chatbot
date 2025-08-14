@@ -76,21 +76,21 @@ const Sidebar = () => {
             <aside className={`${styles.sidebar} ${isCollapsed && styles.collapsed}`}>
                 <div className={styles.sidebarHeader}>
                     <button
-                        className={`${styles.toggleButton} ${styles.desktopToggle}`}
-                        onClick={toggleSidebar}
-                        aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-                        title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-                    >
-                        {isCollapsed ? <MenuIcon /> : <ChevronLeftIcon />}
-                    </button>
-                    <button
-                        className={`${styles.sidebarButton} ${isCollapsed && styles.iconOnly}`}
+                        className={`${styles.newChatButton} ${isCollapsed && styles.iconButton}`}
                         onClick={() => navigate("/")}
                         title="New Chat"
                         aria-label="New Chat"
                     >
                         <AddOutlinedIcon />
                         {!isCollapsed && "New Chat"}
+                    </button>
+                    <button
+                        className={`${styles.toggleButton} ${styles.iconButton}`}
+                        onClick={toggleSidebar}
+                        aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                        title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                    >
+                        {isCollapsed ? <MenuIcon /> : <ChevronLeftIcon />}
                     </button>
                 </div>
                 {!isCollapsed && (
