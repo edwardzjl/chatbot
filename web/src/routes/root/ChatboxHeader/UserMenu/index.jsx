@@ -2,6 +2,8 @@ import styles from "./index.module.css";
 
 import { useNavigate } from "react-router-dom";
 import Avatar from "@mui/material/Avatar";
+
+import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import ShareIcon from "@mui/icons-material/Share";
 
 import { Dropdown, DropdownButton, DropdownMenu } from "@/components/DropdownMenu";
@@ -45,7 +47,7 @@ const UserMenu = () => {
                         onClick={handleMyShares}
                         aria-label="My Shares"
                     >
-                        <ShareIcon sx={{ fontSize: 16, marginRight: 1 }} />
+                        <ShareIcon sx={{ marginRight: 1 }} />
                         <span className={styles.themeMenuText}>My Shares</span>
                     </button>
                 </li>
@@ -55,6 +57,7 @@ const UserMenu = () => {
                         onClick={handleLogout}
                         aria-label="Logout"
                     >
+                        <LogoutOutlinedIcon sx={{ marginRight: 1 }} />
                         <span className={styles.themeMenuText}>Logout</span>
                     </button>
                 </li>
