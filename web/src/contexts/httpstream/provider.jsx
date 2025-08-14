@@ -8,7 +8,6 @@ export const HttpStreamProvider = ({ children }) => {
     const messageHandlers = useRef([]);
 
     const send = useCallback(async (url, message) => {
-        console.log(url)
         try {
             const response = await fetch(url, {
                 method: "POST",
