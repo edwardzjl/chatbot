@@ -29,31 +29,12 @@ from chatbot.schemas import (
     InfoMessage,
     HumanChatMessage,
 )
-from chatbot.utils import utcnow
+from chatbot.utils import get_client_ip, utcnow
 
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/chat")
-
-
-def get_client_ip(request: Request) -> str:
-    """Extract client IP address from request, considering proxy headers."""
-    # Check X-Forwarded-For header (common when behind reverse proxy/load balancer)
-    if forwarded_for := request.headers.get("x-forwarded-for"):
-        # X-Forwarded-For can contain multiple IPs, take the first one (original client)
-        return forwarded_for.split(",")[0].strip()
-
-    # Check X-Real-IP header (common with nginx)
-    if real_ip := request.headers.get("x-real-ip"):
-        return real_ip.strip()
-
-    # Fall back to direct connection IP
-    if request.client and request.client.host:
-        return request.client.host
-
-    # Final fallback
-    return "unknown"
 
 
 @router.post("/stream")

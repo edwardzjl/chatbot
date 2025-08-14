@@ -1,6 +1,8 @@
 import ipaddress
 from datetime import datetime, timezone
 
+from fastapi import Request
+
 
 def utcnow():
     """
@@ -27,3 +29,22 @@ def is_public_ip(ip_str: str):
 def is_valid_positive_int(value: int | None) -> bool:
     """Helper to check if a value is a positive integer."""
     return isinstance(value, int) and value > 0
+
+
+def get_client_ip(request: Request) -> str:
+    """Extract client IP address from request, considering proxy headers."""
+    # Check X-Forwarded-For header (common when behind reverse proxy/load balancer)
+    if forwarded_for := request.headers.get("x-forwarded-for"):
+        # X-Forwarded-For can contain multiple IPs, take the first one (original client)
+        return forwarded_for.split(",")[0].strip()
+
+    # Check X-Real-IP header (common with nginx)
+    if real_ip := request.headers.get("x-real-ip"):
+        return real_ip.strip()
+
+    # Fall back to direct connection IP
+    if request.client and request.client.host:
+        return request.client.host
+
+    # Final fallback
+    return "unknown"
