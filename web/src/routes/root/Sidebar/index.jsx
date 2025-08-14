@@ -55,24 +55,6 @@ const Sidebar = () => {
 
     return (
         <>
-            {/* Mobile floating toggle button */}
-            <button
-                className={`${styles.toggleButton} ${styles.mobileFloatingToggle} ${isCollapsed && styles.collapsed}`}
-                onClick={toggleSidebar}
-                aria-label="Expand sidebar"
-                title="Expand sidebar"
-            >
-                <MenuIcon />
-            </button>
-            {/* Mobile floating new chat button */}
-            <button
-                className={`${styles.sidebarButton} ${styles.mobileFloatingNewChat} ${isCollapsed && styles.collapsed}`}
-                onClick={() => navigate("/")}
-                aria-label="New Chat"
-                title="New Chat"
-            >
-                <AddOutlinedIcon />
-            </button>
             <aside className={`${styles.sidebar} ${isCollapsed && styles.collapsed}`}>
                 <div className={styles.sidebarHeader}>
                     <button

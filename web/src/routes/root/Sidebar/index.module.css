@@ -64,16 +64,6 @@
     }
 }
 
-.mobileFloatingToggle {
-    /* Hidden by default */
-    display: none !important;
-}
-
-.mobileFloatingNewChat {
-    /* Hidden by default */
-    display: none !important;
-}
-
 .sidebar a {
     color: unset;
     text-decoration: none;
@@ -180,39 +170,45 @@
         position: absolute;
         z-index: 1000;
         height: 100%;
-        transform: translateX(0);
-        transition: transform 0.3s ease;
+        /*
+         * NOTE: We use left positioning instead of transform: translateX() 
+         * because transform creates a new stacking context that interferes 
+         * with fixed positioning of child elements (the floating buttons)
+         */
+        left: 0;
+        transition: left 0.3s ease;
     }
 
     /* Totally hide sidebar on small screens */
     .sidebar.collapsed {
-        transform: translateX(-100%);
-    }
+        left: -100%;
 
-    /* Mobile floating toggle button - only show when collapsed */
-    .mobileFloatingToggle.collapsed {
-        display: flex !important;
-        position: fixed;
-        top: 10px;
-        left: 10px;
-        z-index: 1001;
-        background-color: var(--bg-secondary);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        width: 2.5rem;
-        height: 2.5rem;
-    }
+        .toggleButton {
+            position: fixed !important;
+            top: 10px;
+            left: 10px;
+            z-index: 1001;
+            background-color: var(--bg-secondary);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex !important;
+        }
 
-    /* Mobile floating new chat button - only show when collapsed */
-    .mobileFloatingNewChat.collapsed {
-        display: flex !important;
-        position: fixed;
-        top: 65px; /* Position it below the toggle button */
-        left: 10px; /* Same left position as toggle button */
-        z-index: 1001;
-        background-color: var(--bg-secondary);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        width: 2.5rem;
-        height: 2.5rem;
-        justify-content: center;
+        .newChatButton {
+            position: fixed !important;
+            top: 65px;
+            /* Position below toggle button */
+            left: 10px;
+            z-index: 1001;
+            background-color: var(--bg-secondary);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            width: 2.5rem;
+            height: 2.5rem;
+            justify-content: center;
+            flex: none;
+            /* Reset flex since we're using fixed positioning */
+            display: flex !important;
+        }
     }
 }
