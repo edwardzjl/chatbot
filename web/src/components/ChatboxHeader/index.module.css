@@ -21,6 +21,6 @@
 /* Add space for mobile toggle button */
 @media (max-width: 768px) {
     .chatboxHeader {
-        padding-left: 4rem; /* Space for the 2.5rem toggle button + margin */
+        padding-left: 6rem; /* Space for the buttons */
     }
 }

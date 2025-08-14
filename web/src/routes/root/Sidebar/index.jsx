@@ -54,85 +54,65 @@ const Sidebar = () => {
     };
 
     return (
-        <>
-            {/* Mobile floating toggle button */}
-            <button
-                className={`${styles.toggleButton} ${styles.mobileFloatingToggle} ${isCollapsed && styles.collapsed}`}
-                onClick={toggleSidebar}
-                aria-label="Expand sidebar"
-                title="Expand sidebar"
-            >
-                <MenuIcon />
-            </button>
-            {/* Mobile floating new chat button */}
-            <button
-                className={`${styles.sidebarButton} ${styles.mobileFloatingNewChat} ${isCollapsed && styles.collapsed}`}
-                onClick={() => navigate("/")}
-                aria-label="New Chat"
-                title="New Chat"
-            >
-                <AddOutlinedIcon />
-            </button>
-            <aside className={`${styles.sidebar} ${isCollapsed && styles.collapsed}`}>
-                <div className={styles.sidebarHeader}>
-                    <button
-                        className={`${styles.toggleButton} ${styles.desktopToggle}`}
-                        onClick={toggleSidebar}
-                        aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-                        title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-                    >
-                        {isCollapsed ? <MenuIcon /> : <ChevronLeftIcon />}
-                    </button>
-                    <button
-                        className={`${styles.sidebarButton} ${isCollapsed && styles.iconOnly}`}
-                        onClick={() => navigate("/")}
-                        title="New Chat"
-                        aria-label="New Chat"
-                    >
-                        <AddOutlinedIcon />
-                        {!isCollapsed && "New Chat"}
-                    </button>
-                </div>
-                {!isCollapsed && (
-                    <>
-                        <nav className={`${styles.convList} scroll-box`}>
-                            {convs && convs
-                                .filter(group => group.conversations && group.conversations.length > 0) // Filter out empty lists
-                                .map(group => (
-                                    <div key={group.key}>
-                                        <div className={styles.sidebarDateGroup}>{group.key}</div>
-                                        {group.conversations.map((conv) => (
-                                            <ChatTab key={conv.id} chat={conv} />
-                                        ))}
-                                    </div>
-                                ))}
-                            <div ref={loadMoreRef} className={styles.loadMoreAnchor}>
-                                {isLoading ? (
-                                    <div className={styles.spinner} />
-                                ) : (
-                                    // placeholder
-                                    <div style={{ width: 24, height: 24, visibility: "hidden" }} />
-                                )}
-                            </div>
-                        </nav>
-                        <hr className={styles.sidebarBottom} />
-                        <div className={styles.sidebarBottomGroup}>
-                            <div className={styles.sidebarBottomGroupItem}>
-                                <InfoOutlinedIcon />
-                            </div>
-                            <div className={styles.sidebarBottomGroupItem}>
-                                <a href="https://github.com/edwardzjl/chatbot" target="_blank" rel="noreferrer"> <GitHubIcon /> </a>
-                            </div>
-                            <div className={styles.sidebarBottomGroupItem}>
-                                <a href="mailto:jameszhou2108@hotmail.com">
-                                    <MailOutlineIcon />
-                                </a>
-                            </div>
+        <aside className={`${styles.sidebar} ${isCollapsed && styles.collapsed}`}>
+            <div className={styles.sidebarHeader}>
+                <button
+                    className={`${styles.newChatButton} ${isCollapsed && styles.iconButton}`}
+                    onClick={() => navigate("/")}
+                    title="New Chat"
+                    aria-label="New Chat"
+                >
+                    <AddOutlinedIcon />
+                    {!isCollapsed && "New Chat"}
+                </button>
+                <button
+                    className={`${styles.toggleButton} ${styles.iconButton}`}
+                    onClick={toggleSidebar}
+                    aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                    title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                >
+                    {isCollapsed ? <MenuIcon /> : <ChevronLeftIcon />}
+                </button>
+            </div>
+            {!isCollapsed && (
+                <>
+                    <nav className={`${styles.convList} scroll-box`}>
+                        {convs && convs
+                            .filter(group => group.conversations && group.conversations.length > 0) // Filter out empty lists
+                            .map(group => (
+                                <div key={group.key}>
+                                    <div className={styles.sidebarDateGroup}>{group.key}</div>
+                                    {group.conversations.map((conv) => (
+                                        <ChatTab key={conv.id} chat={conv} />
+                                    ))}
+                                </div>
+                            ))}
+                        <div ref={loadMoreRef} className={styles.loadMoreAnchor}>
+                            {isLoading ? (
+                                <div className={styles.spinner} />
+                            ) : (
+                                // placeholder
+                                <div style={{ width: 24, height: 24, visibility: "hidden" }} />
+                            )}
                         </div>
-                    </>
-                )}
-            </aside>
-        </>
+                    </nav>
+                    <hr className={styles.sidebarBottom} />
+                    <div className={styles.sidebarBottomGroup}>
+                        <div className={styles.sidebarBottomGroupItem}>
+                            <InfoOutlinedIcon />
+                        </div>
+                        <div className={styles.sidebarBottomGroupItem}>
+                            <a href="https://github.com/edwardzjl/chatbot" target="_blank" rel="noreferrer"> <GitHubIcon /> </a>
+                        </div>
+                        <div className={styles.sidebarBottomGroupItem}>
+                            <a href="mailto:jameszhou2108@hotmail.com">
+                                <MailOutlineIcon />
+                            </a>
+                        </div>
+                    </div>
+                </>
+            )}
+        </aside>
     );
 };
 

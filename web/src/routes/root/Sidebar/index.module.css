@@ -1,3 +1,5 @@
+/* ===== SIDEBAR LAYOUT ===== */
+
 .sidebar {
     width: 16rem;
     max-height: 100%;
@@ -12,67 +14,89 @@
 
 .sidebar.collapsed {
     width: 3rem;
-    padding: 10px 5px;
 }
 
 .sidebarHeader {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: 5px;
 }
 
+.sidebar.collapsed .sidebarHeader {
+    flex-direction: column;
+    align-items: center;
+}
+
+/* ===== SPECIFIC BUTTONS ===== */
+
 .toggleButton {
-    height: 2rem;
-    margin: 2px;
-    padding: 3px;
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
-    border: none;
-    border-radius: 5px;
-    transition: ease 0.25s all;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
+    height: 2rem;
+    width: 2rem;
+    margin: 2px;
+    padding: 3px;
+    color: var(--text-primary);
+    background-color: var(--bg-primary);
+    border: none;
+    border-radius: 5px;
+    transition: ease 0.25s all;
+    flex-shrink: 0;
 }
 
-.desktopToggle {
+.newChatButton {
     display: flex;
+    align-items: center;
+    flex-direction: row;
+    gap: 0.5rem;
+    height: 2rem;
+    margin: 2px;
+    padding: 3px;
+    color: var(--text-primary);
+    background-color: var(--bg-primary);
+    border: none;
+    border-radius: 5px;
+    transition: ease 0.25s all;
+    flex: 1;
 }
 
-.mobileFloatingToggle {
-    /* Hidden by default */
-    display: none !important;
+/* Button order in collapsed state */
+.sidebar.collapsed .toggleButton {
+    order: 1;
 }
 
-.mobileFloatingNewChat {
-    /* Hidden by default */
-    display: none !important;
+.sidebar.collapsed .newChatButton {
+    order: 2;
 }
+
+.sidebarButton {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    gap: 0.5rem;
+    height: 2rem;
+    margin: 2px;
+    padding: 3px;
+    color: var(--text-primary);
+    background-color: var(--bg-primary);
+    border: none;
+    border-radius: 5px;
+    transition: ease 0.25s all;
+    flex: 1;
+}
+
+.iconButton {
+    justify-content: center;
+    gap: 0;
+    flex: none;
+}
+
+/* ===== CONTENT AREAS ===== */
 
 .sidebar a {
     color: unset;
     text-decoration: none;
-}
-
-.sidebarButton {
-    height: 2rem;
-    margin: 2px;
-    padding: 3px;
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
-    border: none;
-    border-radius: 5px;
-    transition: ease 0.25s all;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.sidebarButton.iconOnly {
-    justify-content: center;
-    gap: 0;
 }
 
 .convList {
@@ -100,12 +124,13 @@
     text-align: center;
 }
 
+/* ===== LOADING SPINNER ===== */
+
 .spinner {
     width: 24px;
     height: 24px;
     border: 3px solid #ccc;
     border-top: 3px solid #3498db;
-    /* TODO: change this */
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin: 0 auto;
@@ -120,6 +145,8 @@
         transform: rotate(360deg);
     }
 }
+
+/* ===== BOTTOM SECTION ===== */
 
 .sidebarBottom {
     margin-top: auto;
@@ -150,45 +177,51 @@
     margin: 0.25rem;
 }
 
-/* Responsive behavior for mobile */
+/* ===== MOBILE RESPONSIVE ===== */
+
 @media (max-width: 768px) {
     .sidebar {
         position: absolute;
         z-index: 1000;
         height: 100%;
-        transform: translateX(0);
-        transition: transform 0.3s ease;
+        /*
+         * NOTE: We use left positioning instead of transform: translateX() 
+         * because transform creates a new stacking context that interferes 
+         * with fixed positioning of child elements (the floating buttons)
+         */
+        left: 0;
+        transition: left 0.3s ease;
     }
 
-    /* Totally hide sidebar on small screens */
     .sidebar.collapsed {
-        transform: translateX(-100%);
+        left: -100%;
     }
 
-    /* Mobile floating toggle button - only show when collapsed */
-    .mobileFloatingToggle.collapsed {
+    /* Floating action buttons on mobile when collapsed - horizontal layout */
+    .sidebar.collapsed .newChatButton {
         display: flex !important;
-        position: fixed;
+        justify-content: center;
+        position: fixed !important;
         top: 10px;
         left: 10px;
         z-index: 1001;
-        background-color: var(--bg-secondary);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         width: 2.5rem;
         height: 2.5rem;
+        background-color: var(--bg-secondary);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     }
 
-    /* Mobile floating new chat button - only show when collapsed */
-    .mobileFloatingNewChat.collapsed {
+    .sidebar.collapsed .toggleButton {
         display: flex !important;
-        position: fixed;
-        top: 65px; /* Position it below the toggle button */
-        left: 10px; /* Same left position as toggle button */
+        justify-content: center;
+        position: fixed !important;
+        top: 10px;
+        left: 65px;
+        width: 2.5rem;
+        height: 2.5rem;
         z-index: 1001;
         background-color: var(--bg-secondary);
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        width: 2.5rem;
-        height: 2.5rem;
-        justify-content: center;
     }
+
 }
