@@ -7,11 +7,11 @@ import MuiAlert from "@mui/material/Alert";
 
 import { useSnackbar } from "@/contexts/snackbar/hook";
 
-import ChatboxHeader from "@/components/ChatboxHeader";
 import ShareConvDialog from "@/components/dialogs/ShareConvDialog";
 import ConvSharedDialog from "@/components/dialogs/ConvSharedDialog";
 import DeleteConvDialog from "@/components/dialogs/DeleteConvDialog";
 
+import ChatboxHeader from "./ChatboxHeader";
 import Sidebar from "./Sidebar";
 
 
