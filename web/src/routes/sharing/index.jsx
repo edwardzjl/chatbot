@@ -28,20 +28,15 @@ const fetchShares = async (size = null, cursor = null) => {
 };
 
 async function loader() {
-    try {
-        const data = await fetchShares();
-        return {
-            shares: data.items || [],
-            nextCursor: data.next_page || null,
-        };
-    } catch (error) {
-        throw new Error(`Failed to load shares: ${error.message}`);
-    }
+    const data = await fetchShares();
+    return {
+        shares: data.items || [],
+        nextCursor: data.next_page || null,
+    };
 }
 
 const Sharing = () => {
-    const loaderData = useLoaderData();
-    const { shares: initialShares, nextCursor: initialCursor } = loaderData;
+    const { shares: initialShares, nextCursor: initialCursor } = useLoaderData();
 
     // State
     const [shares, setShares] = useState(initialShares);
@@ -53,7 +48,6 @@ const Sharing = () => {
     const { setSnackbar } = useSnackbar();
 
     // Memoized values
-    const hasShares = shares.length > 0;
     const hasMore = !!nextCursor;
 
     // Fetch more shares for infinite scrolling
@@ -92,17 +86,16 @@ const Sharing = () => {
             const response = await fetch(`/api/shares/${shareId}`, {
                 method: "DELETE",
             });
-
-            if (response.ok) {
-                setShares(current => current.filter(share => share.id !== shareId));
-                setSnackbar({
-                    open: true,
-                    message: "Share deleted successfully",
-                    severity: "success",
-                });
-            } else {
+            if (!response.ok) {
                 throw new Error(`Failed to delete share: ${response.statusText}`);
             }
+
+            setShares(current => current.filter(share => share.id !== shareId));
+            setSnackbar({
+                open: true,
+                message: "Share deleted successfully",
+                severity: "success",
+            });
         } catch (err) {
             setSnackbar({
                 open: true,
@@ -141,7 +134,7 @@ const Sharing = () => {
                     posted on other websites.
                 </p>
 
-                {!hasShares ? (
+                {!(shares.length > 0) ? (
                     <EmptyState />
                 ) : (
                     <div className={styles.sharesList}>
