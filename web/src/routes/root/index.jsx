@@ -1,6 +1,6 @@
 import styles from "./index.module.css";
 
-import { Outlet, redirect } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
@@ -19,13 +19,6 @@ const Alert = (props, ref) => {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 };
 
-
-async function action({ request }) {
-    if (request.method === "POST") {
-        const conversation = await request.json();
-        return redirect(`/conversations/${conversation.id}`);
-    }
-}
 
 const Root = () => {
     const { snackbar, closeSnackbar } = useSnackbar();
@@ -58,4 +51,3 @@ const Root = () => {
 }
 
 export default Root;
-Root.action = action;
