@@ -1,6 +1,6 @@
 import styles from "./index.module.css";
 
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import { redirect, useLoaderData, useNavigation } from "react-router-dom";
 
 import ChatLog from "@/components/ChatLog";
@@ -9,8 +9,9 @@ import ChatInput from "@/components/ChatInput";
 
 import { useConversations } from "@/contexts/conversation/hook";
 import { useCurrentConv } from "@/contexts/message/hook";
+import { useHttpStream } from "@/contexts/httpstream/hook";
+import { useSnackbar } from "@/contexts/snackbar/hook";
 import { useUserProfile } from "@/contexts/user/hook";
-import { useWebsocket } from "@/contexts/websocket/hook";
 
 
 async function loader({ params }) {
@@ -65,8 +66,9 @@ const Conversation = () => {
     const navigation = useNavigation();
     const { groupedConvsArray: convs, dispatch: dispatchConv } = useConversations();
     const { username } = useUserProfile();
-    const { send } = useWebsocket();
+    const { registerMessageHandler, unregisterMessageHandler, send } = useHttpStream();
     const { currentConv, dispatch } = useCurrentConv();
+    const { setSnackbar } = useSnackbar();
     // Only rendering messages of the following types
     const rendering_messages = new Set(["human", "ai", "AIMessageChunk"]);
 
@@ -82,6 +84,43 @@ const Conversation = () => {
             messages: conversation.messages,
         });
     }, [conversation, currentConv, dispatch]);
+
+    const sendMessage = useCallback(async (message, skipReordering = false) => {
+        const payload = {
+            from: username,
+            ...message,
+        };
+        send(`/api/conversations/${conversation.id}/messages`, payload);
+        // append user input to chatlog
+        dispatch({
+            type: "added",
+            convId: conversation.id,
+            message: payload,
+        });
+
+        // Skip reordering for init messages or when explicitly requested
+        if (skipReordering) {
+            return;
+        }
+
+        // re-order conversations
+        // NOTE: this will sometimes skip the update of last_message_at, which might cause issue in the future.
+        if (conversation.pinned && convs[0].key === "Pinned" && convs[0].conversations[0]?.id === conversation.id) {
+            return;
+        }
+        if (!conversation.pinned) {
+            if (convs[0].key === "Today" && convs[0].conversations[0]?.id === conversation.id) {
+                return;
+            }
+            if (convs[1].key === "Today" && convs[1].conversations[0]?.id === conversation.id) {
+                return;
+            }
+        }
+        dispatchConv({
+            type: "reordered",
+            conv: { ...conversation, last_message_at: message.sent_at },
+        });
+    }, [username, send, conversation, dispatch, convs, dispatchConv]);
 
     useEffect(() => {
         // `currentConv.id !== conversation.id` means that the `replaceAll` action is finished.
@@ -109,48 +148,63 @@ const Conversation = () => {
                 require_summarization: true,
             },
         };
-        send(toSend);
+        sendMessage(toSend, true); // true = skip reordering
         sessionStorage.removeItem(initMsgKey);
-        dispatch({
-            type: "added",
-            convId: conversation.id,
-            message: message,
-        });
-    }, [conversation, currentConv, dispatch, send]);
+    }, [conversation, currentConv, sendMessage]);
 
-    const sendMessage = async (message) => {
-        const payload = {
-            conversation: conversation.id,
-            from: username,
-            ...message,
-        };
-        // `send` may throw an `InvalidStateError` if `WebSocket.readyState` is `CONNECTING`.
-        // See <https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/send>
-        send(payload);
-        // append user input to chatlog
-        dispatch({
-            type: "added",
-            convId: conversation.id,
-            message: payload,
-        });
-        // re-order conversations
-        // NOTE: this will sometimes skip the update of last_message_at, which might cause issue in the future.
-        if (conversation.pinned && convs[0].key === "Pinned" && convs[0].conversations[0]?.id === conversation.id) {
+    const handleStreamMessage = useCallback((data) => {
+        if (data === null || data === undefined) {
             return;
         }
-        if (!conversation.pinned) {
-            if (convs[0].key === "Today" && convs[0].conversations[0]?.id === conversation.id) {
-                return;
+        try {
+            const message = JSON.parse(data);
+            switch (message.type) {
+            case "human":
+            case "ai":
+                dispatch({
+                    type: "updated",
+                    convId: conversation.id,
+                    message: message,
+                });
+                break;
+            case "AIMessageChunk":
+                dispatch({
+                    type: "appended",
+                    convId: conversation.id,
+                    message: message,
+                });
+                break;
+            case "info":
+                if (message.content.type === "title-generated") {
+                    dispatchConv({ type: "renamed", conv: { id: conversation.id, title: message.content.payload } });
+                } else {
+                    console.debug("unhandled info message", message);
+                }
+                break;
+            case "error":
+                setSnackbar({
+                    open: true,
+                    severity: "error",
+                    message: message.content,
+                });
+                break;
+            default:
+                console.warn("unknown message type", message.type);
             }
-            if (convs[1].key === "Today" && convs[1].conversations[0]?.id === conversation.id) {
-                return;
-            }
+        } catch (error) {
+            console.error("Unhandled error: Payload may not be a valid JSON.", { Data: data, errorDetails: error });
         }
-        dispatchConv({
-            type: "reordered",
-            conv: { ...conversation, last_message_at: message.sent_at },
-        });
-    };
+    }, [dispatch, dispatchConv, setSnackbar, conversation.id]);
+
+    useEffect(() => {
+        // Register the message handler when component mounts
+        registerMessageHandler(handleStreamMessage);
+
+        // Unregister when component unmounts
+        return () => {
+            unregisterMessageHandler(handleStreamMessage);
+        };
+    }, [registerMessageHandler, unregisterMessageHandler, handleStreamMessage]);
 
     return (
         <>

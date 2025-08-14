@@ -1,15 +1,11 @@
 import styles from "./index.module.css";
 
-import { useCallback, useEffect } from "react";
 import { Outlet, redirect } from "react-router-dom";
 
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 
 import { useSnackbar } from "@/contexts/snackbar/hook";
-import { useConversations } from "@/contexts/conversation/hook";
-import { useCurrentConv } from "@/contexts/message/hook";
-import { useWebsocket } from "@/contexts/websocket/hook";
 
 import ChatboxHeader from "@/components/ChatboxHeader";
 import ShareConvDialog from "@/components/dialogs/ShareConvDialog";
@@ -32,65 +28,7 @@ async function action({ request }) {
 }
 
 const Root = () => {
-    const { dispatch: dispatchConv } = useConversations();
-
-    const { snackbar, setSnackbar, closeSnackbar } = useSnackbar();
-    const { dispatch } = useCurrentConv();
-    const { registerMessageHandler, unregisterMessageHandler } = useWebsocket();
-
-    const handleWebSocketMessage = useCallback((data) => {
-        if (data === null || data === undefined) {
-            return;
-        }
-        try {
-            const message = JSON.parse(data);
-            switch (message.type) {
-            case "human":
-            case "ai":
-                dispatch({
-                    type: "updated",
-                    convId: message.conversation,
-                    message: message,
-                });
-                break;
-            case "AIMessageChunk":
-                dispatch({
-                    type: "appended",
-                    convId: message.conversation,
-                    message: message,
-                });
-                break;
-            case "info":
-                if (message.content.type === "title-generated") {
-                    dispatchConv({ type: "renamed", conv: { id: message.conversation, title: message.content.payload } });
-                } else {
-                    console.debug("unhandled info message", message);
-                }
-                break;
-            case "error":
-                setSnackbar({
-                    open: true,
-                    severity: "error",
-                    message: message.content,
-                });
-                break;
-            default:
-                console.warn("unknown message type", message.type);
-            }
-        } catch (error) {
-            console.error("Unhandled error: Payload may not be a valid JSON.", { Data: data, errorDetails: error });
-        }
-    }, [dispatch, dispatchConv, setSnackbar]);
-
-    useEffect(() => {
-        // Register the message handler when component mounts
-        registerMessageHandler(handleWebSocketMessage);
-
-        // Unregister when component unmounts
-        return () => {
-            unregisterMessageHandler(handleWebSocketMessage);
-        };
-    }, [registerMessageHandler, unregisterMessageHandler, handleWebSocketMessage]);
+    const { snackbar, closeSnackbar } = useSnackbar();
 
     return (
         <div className={styles.App}>

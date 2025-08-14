@@ -1,24 +1,26 @@
 import logging
 from functools import partial
+from typing import Annotated, Any
 from uuid import UUID
 
 from fastapi import (
     APIRouter,
-    WebSocket,
-    WebSocketDisconnect,
-    WebSocketException,
+    BackgroundTasks,
+    HTTPException,
+    Request,
 )
+from fastapi.responses import StreamingResponse
 from langchain_core.messages import AIMessage, BaseMessage
 from langchain_core.messages.ai import UsageMetadata
 from langchain_core.runnables import Runnable, RunnableConfig
 from langgraph.graph.state import CompiledStateGraph
 from openai import RateLimitError
+from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from chatbot.dependencies import UserIdHeaderDep
+from chatbot.dependencies import UserIdHeaderDep, uuid_or_404
 from chatbot.dependencies.agent import AgentWrapperDep, SmrChainWrapperDep
 from chatbot.dependencies.db import SqlalchemySessionMakerDep
-from chatbot.metrics import connected_clients
 from chatbot.metrics.llm import input_tokens, output_tokens
 from chatbot.models import Conversation
 from chatbot.schemas import (
@@ -27,45 +29,41 @@ from chatbot.schemas import (
     InfoMessage,
     HumanChatMessage,
 )
-from chatbot.utils import utcnow
+from chatbot.utils import get_client_ip, utcnow
 
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/chat")
+router = APIRouter(prefix="/conversations/{conversation_id}/messages")
 
 
-@router.websocket("")
-async def chat(
-    websocket: WebSocket,
+@router.post("")
+async def chat_stream(
+    conversation_id: Annotated[UUID, uuid_or_404("conversation_id", "Conversation")],
+    message: HumanChatMessage,
+    request: Request,
     userid: UserIdHeaderDep,
     agent_wrapper: AgentWrapperDep,
     smry_chain_wrapper: SmrChainWrapperDep,
     session_maker: SqlalchemySessionMakerDep,
+    background_tasks: BackgroundTasks,
 ):
-    await websocket.accept()
-    connected_clients.inc()
-    logger.info("websocket connected")
-    while True:
+    """HTTP streaming endpoint for chat interactions using Server-Sent Events."""
+
+    await validate_conversation_owner(session_maker, conversation_id, userid)
+    selected_model = message.additional_kwargs.get("model_name")
+    runnable_config: RunnableConfig = {
+        "run_name": "chat",
+        "metadata": {
+            "conversation_id": conversation_id,
+            "userid": userid,
+            "client_ip": get_client_ip(request),
+        },
+        "configurable": {"thread_id": conversation_id},
+    }
+
+    async def generate_stream():
         try:
-            payload: str = await websocket.receive_text()
-            message = HumanChatMessage.model_validate_json(payload)
-
-            conv = await validate_conversation_owner(
-                session_maker, message.conversation, userid
-            )
-
-            runnable_config: RunnableConfig = {
-                "run_name": "chat",
-                "metadata": {
-                    "conversation_id": message.conversation,
-                    "userid": userid,
-                    "client_ip": websocket.client.host,
-                },
-                "configurable": {"thread_id": message.conversation},
-            }
-
-            selected_model = message.additional_kwargs.get("model_name")
             async with agent_wrapper(selected_model) as agent:
                 async for msg, metadata in agent.astream(
                     input={"messages": [message.to_lc()]},
@@ -79,9 +77,11 @@ async def chat(
                     _msg = ChatMessage.from_lc(
                         msg,
                         parent_id=message.id,
-                        conversation=message.conversation,
                     )
-                    await websocket.send_text(_msg.model_dump_json())
+
+                    # Send as Server-Sent Event
+                    sse_data = f"data: {_msg.model_dump_json()}\n\n"
+                    yield sse_data
 
                     if (
                         isinstance(msg, AIMessage)
@@ -93,7 +93,12 @@ async def chat(
                             usage_metadata,
                         )
 
-                conv = await update_conversation_last_message_at(session_maker, conv)
+                background_tasks.add_task(
+                    update_conv,
+                    session_maker,
+                    conversation_id,
+                    last_message_at=utcnow(),
+                )
 
                 # summarize if required
                 if message.additional_kwargs and message.additional_kwargs.get(
@@ -106,58 +111,58 @@ async def chat(
                         runnable_config=runnable_config,
                     )
                     if title:
-                        conv.title = title
-                        async with session_maker() as session:
-                            conv = await session.merge(conv)
-                            await session.commit()
+                        background_tasks.add_task(
+                            update_conv,
+                            session_maker,
+                            conversation_id,
+                            title=title,
+                        )
 
                         info_message = InfoMessage(
-                            conversation=message.conversation,
                             content={
                                 "type": "title-generated",
                                 "payload": title,
                             },
                         )
-                        await websocket.send_text(info_message.model_dump_json())
+                        # Send title update as SSE
+                        sse_data = f"data: {info_message.model_dump_json()}\n\n"
+                        yield sse_data
+
         except RateLimitError:
             err_message = ErrorMessage(
                 content="Rate limit exceeded. Please try again later.",
             )
-            await websocket.send_text(err_message.model_dump_json())
-        except WebSocketDisconnect:
-            logger.info("websocket disconnected")
-            connected_clients.dec()
-            return
+            sse_data = f"data: {err_message.model_dump_json()}\n\n"
+            yield sse_data
         except Exception as e:  # noqa: BLE001
             logger.exception("Something goes wrong: %s", e)
+            err_message = ErrorMessage(
+                content="An error occurred while processing your request.",
+            )
+            sse_data = f"data: {err_message.model_dump_json()}\n\n"
+            yield sse_data
+
+    return StreamingResponse(
+        generate_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",  # Disable nginx buffering for real-time streaming
+        },
+    )
 
 
 async def validate_conversation_owner(
     session_maker: async_sessionmaker[AsyncSession],
-    conversation_id: UUID | str,
+    conversation_id: UUID,
     userid: str,
 ) -> Conversation:
     """Validate that the user owns the conversation."""
-    if not isinstance(conversation_id, UUID):
-        # In most cases, I don't need to do anything. SQLAlchemy will do the conversion for me.
-        # However, SQLite doesn't have a native UUID type.
-        # See <https://github.com/sqlalchemy/sqlalchemy/discussions/9290#discussioncomment-4953349>
-        conversation_id = UUID(conversation_id)
     async with session_maker() as session:
         conv: Conversation = await session.get(Conversation, conversation_id)
     if conv.owner != userid:
-        raise WebSocketException(code=3403, reason="authorization error")
-    return conv
-
-
-async def update_conversation_last_message_at(
-    session_maker: async_sessionmaker[AsyncSession], conv: Conversation
-):
-    """Update the conversation's last_message_at timestamp."""
-    conv.last_message_at = utcnow()
-    async with session_maker() as session:
-        conv = await session.merge(conv)
-        await session.commit()
+        raise HTTPException(status_code=403, detail="authorization error")
     return conv
 
 
@@ -196,3 +201,19 @@ def update_usage_metrics(
         user_id=userid,
         model_name=model_name,
     ).inc(usage_metadata["output_tokens"])
+
+
+async def update_conv(
+    session_maker: async_sessionmaker[AsyncSession],
+    conv_id: UUID,
+    **fields: Any,
+) -> None:
+    """Update arbitrary fields of a conversation."""
+    if not fields:
+        return  # nothing to update
+
+    async with session_maker() as session:
+        await session.execute(
+            update(Conversation).where(Conversation.id == conv_id).values(**fields)
+        )
+        await session.commit()
