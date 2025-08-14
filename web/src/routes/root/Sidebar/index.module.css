@@ -1,3 +1,5 @@
+/* ===== SIDEBAR LAYOUT ===== */
+
 .sidebar {
     width: 16rem;
     max-height: 100%;
@@ -10,18 +12,29 @@
     overflow: hidden;
 }
 
+.sidebar.collapsed {
+    width: 3rem;
+}
+
 .sidebarHeader {
     display: flex;
     flex-direction: row;
     gap: 5px;
 }
 
+.sidebar.collapsed .sidebarHeader {
+    flex-direction: column;
+    align-items: center;
+}
+
+/* ===== SPECIFIC BUTTONS ===== */
+
 .toggleButton {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 2rem;
     height: 2rem;
+    width: 2rem;
     margin: 2px;
     padding: 3px;
     color: var(--text-primary);
@@ -29,13 +42,13 @@
     border: none;
     border-radius: 5px;
     transition: ease 0.25s all;
+    flex-shrink: 0;
 }
 
 .newChatButton {
     display: flex;
-    flex: 1;
-    flex-direction: row;
     align-items: center;
+    flex-direction: row;
     gap: 0.5rem;
     height: 2rem;
     margin: 2px;
@@ -45,48 +58,45 @@
     border: none;
     border-radius: 5px;
     transition: ease 0.25s all;
+    flex: 1;
 }
 
-.sidebar.collapsed {
-    width: 3rem;
-
-    .sidebarHeader {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .toggleButton {
-        order: 1;
-    }
-
-    .newChatButton {
-        order: 2;
-    }
+/* Button order in collapsed state */
+.sidebar.collapsed .toggleButton {
+    order: 1;
 }
 
-.sidebar a {
-    color: unset;
-    text-decoration: none;
+.sidebar.collapsed .newChatButton {
+    order: 2;
 }
 
 .sidebarButton {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    gap: 0.5rem;
     height: 2rem;
     margin: 2px;
     padding: 3px;
-    background-color: var(--bg-primary);
     color: var(--text-primary);
+    background-color: var(--bg-primary);
     border: none;
     border-radius: 5px;
     transition: ease 0.25s all;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 0.5rem;
+    flex: 1;
 }
 
 .iconButton {
     justify-content: center;
     gap: 0;
+    flex: none;
+}
+
+/* ===== CONTENT AREAS ===== */
+
+.sidebar a {
+    color: unset;
+    text-decoration: none;
 }
 
 .convList {
@@ -114,12 +124,13 @@
     text-align: center;
 }
 
+/* ===== LOADING SPINNER ===== */
+
 .spinner {
     width: 24px;
     height: 24px;
     border: 3px solid #ccc;
     border-top: 3px solid #3498db;
-    /* TODO: change this */
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin: 0 auto;
@@ -134,6 +145,8 @@
         transform: rotate(360deg);
     }
 }
+
+/* ===== BOTTOM SECTION ===== */
 
 .sidebarBottom {
     margin-top: auto;
@@ -164,7 +177,8 @@
     margin: 0.25rem;
 }
 
-/* Responsive behavior for mobile */
+/* ===== MOBILE RESPONSIVE ===== */
+
 @media (max-width: 768px) {
     .sidebar {
         position: absolute;
@@ -179,36 +193,35 @@
         transition: left 0.3s ease;
     }
 
-    /* Totally hide sidebar on small screens */
     .sidebar.collapsed {
         left: -100%;
+    }
 
-        .toggleButton {
-            position: fixed !important;
-            top: 10px;
-            left: 10px;
-            z-index: 1001;
-            background-color: var(--bg-secondary);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-            width: 2.5rem;
-            height: 2.5rem;
-            display: flex !important;
-        }
+    /* Floating action buttons on mobile when collapsed */
+    .sidebar.collapsed .toggleButton {
+        display: flex !important;
+        justify-content: center;
+        position: fixed !important;
+        top: 10px;
+        left: 10px;
+        width: 2.5rem;
+        height: 2.5rem;
+        z-index: 1001;
+        background-color: var(--bg-secondary);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
 
-        .newChatButton {
-            position: fixed !important;
-            top: 65px;
-            /* Position below toggle button */
-            left: 10px;
-            z-index: 1001;
-            background-color: var(--bg-secondary);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-            width: 2.5rem;
-            height: 2.5rem;
-            justify-content: center;
-            flex: none;
-            /* Reset flex since we're using fixed positioning */
-            display: flex !important;
-        }
+    .sidebar.collapsed .newChatButton {
+        display: flex !important;
+        justify-content: center;
+        flex: none;
+        position: fixed !important;
+        top: 65px; /* Position below toggle button */
+        left: 10px;
+        z-index: 1001;
+        width: 2.5rem;
+        height: 2.5rem;
+        background-color: var(--bg-secondary);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     }
 }
