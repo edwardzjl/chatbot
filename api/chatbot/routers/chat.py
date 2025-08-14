@@ -1,6 +1,6 @@
 import logging
 from functools import partial
-from typing import Any
+from typing import Annotated, Any
 from uuid import UUID
 
 from fastapi import (
@@ -18,7 +18,7 @@ from openai import RateLimitError
 from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from chatbot.dependencies import UserIdHeaderDep
+from chatbot.dependencies import UserIdHeaderDep, uuid_or_404
 from chatbot.dependencies.agent import AgentWrapperDep, SmrChainWrapperDep
 from chatbot.dependencies.db import SqlalchemySessionMakerDep
 from chatbot.metrics.llm import input_tokens, output_tokens
@@ -34,11 +34,12 @@ from chatbot.utils import get_client_ip, utcnow
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/chat")
+router = APIRouter(prefix="/conversations/{conversation_id}/messages")
 
 
-@router.post("/stream")
+@router.post("")
 async def chat_stream(
+    conversation_id: Annotated[UUID, uuid_or_404("conversation_id", "Conversation")],
     message: HumanChatMessage,
     request: Request,
     userid: UserIdHeaderDep,
@@ -49,16 +50,16 @@ async def chat_stream(
 ):
     """HTTP streaming endpoint for chat interactions using Server-Sent Events."""
 
-    await validate_conversation_owner(session_maker, message.conversation, userid)
+    await validate_conversation_owner(session_maker, conversation_id, userid)
     selected_model = message.additional_kwargs.get("model_name")
     runnable_config: RunnableConfig = {
         "run_name": "chat",
         "metadata": {
-            "conversation_id": message.conversation,
+            "conversation_id": conversation_id,
             "userid": userid,
             "client_ip": get_client_ip(request),
         },
-        "configurable": {"thread_id": message.conversation},
+        "configurable": {"thread_id": conversation_id},
     }
 
     async def generate_stream():
@@ -76,7 +77,6 @@ async def chat_stream(
                     _msg = ChatMessage.from_lc(
                         msg,
                         parent_id=message.id,
-                        conversation=message.conversation,
                     )
 
                     # Send as Server-Sent Event
@@ -96,7 +96,7 @@ async def chat_stream(
                 background_tasks.add_task(
                     update_conv,
                     session_maker,
-                    message.conversation,
+                    conversation_id,
                     last_message_at=utcnow(),
                 )
 
@@ -114,12 +114,11 @@ async def chat_stream(
                         background_tasks.add_task(
                             update_conv,
                             session_maker,
-                            message.conversation,
+                            conversation_id,
                             title=title,
                         )
 
                         info_message = InfoMessage(
-                            conversation=message.conversation,
                             content={
                                 "type": "title-generated",
                                 "payload": title,
@@ -145,7 +144,7 @@ async def chat_stream(
 
     return StreamingResponse(
         generate_stream(),
-        media_type="text/plain",
+        media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
             "Connection": "keep-alive",
@@ -156,12 +155,10 @@ async def chat_stream(
 
 async def validate_conversation_owner(
     session_maker: async_sessionmaker[AsyncSession],
-    conversation_id: UUID | str,
+    conversation_id: UUID,
     userid: str,
 ) -> Conversation:
     """Validate that the user owns the conversation."""
-    if not isinstance(conversation_id, UUID):
-        conversation_id = UUID(conversation_id)
     async with session_maker() as session:
         conv: Conversation = await session.get(Conversation, conversation_id)
     if conv.owner != userid:

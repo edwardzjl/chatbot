@@ -7,9 +7,10 @@ import { HttpStreamContext } from "./index";
 export const HttpStreamProvider = ({ children }) => {
     const messageHandlers = useRef([]);
 
-    const send = useCallback(async (message) => {
+    const send = useCallback(async (url, message) => {
+        console.log(url)
         try {
-            const response = await fetch("/api/chat/stream", {
+            const response = await fetch(url, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

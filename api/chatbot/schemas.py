@@ -28,10 +28,8 @@ class ChatMessage(BaseModel):
     parent_id: str | None = None
     id: str = Field(default_factory=lambda: str(uuid4()))
     """Message id, used to chain stream responses into message."""
-    conversation: str | None = None
-    """Conversation id"""
     from_: str | None = Field(None, alias="from")
-    """A transient field to determine conversation id."""
+    """Usually userid."""
     content: str | list[str | dict] | None = None
     attachments: list[Attachment] | None = None
     type: str
@@ -51,7 +49,6 @@ class ChatMessage(BaseModel):
         _kwargs = {
             "parent_id": additional_kwargs.pop("parent_id", None),
             "id": lc_message.id or str(uuid4()),
-            "conversation": additional_kwargs.pop("session_id", None),
             "from": lc_message.name,
             "content": lc_message.content,
             "type": msg_type,
@@ -70,10 +67,7 @@ class ChatMessage(BaseModel):
 
     def to_lc(self) -> BaseMessage:
         """Convert to langchain message."""
-        additional_kwargs = (self.additional_kwargs or {}) | {
-            "type": self.type,
-            "session_id": self.conversation,
-        }
+        additional_kwargs = (self.additional_kwargs or {}) | {"type": self.type}
         if self.sent_at:
             additional_kwargs["sent_at"] = self.sent_at.isoformat()
         if self.parent_id:
