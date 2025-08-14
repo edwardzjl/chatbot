@@ -19,7 +19,7 @@ const mockUserContextValue = {
     avatar: "testavatar.png",
 };
 
-describe("ChatboxHeader", () => {
+describe("UserMenu", () => {
     it("renders the username and avatar", () => {
         setup();
         expect(screen.getByAltText("testuser's avatar")).toBeDefined();
