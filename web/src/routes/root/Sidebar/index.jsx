@@ -45,8 +45,8 @@ const Sidebar = () => {
     useInfiniteScroll({
         targetRef: loadMoreRef,
         onLoadMore: fetchMoreConvs,
+        hasMore,
         isLoading,
-        canLoadMore: hasMore,
     });
 
     const toggleSidebar = () => {
