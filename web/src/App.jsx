@@ -50,8 +50,9 @@ const router = createBrowserRouter([
     },
     {
         path: "/share/:shareId",
-        loader: Share.loader,
         element: <Share />,
+        loader: Share.loader,
+        errorElement: <ErrorPage />,
     }
 ]);
 
