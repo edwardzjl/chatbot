@@ -1,7 +1,7 @@
 import styles from "./index.module.css";
 
 import { useState, useCallback, useRef } from "react";
-import { useLoaderData } from "react-router-dom";
+import { useLoaderData } from "react-router";
 
 import { useSnackbar } from "@/contexts/snackbar/hook";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";

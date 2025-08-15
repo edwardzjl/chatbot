@@ -1,6 +1,6 @@
 import styles from "./index.module.css";
 
-import { useLoaderData, redirect } from "react-router-dom";
+import { useLoaderData, redirect } from "react-router";
 
 import ChatLog from "@/components/ChatLog";
 import ChatMessage from "@/components/ChatMessage";

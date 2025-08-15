@@ -1,7 +1,7 @@
 import styles from "./index.module.css";
 
 import { useEffect, useCallback } from "react";
-import { redirect, useLoaderData, useNavigation } from "react-router-dom";
+import { redirect, useLoaderData, useNavigation } from "react-router";
 
 import ChatLog from "@/components/ChatLog";
 import ChatMessage from "@/components/ChatMessage";
