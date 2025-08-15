@@ -1,6 +1,6 @@
 import styles from "./index.module.css";
 
-import { useLoaderData, redirect } from "react-router";
+import { useLoaderData } from "react-router";
 
 import ChatLog from "@/components/ChatLog";
 import ChatMessage from "@/components/ChatMessage";
@@ -10,8 +10,7 @@ import { formatTimestamp } from "@/commons";
 async function loader({ params }) {
     const resp = await fetch(`/api/shares/${params.shareId}`, {});
     if (!resp.ok) {
-        console.error("Failed to fetch share");
-        return redirect("/");
+        throw new Error(`Failed to fetch share: ${resp.statusText}`);
     }
     const share = await resp.json();
     return { share };

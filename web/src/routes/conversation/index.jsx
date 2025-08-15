@@ -1,7 +1,7 @@
 import styles from "./index.module.css";
 
 import { useEffect, useCallback } from "react";
-import { redirect, useLoaderData, useNavigation } from "react-router";
+import { useLoaderData, useNavigation } from "react-router";
 
 import ChatLog from "@/components/ChatLog";
 import ChatMessage from "@/components/ChatMessage";
@@ -17,7 +17,7 @@ import { useUserProfile } from "@/contexts/user/hook";
 async function loader({ params }) {
     const resp = await fetch(`/api/conversations/${params.convId}`, {});
     if (!resp.ok) {
-        return redirect("/");
+        throw new Error(`Failed to fetch conversation: ${resp.statusText}`);
     }
     const conversation = await resp.json();
     return { conversation };
