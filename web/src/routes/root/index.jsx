@@ -1,6 +1,6 @@
 import styles from "./index.module.css";
 
-import { Outlet } from "react-router-dom";
+import { Outlet } from "react-router";
 
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";

@@ -1,6 +1,6 @@
 import styles from "./index.module.css";
 
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import Avatar from "@mui/material/Avatar";
 
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";

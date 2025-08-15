@@ -2353,7 +2353,7 @@ __metadata:
     react: "npm:^19.1.1"
     react-dom: "npm:^19.1.1"
     react-markdown: "npm:^10.1.0"
-    react-router-dom: "npm:^7.8.0"
+    react-router: "npm:^7.8.0"
     react-syntax-highlighter: "npm:^15.6.1"
     react-window: "npm:^1.8.11"
     rehype-katex: "npm:^7.0.1"
@@ -5727,19 +5727,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router-dom@npm:^7.8.0":
-  version: 7.8.0
-  resolution: "react-router-dom@npm:7.8.0"
-  dependencies:
-    react-router: "npm:7.8.0"
-  peerDependencies:
-    react: ">=18"
-    react-dom: ">=18"
-  checksum: 10c0/a39a65477249f306935d48c010afd3f34009be66993df02dfa8a13cb79e0f3d61940e4ea0b7dadadb64b9b1f303358a830ed62c08d05cb406196aee6d609bdaf
-  languageName: node
-  linkType: hard
-
-"react-router@npm:7.8.0":
+"react-router@npm:^7.8.0":
   version: 7.8.0
   resolution: "react-router@npm:7.8.0"
   dependencies:

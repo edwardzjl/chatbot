@@ -1,7 +1,7 @@
 import styles from "./index.module.css";
 
 import { useEffect, useState, useRef } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router";
 import PropTypes from "prop-types";
 import Tooltip from "@mui/material/Tooltip";
 import Icon from "@mui/material/Icon";
