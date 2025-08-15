@@ -19,24 +19,20 @@ const fetchShares = async (size = null, cursor = null) => {
     if (size) {
         apiUrl.searchParams.set("size", size.toString());
     }
-
     const response = await fetch(apiUrl.toString());
     if (!response.ok) {
         throw new Error(`Failed to fetch shares: ${response.statusText}`);
     }
-    return response.json();
+    return await response.json();
 };
 
+// Wraps `fetchShares` because loader has its own params
 async function loader() {
-    const data = await fetchShares();
-    return {
-        shares: data.items || [],
-        nextCursor: data.next_page || null,
-    };
+    return await fetchShares();
 }
 
 const Sharing = () => {
-    const { shares: initialShares, nextCursor: initialCursor } = useLoaderData();
+    const { items: initialShares, next_page: initialCursor } = useLoaderData();
 
     // State
     const [shares, setShares] = useState(initialShares);
