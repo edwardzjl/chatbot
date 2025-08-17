@@ -16,7 +16,7 @@ import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import ChatTab from "../ChatTab";
 
 
-const Sidebar = () => {
+const LeftPanel = () => {
     const { groupedConvsArray: convs, fetchMoreConvs, isLoading, hasMore } = useConversations();
     const loadMoreRef = useRef();
 
@@ -116,4 +116,4 @@ const Sidebar = () => {
     );
 };
 
-export default Sidebar;
+export default LeftPanel;

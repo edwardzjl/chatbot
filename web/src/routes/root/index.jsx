@@ -12,7 +12,7 @@ import ConvSharedDialog from "@/components/dialogs/ConvSharedDialog";
 import DeleteConvDialog from "@/components/dialogs/DeleteConvDialog";
 
 import ChatboxHeader from "./ChatboxHeader";
-import Sidebar from "./Sidebar";
+import LeftPanel from "./LeftPanel";
 
 
 const Alert = (props, ref) => {
@@ -25,7 +25,7 @@ const Root = () => {
 
     return (
         <div className={styles.App}>
-            <Sidebar />
+            <LeftPanel />
             <section className={styles.chatbox}>
                 <ChatboxHeader />
                 <Outlet />

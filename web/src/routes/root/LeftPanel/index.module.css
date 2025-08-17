@@ -185,8 +185,8 @@
         z-index: 1000;
         height: 100%;
         /*
-         * NOTE: We use left positioning instead of transform: translateX() 
-         * because transform creates a new stacking context that interferes 
+         * NOTE: We use left positioning instead of transform: translateX()
+         * because transform creates a new stacking context that interferes
          * with fixed positioning of child elements (the floating buttons)
          */
         left: 0;
