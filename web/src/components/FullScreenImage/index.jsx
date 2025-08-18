@@ -5,7 +5,7 @@ import ReactDOM from "react-dom";
 import PropTypes from "prop-types";
 
 
-const FullScreenImage = ({ src, onClose = () => {}, className, ...props }) => {
+const FullScreenImage = ({ src, onClose = () => { }, className, ...props }) => {
     const imageRef = useRef(null);
 
     useEffect(() => {
@@ -22,8 +22,17 @@ const FullScreenImage = ({ src, onClose = () => {}, className, ...props }) => {
         };
     }, [onClose]);
 
+    const backdropClick = (e) => {
+        if (e.target === e.currentTarget) {
+            onClose();
+        }
+    };
+
     const content = (
-        <div className={styles.fullScreenContainer} onClick={onClose}>
+        <div
+            className={styles.fullScreenContainer}
+            onClick={backdropClick}
+        >
             <img
                 ref={imageRef}
                 className={`${styles.fullScreenImage} ${className || ""}`}
