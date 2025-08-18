@@ -41,6 +41,7 @@ const FullScreenImage = ({ src, onClose = () => { }, className, ...props }) => {
                 ref={imageRef}
                 className={`${styles.fullScreenImage} ${className || ""}`}
                 src={src}
+                decoding="async"
                 {...props}
             />
         </div>
