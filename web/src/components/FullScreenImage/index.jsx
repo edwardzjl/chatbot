@@ -32,6 +32,10 @@ const FullScreenImage = ({ src, onClose = () => { }, className, ...props }) => {
         <div
             className={styles.fullScreenContainer}
             onClick={backdropClick}
+            role="dialog"
+            aria-modal="true"
+            aria-label={props.alt || "Image preview"}
+            tabIndex={-1}
         >
             <img
                 ref={imageRef}
