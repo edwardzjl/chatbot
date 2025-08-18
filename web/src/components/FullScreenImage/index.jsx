@@ -1,6 +1,7 @@
 import styles from "./index.module.css";
 
 import { useEffect, useRef } from "react";
+import ReactDOM from "react-dom";
 import PropTypes from "prop-types";
 
 
@@ -21,7 +22,7 @@ const FullScreenImage = ({ src, onClose = () => {}, className, ...props }) => {
         };
     }, [onClose]);
 
-    return (
+    const content = (
         <div className={styles.fullScreenContainer} onClick={onClose}>
             <img
                 ref={imageRef}
@@ -31,6 +32,8 @@ const FullScreenImage = ({ src, onClose = () => {}, className, ...props }) => {
             />
         </div>
     );
+
+    return ReactDOM.createPortal(content, document.body);
 };
 
 FullScreenImage.propTypes = {
