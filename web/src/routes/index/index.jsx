@@ -42,8 +42,8 @@ const Index = () => {
             {/* TODO: add some examples here? */}
             <div className={styles.inputBottom}>
                 <ChatInput onSubmit={handleSubmit} />
-                <div className={styles.footer}>Chatbot can make mistakes. Consider checking important information.</div>
             </div>
+            <footer className={styles.footer}>Chatbot can make mistakes. Consider checking important information.</footer>
         </>
     );
 }

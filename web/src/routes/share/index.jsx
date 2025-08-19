@@ -29,10 +29,10 @@ const Share = () => {
     return (
         <div className={styles.App}>
             <div className={styles.sharebox}>
-                <div className={styles.shareHeader}>
+                <header className={styles.shareHeader}>
                     <h1 className={styles.shareTitle}>{share.title}</h1>
                     <p>Shared @ {formatTimestamp(share.created_at)}</p>
-                </div>
+                </header>
                 <ChatLog className={styles.chatLog}>
                     {share?.messages?.filter(message => rendering_messages.has(message.type)).map((message, index) => (
                         <ChatMessage key={index} convId={share.id} idx={index} message={message} />
