@@ -2,21 +2,19 @@ import styles from "./MarkdownContent.module.css";
 
 import { useState } from "react";
 import PropTypes from "prop-types";
-
 import Markdown from "react-markdown";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 
-import Tooltip from "@mui/material/Tooltip";
-
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 
+import Tooltip from "@/components/Tooltip";
 import { useTheme } from "@/hooks/useTheme";
 
 
-const MarkdownContent = ({content}) => {
+const MarkdownContent = ({ content }) => {
     const { codeTheme } = useTheme();
     const [copyTooltipTitle, setCopyTooltipTitle] = useState("copy content");
 
@@ -49,7 +47,7 @@ const MarkdownContent = ({content}) => {
                         <div>
                             <div className={styles.codeTitle}>
                                 <div>{language}</div>
-                                <Tooltip title={copyTooltipTitle}>
+                                <Tooltip text={copyTooltipTitle}>
                                     <ContentCopyIcon
                                         aria-label="Copy code snippet to clipboard"
                                         onClick={() => onCopyClick(children)}

@@ -4,7 +4,6 @@ import { useState } from "react";
 import PropTypes from "prop-types";
 
 import Avatar from "@mui/material/Avatar";
-import Tooltip from "@mui/material/Tooltip";
 
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
@@ -19,6 +18,7 @@ import { useCurrentConv } from "@/contexts/message/hook";
 import { useSnackbar } from "@/contexts/snackbar/hook";
 import { useUserProfile } from "@/contexts/user/hook";
 
+import Tooltip from "@/components/Tooltip";
 import PeekDetails from "@/components/PeekDetails";
 import PreviewImage from "@/components/PreviewImage";
 
@@ -160,7 +160,7 @@ const ChatMessage = ({ convId, message }) => {
                 )}
                 {!myMessage && (
                     <div className={styles.messageFeedbacks}>
-                        <Tooltip title={copyTooltipTitle}>
+                        <Tooltip text={copyTooltipTitle}>
                             <ContentCopyIcon
                                 aria-label="Copy message content to clipboard"
                                 onClick={() => onCopyClick(message.content)}
@@ -168,7 +168,7 @@ const ChatMessage = ({ convId, message }) => {
                         </Tooltip>
                         {message.feedback !== "thumbdown" && (
                             message.feedback === "thumbup" ? <ThumbUpIcon /> :
-                                <Tooltip title={feedbackTooltipTitles.thumbup}>
+                                <Tooltip text={feedbackTooltipTitles.thumbup}>
                                     <ThumbUpOutlined
                                         aria-label="Mark this answer as good"
                                         onClick={() => onFeedback("thumbup")}
@@ -177,7 +177,7 @@ const ChatMessage = ({ convId, message }) => {
                         )}
                         {message.feedback !== "thumbup" && (
                             message.feedback === "thumbdown" ? <ThumbDownIcon /> :
-                                <Tooltip title={feedbackTooltipTitles.thumbdown}>
+                                <Tooltip text={feedbackTooltipTitles.thumbdown}>
                                     <ThumbDownOutlined
                                         aria-label="Mark this answer as bad"
                                         onClick={() => onFeedback("thumbdown")}

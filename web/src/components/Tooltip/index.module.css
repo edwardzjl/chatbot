@@ -1,0 +1,29 @@
+.tooltipContainer {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltipBox {
+    position: fixed;  /* 关键：与 rect.* 同坐标系 */
+    z-index: 2147483647;
+    padding: 6px 10px;
+    max-width: 320px;
+
+    font-size: 12px;
+    line-height: 1.25;
+    text-align: left;
+    white-space: normal;
+    color: #fff;
+    background-color: #333;
+    border-radius: 6px;
+    pointer-events: none;
+
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+}
+
+.tooltipBoxVisible {
+    opacity: 1;
+    visibility: visible;
+}

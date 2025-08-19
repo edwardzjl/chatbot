@@ -3,7 +3,6 @@ import styles from "./index.module.css";
 import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router";
 import PropTypes from "prop-types";
-import Tooltip from "@mui/material/Tooltip";
 import Icon from "@mui/material/Icon";
 
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
@@ -12,6 +11,7 @@ import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutli
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import ShareIcon from '@mui/icons-material/Share';
 
+import Tooltip from "@/components/Tooltip";
 import { Dropdown, DropdownButton, DropdownMenu } from "@/components/DropdownMenu";
 import { useConversations } from "@/contexts/conversation/hook";
 import { useSnackbar } from "@/contexts/snackbar/hook";
@@ -23,6 +23,7 @@ import { useDialog } from "@/contexts/dialog/hook";
  * @param {Object} chat
  * @param {string} chat.id
  * @param {string} chat.title
+ * @param {boolean} chat.pinned
  * @returns
  */
 const ChatTab = ({ chat }) => {
@@ -143,11 +144,11 @@ const ChatTab = ({ chat }) => {
         <div
             className={`${styles.sidebarButton} ${params.convId === chat.id && styles.active}`}
         >
-            <Tooltip title={titleText} placement="right-start">
-                <div
-                    className={styles.titleContainer}
-                    onClick={() => navigate(`/conversations/${chat.id}`)}
-                >
+            <div
+                className={styles.titleContainer}
+                onClick={() => navigate(`/conversations/${chat.id}`)}
+            >
+                <Tooltip text={titleText} position="right" offset={{ x: 20 }}>
                     <input
                         aria-label="chat title"
                         ref={titleRef}
@@ -159,8 +160,8 @@ const ChatTab = ({ chat }) => {
                         value={titleText}
                         onChange={(e) => setTitleText(e.target.value)}
                     />
-                </div>
-            </Tooltip>
+                </Tooltip>
+            </div>
             <Dropdown className={styles.chatOpMenu}>
                 <DropdownButton ref={buttonRef} className={styles.chatOpMenuIcon}>
                     <MoreVertIcon />
