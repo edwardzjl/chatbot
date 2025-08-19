@@ -215,8 +215,8 @@ const Conversation = () => {
             </ChatLog>
             <div className={styles.inputBottom}>
                 <ChatInput onSubmit={sendMessage} />
-                <div className={styles.footer}>Chatbot can make mistakes. Consider checking important information.</div>
             </div>
+            <footer className={styles.footer}>Chatbot can make mistakes. Consider checking important information.</footer>
         </>
     );
 }
