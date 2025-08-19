@@ -13,7 +13,7 @@ import MenuOpenOutlinedIcon from "@mui/icons-material/MenuOpenOutlined";
 import { useConversations } from "@/contexts/conversation/hook";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 
-import ChatTab from "../ChatTab";
+import ConvItem from "./ConvItem";
 
 
 const LeftPanel = () => {
@@ -83,7 +83,7 @@ const LeftPanel = () => {
                                 <div key={group.key}>
                                     <div className={styles.sidebarDateGroup}>{group.key}</div>
                                     {group.conversations.map((conv) => (
-                                        <ChatTab key={conv.id} chat={conv} />
+                                        <ConvItem key={conv.id} chat={conv} />
                                     ))}
                                 </div>
                             ))}
