@@ -7,13 +7,13 @@ import UserMenu from "./UserMenu";
 
 const ChatboxHeader = () => {
     return (
-        <div className={styles.chatboxHeader}>
+        <header className={styles.chatboxHeader}>
             <ModelSelector />
             <div className={styles.rightElems}>
                 <ThemeSelector />
                 <UserMenu />
             </div>
-        </div>
+        </header>
     );
 };
 
