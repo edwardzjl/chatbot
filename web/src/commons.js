@@ -1,3 +1,17 @@
+/**
+ * A lightweight utility for safely joining CSS class names.
+ *
+ * Usage:
+ *   cx("foo", isActive && "active", maybeClass)
+ *   // => "foo active"
+ *
+ * - Falsy values (false, null, undefined, 0, "") are filtered out.
+ * - Only supports string arguments (no objects/arrays like `clsx`).
+ *
+ * This is a simple replacement for `clsx` or `classnames`
+ * when you only need basic conditional className joining.
+ */
+export const cx = (...classes) => classes.filter(Boolean).join(" ");
 
 /**
  * Get ISO 8601 string of the input date in local timezone.

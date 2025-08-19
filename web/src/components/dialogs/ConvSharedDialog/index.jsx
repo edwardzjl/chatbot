@@ -3,10 +3,9 @@ import styles from "./index.module.css";
 import { useEffect, useMemo, useRef, useState } from "react";
 import PropTypes from "prop-types";
 
-import Tooltip from "@mui/material/Tooltip";
-
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 
+import Tooltip from "@/components/Tooltip";
 import { useDialog } from "@/contexts/dialog/hook";
 
 
@@ -60,9 +59,7 @@ const ConvSharedDialog = ({ id }) => {
             <h2>Conversation shared</h2>
             <div className={styles.dialogContent}>
                 <input id={`${id}-url`} type="url" readOnly value={targetConv.url || ""} />
-                {/* Set slotProps or the tooltip won't be visible */}
-                {/* See <https://github.com/mui/material-ui/issues/40870#issuecomment-2044719356> */}
-                <Tooltip title={copyTooltipTitle} slotProps={{ popper: { disablePortal: true } }} >
+                <Tooltip text={copyTooltipTitle} >
                     <ContentCopyIcon onClick={() => onCopyClick(targetConv.url)} />
                 </Tooltip>
             </div>
