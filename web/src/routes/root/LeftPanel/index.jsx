@@ -55,7 +55,7 @@ const LeftPanel = () => {
 
     return (
         <aside className={`${styles.sidebar} ${isCollapsed && styles.collapsed}`}>
-            <div className={styles.sidebarHeader}>
+            <header className={styles.sidebarHeader}>
                 <button
                     className={`${styles.newChatButton} ${isCollapsed && styles.iconButton}`}
                     onClick={() => navigate("/")}
@@ -73,7 +73,7 @@ const LeftPanel = () => {
                 >
                     {isCollapsed ? <MenuIcon /> : <MenuOpenOutlinedIcon />}
                 </button>
-            </div>
+            </header>
             {!isCollapsed && (
                 <>
                     <nav className={`${styles.convList} scroll-box`}>
@@ -97,7 +97,7 @@ const LeftPanel = () => {
                         </div>
                     </nav>
                     <hr className={styles.sidebarBottom} />
-                    <div className={styles.sidebarBottomGroup}>
+                    <footer className={styles.sidebarBottomGroup}>
                         <div className={styles.sidebarBottomGroupItem}>
                             <InfoOutlinedIcon />
                         </div>
@@ -109,7 +109,7 @@ const LeftPanel = () => {
                                 <MailOutlineIcon />
                             </a>
                         </div>
-                    </div>
+                    </footer>
                 </>
             )}
         </aside>
