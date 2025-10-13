@@ -11,7 +11,7 @@ COPY web/ ./
 RUN yarn build
 
 
-FROM python:3.13 AS backend-builder
+FROM python:3.14 AS backend-builder
 
 ENV UV_COMPILE_BYTECODE=1
 
@@ -24,7 +24,7 @@ RUN --mount=from=ghcr.io/astral-sh/uv,source=/uv,target=/bin/uv \
     uv sync --locked --no-install-project --no-dev --group prod --no-cache
 
 
-FROM python:3.13-slim AS app
+FROM python:3.14-slim AS app
 WORKDIR /app
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
