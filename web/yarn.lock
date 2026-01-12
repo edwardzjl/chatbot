@@ -2211,7 +2211,7 @@ __metadata:
     react-markdown: "npm:^10.1.0"
     react-router: "npm:^7.10.1"
     react-syntax-highlighter: "npm:^15.6.6"
-    react-window: "npm:^2.2.1"
+    react-window: "npm:^2.2.5"
     rehype-katex: "npm:^7.0.1"
     remark-gfm: "npm:^4.0.1"
     remark-math: "npm:^6.0.0"
@@ -5582,13 +5582,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-window@npm:^2.2.1":
-  version: 2.2.1
-  resolution: "react-window@npm:2.2.1"
+"react-window@npm:^2.2.5":
+  version: 2.2.5
+  resolution: "react-window@npm:2.2.5"
   peerDependencies:
     react: ^18.0.0 || ^19.0.0
     react-dom: ^18.0.0 || ^19.0.0
-  checksum: 10c0/176f80e933539064cc2abc885d9f3b604e58b44328262343fa29fd00ae4605e21874b08d3fadb4b8b4f0be00e82b7c24606455a24f2f9c452001a339f9ffcf0a
+  checksum: 10c0/73d100253d2aa654b221f23bbd3c0438c865b6d0d6a03080c8417da19fd15bd37ae7aecf638a331f52a2037dc0cb7032400c1e71a7a5f74a4b67856136a66c3d
   languageName: node
   linkType: hard
 
