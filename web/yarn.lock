@@ -2310,7 +2310,7 @@ __metadata:
     eslint-plugin-react: "npm:^7.37.5"
     eslint-plugin-react-hooks: "npm:^5.2.0"
     eslint-plugin-react-refresh: "npm:^0.4.26"
-    globals: "npm:^16.4.0"
+    globals: "npm:^17.3.0"
     js-sha256: "npm:^0.11.1"
     jsdom: "npm:^27.4.0"
     material-icons: "npm:^1.13.14"
@@ -3549,10 +3549,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"globals@npm:^16.4.0":
-  version: 16.4.0
-  resolution: "globals@npm:16.4.0"
-  checksum: 10c0/a14b447a78b664b42f6d324e8675fcae6fe5e57924fecc1f6328dce08af9b2ca3a3138501e1b1f244a49814a732dc60cfc1aa24e714e0b64ac8bd18910bfac90
+"globals@npm:^17.3.0":
+  version: 17.3.0
+  resolution: "globals@npm:17.3.0"
+  checksum: 10c0/7f21443ecaa60c6e9ff56d9fb6f10a9b5f9514e7f22e5392f715472bb220ce31c865ebf414a32695150e733fb3e1013e6322dbce70fddd1e066f372b8d55a4b8
   languageName: node
   linkType: hard
 
