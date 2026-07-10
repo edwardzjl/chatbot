@@ -5,7 +5,7 @@ import { useNavigate } from "react-router";
 
 import GitHubIcon from "@mui/icons-material/GitHub";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import MailOutlineIcon from "@mui/icons-material/MailOutline";
+import MailOutlinedIcon from "@mui/icons-material/MailOutlined";
 import MapsUgcOutlinedIcon from "@mui/icons-material/MapsUgcOutlined";
 import MenuIcon from "@mui/icons-material/Menu";
 import MenuOpenOutlinedIcon from "@mui/icons-material/MenuOpenOutlined";
@@ -106,7 +106,7 @@ const LeftPanel = () => {
                         </div>
                         <div className={styles.sidebarBottomGroupItem}>
                             <a href="mailto:jameszhou2108@hotmail.com">
-                                <MailOutlineIcon />
+                                <MailOutlinedIcon />
                             </a>
                         </div>
                     </footer>

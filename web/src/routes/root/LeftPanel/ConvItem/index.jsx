@@ -6,7 +6,7 @@ import PropTypes from "prop-types";
 import Icon from "@mui/material/Icon";
 
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutline";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import ShareIcon from '@mui/icons-material/Share';
@@ -200,7 +200,7 @@ const ChatTab = ({ chat }) => {
                     </li>
                     <li>
                         <button className={styles.chatOpMenuItem} onClick={handleDeleteClick}>
-                            <DeleteOutlineIcon />
+                            <DeleteOutlinedIcon />
                             <span className={styles.chatOpMenuItemText}>Delete</span>
                         </button>
                     </li>
