@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "A chatbot application with FastAPI backend"
 requires-python = ">=3.13"
 dependencies = [
-    "aiohttp[speedups]>=3.11.14,<4.0.0",
+    "aiohttp[speedups]>=3.14.3,<4.0.0",
     "aiohttp-client-cache>=0.12.4,<1.0.0",
     "aiosqlite>=0.21.0,<1.0.0",
     "beautifulsoup4>=4.13.4,<5.0.0",
