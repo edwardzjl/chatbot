@@ -508,7 +508,7 @@ prod = [
 
 [package.metadata]
 requires-dist = [
-    { name = "aiohttp", extras = ["speedups"], specifier = ">=3.11.14,<4.0.0" },
+    { name = "aiohttp", extras = ["speedups"], specifier = ">=3.14.3,<4.0.0" },
     { name = "aiohttp-client-cache", specifier = ">=0.12.4,<1.0.0" },
     { name = "aiosqlite", specifier = ">=0.21.0,<1.0.0" },
     { name = "beautifulsoup4", specifier = ">=4.13.4,<5.0.0" },
