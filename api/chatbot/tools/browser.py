@@ -1,4 +1,6 @@
+import ipaddress
 import logging
+from urllib.parse import urlparse
 
 from aiohttp import ClientResponseError
 from bs4 import BeautifulSoup, Comment
@@ -10,7 +12,7 @@ from langchain_core.callbacks import (
 from langchain_core.tools import BaseTool, ToolException
 from langchain_core.tools.base import ArgsSchema
 from markdownify import markdownify as md
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from requests.exceptions import HTTPError
 
 from chatbot.http_client import HttpClient
@@ -23,6 +25,25 @@ class BrowserInput(BaseModel):
     """Input params for BrowserTool."""
 
     url: str = Field(description="The url you want to visit.")
+
+    @field_validator("url")
+    @classmethod
+    def validate_url(cls, v: str) -> str:
+        parsed = urlparse(v)
+        if parsed.scheme not in ("http", "https"):
+            raise ValueError("URL scheme must be http or https")
+        hostname = parsed.hostname or ""
+        try:
+            addr = ipaddress.ip_address(hostname)
+            if addr.is_private or addr.is_loopback or addr.is_link_local or addr.is_reserved:
+                raise ValueError("Requests to private/internal addresses are not allowed")
+        except ValueError as exc:
+            if "not allowed" in str(exc):
+                raise
+            # hostname is a domain name; block well-known internal names
+            if hostname in ("localhost",) or hostname.endswith(".internal") or hostname.endswith(".local"):
+                raise ValueError("Requests to internal hostnames are not allowed")
+        return v
 
 
 ua = UserAgent()
