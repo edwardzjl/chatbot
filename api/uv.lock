@@ -528,7 +528,7 @@ requires-dist = [
     { name = "pydantic-settings", specifier = ">=2.0,<3.0" },
     { name = "requests", specifier = ">=2.34.2,<3.0" },
     { name = "requests-cache", specifier = ">=1.3.3,<2.0.0" },
-    { name = "sqlakeyset", specifier = ">=2.0.0,<3.0.0" },
+    { name = "sqlakeyset", specifier = ">=2.0.1775222100,<3.0.0" },
     { name = "sqlalchemy", extras = ["asyncio"], specifier = ">=2.0.28,<3.0.0" },
     { name = "tenacity", specifier = ">=9.0.0,<10.0.0" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.52.0,<1.0.0" },
@@ -1880,16 +1880,16 @@ wheels = [
 
 [[package]]
 name = "sqlakeyset"
-version = "2.0.1746777265"
+version = "2.0.1775222100"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "packaging" },
     { name = "python-dateutil" },
     { name = "sqlalchemy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/3b/24/f5f8f28757e697b095e5edd077a37104cf98cd799ba6ab5d902cf7eaeed6/sqlakeyset-2.0.1746777265.tar.gz", hash = "sha256:86c81292b8fed283357509a9c0fa10b057b953e8ab7ed85e290b2766d1e7ef84", size = 111128, upload-time = "2025-05-09T07:54:28.358Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/75/18/0a06e22a66df13debde3eb799f7f31f17bf02242836f47a20e2c8c45e44c/sqlakeyset-2.0.1775222100.tar.gz", hash = "sha256:c2988c289181fa3615f3c091308a06001d83fa6ebc0591e7d18e08d8b92ee012", size = 114403, upload-time = "2026-04-03T13:15:03.428Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d2/26/035a313c420784b705cd653e6b6305df448faf1a048cf84fe6b092b3697e/sqlakeyset-2.0.1746777265-py3-none-any.whl", hash = "sha256:ca334d593b9b1d86cbefca7fda7909cc7c37b031673e16c7349a38c48c550e8b", size = 26875, upload-time = "2025-05-09T07:54:27.327Z" },
+    { url = "https://files.pythonhosted.org/packages/d0/f7/ff211cc8bc2968459b78a63c8b62b3b6819dff0abdfd260aa5ef012a73ec/sqlakeyset-2.0.1775222100-py3-none-any.whl", hash = "sha256:5004e671ddc7d9ecf105bcbd46c079b314cc6d413db3159e63a3567e51e28fa3", size = 27369, upload-time = "2026-04-03T13:15:02.219Z" },
 ]
 
 [[package]]
