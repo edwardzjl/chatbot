@@ -6,7 +6,7 @@ requires-python = ">=3.13"
 dependencies = [
     "aiohttp[speedups]>=3.14.3,<4.0.0",
     "aiohttp-client-cache>=0.12.4,<1.0.0",
-    "aiosqlite>=0.21.0,<1.0.0",
+    "aiosqlite>=0.22.1,<1.0.0",
     "beautifulsoup4>=4.13.4,<5.0.0",
     "fake-useragent>=2.2.0,<3.0.0",
     "fastapi>=0.100.0,<1.0.0",
