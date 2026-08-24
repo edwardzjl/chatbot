@@ -27,7 +27,7 @@ dependencies = [
     "sqlalchemy[asyncio]>=2.0.28,<3.0.0",
     "sqlakeyset>=2.0.1775222100,<3.0.0",
     "tenacity>=9.0.0,<10.0.0",
-    "uvicorn[standard]>=0.52.0,<1.0.0",
+    "uvicorn[standard]>=0.52.4,<1.0.0",
     "uvloop; sys_platform != 'win32'",
 ]
 
