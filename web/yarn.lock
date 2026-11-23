@@ -1633,7 +1633,7 @@ __metadata:
     eslint-plugin-react-hooks: "npm:^5.2.0"
     eslint-plugin-react-refresh: "npm:^0.5.8"
     globals: "npm:^17.14.0"
-    js-sha256: "npm:^1.0.0"
+    js-sha256: "npm:^1.1.0"
     jsdom: "npm:^30.1.3"
     material-icons: "npm:^1.13.14"
     micromark-extension-llm-math: "npm:^3.1.0"
@@ -3305,10 +3305,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-sha256@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "js-sha256@npm:1.0.0"
-  checksum: 10c0/24749f9ce929d3121324ba168f120802177939ca8b5411ef3ac69e6333b005a1be92279be50b41e24c1e30094d4eb6e231be7471e50fa5aa54a600f6fcd05612
+"js-sha256@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "js-sha256@npm:1.1.0"
+  checksum: 10c0/1d565839a0ff8cce5ad98632f6cc9ab60d2dd350d39569c0e75f01288dbcb25a52cc9336b937a4556b8031d020b42c0ec731bfc7d75b9fa351cdc61ae4221635
   languageName: node
   linkType: hard
 
